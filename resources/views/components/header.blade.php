@@ -87,6 +87,15 @@
                                    transition-all duration-200 ease-in-out">
                         Iniciar Sesión
                     </button>
+                    <button type="submit" 
+                            class="w-full py-2.5 px-4 bg-gradient-to-r from-red-600 to-red-700 text-white text-sm font-medium rounded-lg 
+                                   hover:from-bredlue-700 hover:to-red-800 
+                                   focus:ring-4 focus:ring-red-300 
+                                   shadow-md hover:shadow-lg 
+                                   transform hover:-translate-y-0.5 
+                                   transition-all duration-200 ease-in-out">
+                        Registrate Ahora
+                    </button>
                 </form>
             </div>
         </div>
