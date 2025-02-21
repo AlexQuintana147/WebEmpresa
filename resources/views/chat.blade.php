@@ -21,48 +21,55 @@
         <x-sidebar />
 
         <!-- Main Content -->
-        <div class="flex-1">
+        <div class="flex-1 flex flex-col h-screen">
             <!-- Header -->
             <x-header />
 
             <!-- Chat Interface -->
-            <main class="p-6" x-data="{ message: '', messages: [] }">
-                <div class="max-w-6xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+            <main class="flex-1 p-4 bg-gradient-to-br from-gray-50 to-gray-100" x-data="{ message: '', messages: [], scrollToBottom() { this.$nextTick(() => { this.$refs.chatContainer.scrollTop = this.$refs.chatContainer.scrollHeight; }); } }">
+                <div class="h-full max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
                     <!-- Chat Messages Container -->
-                    <div class="h-[calc(100vh-12rem)] flex flex-col">
-                        <div class="flex-1 overflow-y-auto p-4 space-y-4" id="chat-messages">
+                    <div class="h-full flex flex-col">
+                        <div class="flex-1 overflow-y-auto p-6 space-y-6" id="chat-messages" x-ref="chatContainer">
                             <!-- Welcome Message -->
-                            <div class="flex items-start">
+                            <div class="flex items-start space-x-4 animate-fade-in">
                                 <div class="flex-shrink-0">
-                                    <div class="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center">
-                                        <i class="fas fa-robot text-white"></i>
+                                    <div class="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-200">
+                                        <i class="fas fa-robot text-white text-lg"></i>
                                     </div>
                                 </div>
-                                <div class="ml-3 bg-blue-50 rounded-lg py-3 px-4 max-w-3xl">
-                                    <p class="text-gray-800">¡Hola! Soy tu asistente virtual. ¿En qué puedo ayudarte hoy?</p>
+                                <div class="flex-1">
+                                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl py-3 px-5 shadow-sm max-w-3xl transform hover:-translate-y-0.5 transition-transform duration-200">
+                                        <p class="text-gray-800 font-medium">¡Hola! Soy tu asistente virtual. ¿En qué puedo ayudarte hoy?</p>
+                                    </div>
+                                    <span class="text-xs text-gray-500 ml-2 mt-1 inline-block">Asistente Virtual</span>
                                 </div>
                             </div>
 
                             <!-- Message Templates -->
                             <template x-for="(msg, index) in messages" :key="index">
-                                <div class="flex items-start" :class="{'justify-end': msg.type === 'user'}">
+                                <div class="flex items-start space-x-4" :class="{'justify-end space-x-reverse': msg.type === 'user'}">
                                     <template x-if="msg.type === 'bot'">
                                         <div class="flex-shrink-0">
-                                            <div class="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center">
-                                                <i class="fas fa-robot text-white"></i>
+                                            <div class="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-200">
+                                                <i class="fas fa-robot text-white text-lg"></i>
                                             </div>
                                         </div>
                                     </template>
-                                    <div class="mx-3" :class="{
-                                        'bg-blue-50': msg.type === 'bot',
-                                        'bg-green-50': msg.type === 'user'
-                                    }" class="rounded-lg py-3 px-4 max-w-3xl">
-                                        <p class="text-gray-800" x-text="msg.text"></p>
+                                    <div class="flex-1" :class="{'text-right': msg.type === 'user'}">
+                                        <div class="inline-block rounded-2xl py-3 px-5 shadow-sm max-w-3xl transform hover:-translate-y-0.5 transition-transform duration-200"
+                                             :class="{
+                                                'bg-gradient-to-br from-blue-50 to-blue-100': msg.type === 'bot',
+                                                'bg-gradient-to-br from-green-50 to-green-100': msg.type === 'user'
+                                             }">
+                                            <p class="text-gray-800" x-text="msg.text"></p>
+                                        </div>
+                                        <span class="text-xs text-gray-500 mx-2 mt-1 inline-block" x-text="msg.type === 'bot' ? 'Asistente Virtual' : 'Tú'"></span>
                                     </div>
                                     <template x-if="msg.type === 'user'">
                                         <div class="flex-shrink-0">
-                                            <div class="h-10 w-10 rounded-full bg-green-500 flex items-center justify-center">
-                                                <i class="fas fa-user text-white"></i>
+                                            <div class="h-12 w-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-200">
+                                                <i class="fas fa-user text-white text-lg"></i>
                                             </div>
                                         </div>
                                     </template>
@@ -71,19 +78,23 @@
                         </div>
 
                         <!-- Chat Input -->
-                        <div class="border-t border-gray-200 p-4 bg-gray-50">
-                            <form @submit.prevent="messages.push({type: 'user', text: message}); messages.push({type: 'bot', text: 'Gracias por tu mensaje. Te responderé en breve.'}); message = ''" class="flex space-x-4">
-                                <div class="flex-1">
+                        <div class="border-t border-gray-100 p-4 bg-gradient-to-b from-white to-gray-50">
+                            <form @submit.prevent="if(message.trim()) { messages.push({type: 'user', text: message}); messages.push({type: 'bot', text: 'Gracias por tu mensaje. Te responderé en breve.'}); scrollToBottom(); message = ''; }" class="flex space-x-4">
+                                <div class="flex-1 relative">
                                     <input 
                                         type="text" 
                                         x-model="message"
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                                        class="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm placeholder-gray-400"
                                         placeholder="Escribe tu mensaje aquí..."
                                     >
+                                    <div class="absolute right-4 top-4 text-gray-400">
+                                        <i class="fas fa-keyboard text-lg"></i>
+                                    </div>
                                 </div>
                                 <button 
                                     type="submit"
-                                    class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+                                    class="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5"
+                                    :disabled="!message.trim()"
                                 >
                                     <i class="fas fa-paper-plane mr-2"></i>
                                     Enviar
@@ -95,5 +106,15 @@
             </main>
         </div>
     </div>
+
+    <style>
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fade-in 0.5s ease-out;
+        }
+    </style>
 </body>
 </html>
