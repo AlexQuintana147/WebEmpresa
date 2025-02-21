@@ -1,4 +1,4 @@
-<header class="bg-white shadow-lg border-b border-gray-100" x-data>
+<header class="bg-white shadow-lg border-b border-gray-100" x-data="{ isLogin: true }">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-end h-16">
             <!-- Profile Dropdown -->
@@ -54,7 +54,8 @@
                     </button>
                 </div>
 
-                <form class="space-y-4">
+                <!-- Login Form -->
+                <form x-show="isLogin" class="space-y-4">
                     <div>
                         <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
                         <input type="email" id="email" name="email" 
@@ -87,14 +88,66 @@
                                    transition-all duration-200 ease-in-out">
                         Iniciar Sesión
                     </button>
-                    <button type="submit" 
+                    <button type="button" 
+                            @click="isLogin = false"
                             class="w-full py-2.5 px-4 bg-gradient-to-r from-red-600 to-red-700 text-white text-sm font-medium rounded-lg 
-                                   hover:from-bredlue-700 hover:to-red-800 
+                                   hover:from-red-700 hover:to-red-800 
                                    focus:ring-4 focus:ring-red-300 
                                    shadow-md hover:shadow-lg 
                                    transform hover:-translate-y-0.5 
                                    transition-all duration-200 ease-in-out">
                         Registrate Ahora
+                    </button>
+                </form>
+
+                <!-- Registration Form -->
+                <form x-show="!isLogin" class="space-y-4">
+                    <div>
+                        <label for="reg-name" class="block text-sm font-medium text-gray-700">Nombre Completo</label>
+                        <input type="text" id="reg-name" name="name" 
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+                                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="reg-email" class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" id="reg-email" name="email" 
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+                                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="reg-password" class="block text-sm font-medium text-gray-700">Contraseña</label>
+                        <input type="password" id="reg-password" name="password" 
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+                                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="reg-password-confirmation" class="block text-sm font-medium text-gray-700">Confirmar Contraseña</label>
+                        <input type="password" id="reg-password-confirmation" name="password_confirmation" 
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+                                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <button type="submit" 
+                            class="w-full py-2.5 px-4 bg-gradient-to-r from-red-600 to-red-700 text-white text-sm font-medium rounded-lg 
+                                   hover:from-red-700 hover:to-red-800 
+                                   focus:ring-4 focus:ring-red-300 
+                                   shadow-md hover:shadow-lg 
+                                   transform hover:-translate-y-0.5 
+                                   transition-all duration-200 ease-in-out">
+                        Crear Cuenta
+                    </button>
+                    <button type="button" 
+                            @click="isLogin = true"
+                            class="w-full py-2.5 px-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-medium rounded-lg 
+                                   hover:from-blue-700 hover:to-blue-800 
+                                   focus:ring-4 focus:ring-blue-300 
+                                   shadow-md hover:shadow-lg 
+                                   transform hover:-translate-y-0.5 
+                                   transition-all duration-200 ease-in-out">
+                        Volver al Login
                     </button>
                 </form>
             </div>
