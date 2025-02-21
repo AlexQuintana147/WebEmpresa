@@ -1,24 +1,37 @@
-<header class="bg-white shadow-lg border-b border-gray-100" x-data="{ isLogin: true }">
+<header class="bg-gradient-to-b from-white to-gray-50 shadow-lg border-b border-gray-100" x-data="{ isLogin: true }">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-end h-16">
-            <!-- Profile Dropdown -->
-            <div class="flex items-center space-x-4">
-                <div class="relative">
-                    <img class="h-10 w-10 rounded-full border-2 border-gray-300 object-cover shadow-sm" 
-                        src="https://ui-avatars.com/api/?background=random&color=fff&name=User" 
-                        alt="Default profile picture">
-                    <div class="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-gray-400"></div>
-                </div>
-                <div class="flex flex-col">
-                    <button @click="$store.modal.open = true" 
-                            class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-medium rounded-lg 
-                                   hover:from-blue-700 hover:to-blue-800 
-                                   focus:ring-4 focus:ring-blue-300 
-                                   shadow-md hover:shadow-lg 
-                                   transform hover:-translate-y-0.5 
-                                   transition-all duration-200 ease-in-out">
-                        Ingresar
-                    </button>
+        <div class="flex items-center justify-between h-20">
+
+            <!-- Profile and Login Section -->
+            <div class="flex items-center justify-end w-full">
+                <div class="flex items-center space-x-4">
+                    <div class="relative group">
+                        <div class="relative cursor-pointer transform transition-transform duration-200 hover:scale-105">
+                            <img class="h-11 w-11 rounded-full border-2 border-gray-200 object-cover shadow-md 
+                                    group-hover:border-blue-400 transition-all duration-300" 
+                                src="https://ui-avatars.com/api/?background=random&color=fff&name=User" 
+                                alt="Profile picture">
+                            <div class="absolute bottom-0.5 right-0.5 h-3 w-3 rounded-full border-2 border-white bg-green-400
+                                    group-hover:animate-pulse"></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <button @click="$store.modal.open = true" 
+                                class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-medium rounded-lg 
+                                       hover:from-blue-700 hover:to-blue-800 
+                                       focus:ring-4 focus:ring-blue-300/50 
+                                       shadow-md hover:shadow-xl 
+                                       transform hover:-translate-y-0.5 
+                                       transition-all duration-300 ease-out 
+                                       active:scale-95">
+                            <span class="flex items-center space-x-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                                </svg>
+                                <span>Ingresar</span>
+                            </span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
