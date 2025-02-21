@@ -26,11 +26,11 @@
             <x-header />
 
             <!-- Chat Interface -->
-            <main class="flex-1 p-4 bg-gradient-to-br from-gray-50 to-gray-100" x-data="{ message: '', messages: [], scrollToBottom() { this.$nextTick(() => { this.$refs.chatContainer.scrollTop = this.$refs.chatContainer.scrollHeight; }); } }">
-                <div class="h-full max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+            <main class="flex-1 p-6 bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200" x-data="{ message: '', messages: [], scrollToBottom() { this.$nextTick(() => { this.$refs.chatContainer.scrollTop = this.$refs.chatContainer.scrollHeight; }); } }">
+                <div class="h-full max-w-7xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
                     <!-- Chat Messages Container -->
                     <div class="h-full flex flex-col">
-                        <div class="flex-1 overflow-y-auto p-6 space-y-6" id="chat-messages" x-ref="chatContainer">
+                        <div class="flex-1 overflow-y-auto p-8 space-y-8" id="chat-messages" x-ref="chatContainer">
                             <!-- Welcome Message -->
                             <div class="flex items-start space-x-4 animate-fade-in">
                                 <div class="flex-shrink-0">
@@ -78,13 +78,13 @@
                         </div>
 
                         <!-- Chat Input -->
-                        <div class="border-t border-gray-100 p-4 bg-gradient-to-b from-white to-gray-50">
-                            <form @submit.prevent="if(message.trim()) { messages.push({type: 'user', text: message}); messages.push({type: 'bot', text: 'Gracias por tu mensaje. Te responderé en breve.'}); scrollToBottom(); message = ''; }" class="flex space-x-4">
+                        <div class="border-t border-gray-200 p-6 bg-gradient-to-b from-white to-gray-50">
+                            <form @submit.prevent="if(message.trim()) { messages.push({type: 'user', text: message}); messages.push({type: 'bot', text: 'Gracias por tu mensaje. Te responderé en breve.'}); scrollToBottom(); message = ''; }" class="flex space-x-6">
                                 <div class="flex-1 relative">
                                     <input 
                                         type="text" 
                                         x-model="message"
-                                        class="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm placeholder-gray-400"
+                                        class="w-full px-8 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 shadow-sm placeholder-gray-400"
                                         placeholder="Escribe tu mensaje aquí..."
                                     >
                                     <div class="absolute right-4 top-4 text-gray-400">
@@ -93,7 +93,7 @@
                                 </div>
                                 <button 
                                     type="submit"
-                                    class="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5"
+                                    class="px-10 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-500/30 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5"
                                     :disabled="!message.trim()"
                                 >
                                     <i class="fas fa-paper-plane mr-2"></i>

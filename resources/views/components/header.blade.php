@@ -1,4 +1,5 @@
-<header class="bg-gradient-to-b from-white to-gray-50 shadow-lg border-b border-gray-100" x-data="{ isLogin: true }">
+<header class="bg-gradient-to-br from-gray-900 via-gray-800 to-black shadow-lg border-b border-gray-700 text-white relative overflow-hidden" x-data="{ isLogin: true }">
+    <div class="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-purple-500/5 pointer-events-none"></div>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-20">
 
