@@ -7,13 +7,21 @@
             <div class="flex items-center justify-end w-full">
                 <div class="flex items-center space-x-4">
                     <div class="relative group">
-                        <div class="relative cursor-pointer transform transition-transform duration-200 hover:scale-105">
-                            <img class="h-11 w-11 rounded-full border-2 border-gray-200 object-cover shadow-md 
-                                    group-hover:border-blue-400 transition-all duration-300" 
-                                src="https://ui-avatars.com/api/?background=random&color=fff&name=User" 
-                                alt="Profile picture">
-                            <div class="absolute bottom-0.5 right-0.5 h-3 w-3 rounded-full border-2 border-white bg-green-400
-                                    group-hover:animate-pulse"></div>
+                        <div class="relative cursor-pointer transform transition-all duration-300 hover:scale-105">
+                            <!-- Gradient border animation container -->
+                            <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full opacity-0 group-hover:opacity-100 blur transition-opacity duration-300"></div>
+                            
+                            <!-- Profile image container -->
+                            <div class="relative bg-gradient-to-br from-gray-900 to-black p-0.5 rounded-full">
+                                <img class="h-12 w-12 rounded-full object-cover shadow-lg ring-2 ring-gray-700/50 transform transition-all duration-300 group-hover:ring-blue-500/50" 
+                                    src="https://ui-avatars.com/api/?background=random&color=fff&name=User&bold=true" 
+                                    alt="Profile picture">
+                            </div>
+                            
+                            <!-- Status indicator -->
+                            <div class="absolute -bottom-1 -right-1 rounded-full p-1 bg-gradient-to-r from-gray-900 to-black">
+                                <div class="h-3.5 w-3.5 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500 shadow-lg shadow-emerald-500/50 group-hover:animate-pulse"></div>
+                            </div>
                         </div>
                     </div>
                     <div class="flex flex-col">
