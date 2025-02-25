@@ -13,3 +13,19 @@ Route::get('/chat', function () {
 Route::get('/instrucciones', function () {
     return view('instrucciones');
 });
+
+Route::get('/presupuesto', function () {
+    return view('presupuesto');
+});
+
+Route::get('/lista-de-actividades', function () {
+    return view('lista-de-actividades');
+});
+
+Route::get('/calendario', function () {
+    return view('calendario');
+});
+
+Route::get('/inversiones', function () {
+    return view('inversiones');
+});
