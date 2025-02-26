@@ -13,14 +13,14 @@
                             
                             <!-- Profile image container -->
                             <div class="relative bg-gradient-to-br from-gray-900 to-black p-0.5 rounded-full">
-                                <img class="h-12 w-12 rounded-full object-cover shadow-lg ring-2 ring-gray-700/50 transform transition-all duration-300 group-hover:ring-blue-500/50" 
-                                    src="https://ui-avatars.com/api/?background=random&color=fff&name=User&bold=true" 
+                                <img class="h-12 w-12 rounded-full object-cover shadow-lg ring-2 ring-gray-700/50 transform transition-all duration-300 group-hover:ring-red-500/50" 
+                                    src="{{ asset('images/iconPerfil.png') }}"
                                     alt="Profile picture">
                             </div>
                             
                             <!-- Status indicator -->
                             <div class="absolute -bottom-1 -right-1 rounded-full p-1 bg-gradient-to-r from-gray-900 to-black">
-                                <div class="h-3.5 w-3.5 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500 shadow-lg shadow-emerald-500/50 group-hover:animate-pulse"></div>
+                                <div class="h-3.5 w-3.5 rounded-full bg-gradient-to-r from-red-400 to-red-500 shadow-lg shadow-red-500/50 group-hover:animate-pulse"></div>
                             </div>
                         </div>
                     </div>
