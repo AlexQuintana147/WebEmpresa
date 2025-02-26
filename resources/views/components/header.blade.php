@@ -134,7 +134,12 @@
                         <input type="text" id="reg-name" name="name" 
                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm 
                                       focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 
-                                      transition duration-200 text-gray-900">
+                                      transition duration-200 text-gray-900"
+                               pattern="[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+"
+                               title="Por favor ingrese solo letras (se permiten acentos y ñ)"
+                               onkeypress="return /[A-Za-zÁáÉéÍíÓóÚúÑñ\s]/i.test(event.key)"
+                               required>
+                        <p class="mt-1 text-sm text-gray-500">Solo se permiten letras en este campo</p>
                     </div>
 
                     <div class="space-y-1.5">
