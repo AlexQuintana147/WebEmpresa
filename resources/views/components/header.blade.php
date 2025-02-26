@@ -83,7 +83,7 @@
                         <input type="email" id="email" name="email" 
                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm 
                                       focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 
-                                      transition duration-200">
+                                      transition duration-200 text-gray-900">
                     </div>
 
                     <div class="space-y-1.5">
@@ -91,7 +91,7 @@
                         <input type="password" id="password" name="password" 
                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm 
                                       focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 
-                                      transition duration-200">
+                                      transition duration-200 text-gray-900">
                     </div>
 
                     <div class="flex items-center justify-between">
@@ -134,7 +134,7 @@
                         <input type="text" id="reg-name" name="name" 
                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm 
                                       focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 
-                                      transition duration-200">
+                                      transition duration-200 text-gray-900">
                     </div>
 
                     <div class="space-y-1.5">
@@ -142,7 +142,7 @@
                         <input type="email" id="reg-email" name="email" 
                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm 
                                       focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 
-                                      transition duration-200">
+                                      transition duration-200 text-gray-900">
                     </div>
 
                     <div class="space-y-1.5">
@@ -150,7 +150,7 @@
                         <input type="password" id="reg-password" name="password" 
                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm 
                                       focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 
-                                      transition duration-200"
+                                      transition duration-200 text-gray-900"
                                pattern="^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,}$"
                                title="La contraseña debe tener al menos 6 caracteres, una mayúscula, un número y un carácter especial">
                         <p class="mt-1 text-sm text-gray-500">
@@ -167,7 +167,7 @@
                         <input type="password" id="reg-password-confirmation" name="password_confirmation" 
                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm 
                                       focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 
-                                      transition duration-200">
+                                      transition duration-200 text-gray-900">
                     </div>
 
                     <div class="space-y-3 pt-2">
