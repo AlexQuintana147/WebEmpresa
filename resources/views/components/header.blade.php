@@ -150,7 +150,16 @@
                         <input type="password" id="reg-password" name="password" 
                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm 
                                       focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 
-                                      transition duration-200">
+                                      transition duration-200"
+                               pattern="^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,}$"
+                               title="La contraseña debe tener al menos 6 caracteres, una mayúscula, un número y un carácter especial">
+                        <p class="mt-1 text-sm text-gray-500">
+                            La contraseña debe contener:
+                            <span class="block mt-1 ml-2">• Mínimo 6 caracteres</span>
+                            <span class="block ml-2">• Al menos una letra mayúscula</span>
+                            <span class="block ml-2">• Al menos un número</span>
+                            <span class="block ml-2">• Al menos un carácter especial (!@#$%^&*)</span>
+                        </p>
                     </div>
 
                     <div class="space-y-1.5">
