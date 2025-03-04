@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.querySelector('form[x-show="isLogin"]');
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    let isSubmitting = false;
 
     function showNotification(message, type = 'error') {
         const notification = document.createElement('div');
@@ -29,6 +30,9 @@ document.addEventListener('DOMContentLoaded', function() {
         loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
+            if (isSubmitting) return;
+            isSubmitting = true;
+
             // Clear previous error messages
             loginForm.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
             loginForm.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
@@ -38,6 +42,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 contrasena: document.querySelector('#password').value,
                 remember: document.querySelector('#remember').checked
             };
+
+            // Validate required fields
+            if (!formData.correo || !formData.contrasena) {
+                console.log('Validation failed: Missing required fields');
+                showNotification('Por favor complete todos los campos', 'error');
+                isSubmitting = false;
+                return;
+            }
 
             try {
                 const response = await fetch('/login', {
@@ -67,82 +79,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     }, 1500);
                 } else {
                     showNotification(data.message || 'Error al iniciar sesión', 'error');
+                    isSubmitting = false;
                 }
             } catch (error) {
                 console.error('Error during login:', error);
                 showNotification('Error al procesar la solicitud', 'error');
-            }
-
-            // Validate required fields
-            if (!formData.correo || !formData.contrasena) {
-                console.log('Validation failed: Missing required fields');
-                showNotification('Por favor complete todos los campos', 'error');
-                return;
-            }
-
-            try {
-                console.log('Form validation passed, proceeding with login');
-                const csrfToken = document.querySelector('meta[name="csrf-token"]');
-                console.log('CSRF Token found:', !!csrfToken, 'Token value:', csrfToken?.getAttribute('content'));
-                
-                if (!csrfToken) {
-                    console.error('CSRF token not found in the document');
-                    showNotification('Error de seguridad: Token CSRF no encontrado', 'error');
-                    return;
-                }
-
-                console.log('Preparing to send login request...');
-                const response = await fetch('/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken.getAttribute('content')
-                    },
-                    body: JSON.stringify(formData),
-                    credentials: 'same-origin'
-                });
-
-                console.log('Login response received:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    headers: Object.fromEntries(response.headers.entries())
-                });
-
-                const data = await response.json();
-                console.log('Login response data:', data);
-
-                if (response.ok) {
-                    console.log('Login successful, user data:', data.user);
-                    console.log('Session state:', document.cookie);
-                    showNotification(data.message || 'Inicio de sesión exitoso', 'success');
-                    
-                    if (data.user) {
-                        console.log('Attempting to update user name display');
-                        const userNameElement = document.querySelector('.text-white.text-sm.font-medium');
-                        if (userNameElement) {
-                            console.log('Found user name element, updating to:', data.user.nombre);
-                            userNameElement.textContent = data.user.nombre;
-                        } else {
-                            console.log('User name element not found in the DOM');
-                        }
-                    } else {
-                        console.log('No user data received from server');
-                    }
-
-                    setTimeout(() => {
-                        console.log('Redirecting to dashboard...');
-                        window.location.href = '/';
-                    }, 1500);
-                } else {
-                    console.error('Login failed:', data);
-                    showNotification(data.message || 'Error al iniciar sesión', 'error');
-                }
-            } catch (error) {
-                console.error('Error during login:', error);
-                showNotification('Error al procesar la solicitud', 'error');
+                isSubmitting = false;
             }
         });
-    } else {
-        console.error('Login form not found in the document');
     }
 });
