@@ -1,4 +1,14 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>WebEmpresa</title>
+</head>
+<body>
 <header class="bg-gradient-to-br from-gray-900 via-gray-800 to-black shadow-lg border-b border-gray-700 text-white relative overflow-hidden" x-data="{ isLogin: true }">
+    
     <div class="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-purple-500/5 pointer-events-none"></div>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-20">
@@ -131,7 +141,7 @@
                 <form x-show="!isLogin" class="space-y-5">
                     <div class="space-y-1.5">
                         <label for="reg-name" class="block text-sm font-semibold text-gray-700">Nombre Completo</label>
-                        <input type="text" id="reg-name" name="name" 
+                        <input type="text" id="reg-name" name="nombre" 
                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm 
                                       focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 
                                       transition duration-200 text-gray-900"
@@ -144,7 +154,7 @@
 
                     <div class="space-y-1.5">
                         <label for="reg-email" class="block text-sm font-semibold text-gray-700">Email</label>
-                        <input type="email" id="reg-email" name="email" 
+                        <input type="email" id="reg-email" name="correo" 
                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm 
                                       focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 
                                       transition duration-200 text-gray-900">
@@ -152,7 +162,7 @@
 
                     <div class="space-y-1.5">
                         <label for="reg-password" class="block text-sm font-semibold text-gray-700">Contraseña</label>
-                        <input type="password" id="reg-password" name="password" 
+                        <input type="password" id="reg-password" name="contrasena" 
                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm 
                                       focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 
                                       transition duration-200 text-gray-900"
@@ -202,3 +212,4 @@
         </div>
     </div>
 </header>
+<script src="{{ asset('js/register.js') }}"></script>

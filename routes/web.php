@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\RegisterController;
 
 Route::get('/', function () {
     return view('dashboard');
@@ -29,3 +30,5 @@ Route::get('/calendario', function () {
 Route::get('/inversiones', function () {
     return view('inversiones');
 });
+
+Route::post('/register', [RegisterController::class, 'register']);

@@ -4,10 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-
+use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
     protected $table = 'usuarios';
 
@@ -28,6 +28,16 @@ class User extends Authenticatable
         'correo_verified_at' => 'datetime',
         'contrasena' => 'hashed',
     ];
+
+    public function getAuthPassword()
+    {
+        return $this->contrasena;
+    }
+
+    public function getEmailForPasswordReset()
+    {
+        return $this->correo;
+    }
 
     protected static function boot()
     {

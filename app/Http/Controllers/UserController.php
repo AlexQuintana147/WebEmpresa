@@ -19,10 +19,20 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nombre' => 'required|string|max:255',
+            'nombre' => 'required|string|max:255|regex:/^[a-zA-Z\s]+$/',
             'correo' => 'required|string|email|max:255|unique:usuarios',
-            'contrasena' => 'required|string|min:8',
-            'imagen' => 'nullable|string'
+            'contrasena' => [
+                'required',
+                'string',
+                'min:6',
+                'regex:/[A-Z]/',
+                'regex:/[0-9]/',
+                'regex:/[@$!%*#?&]/',
+            ]
+        ], [
+            'nombre.regex' => 'El nombre solo puede contener letras y espacios',
+            'contrasena.min' => 'La contraseña debe tener al menos 6 caracteres',
+            'contrasena.regex' => 'La contraseña debe contener al menos una mayúscula, un número y un carácter especial'
         ]);
 
         if ($validator->fails()) {
@@ -33,7 +43,7 @@ class UserController extends Controller
             'nombre' => $request->nombre,
             'correo' => $request->correo,
             'contrasena' => Hash::make($request->contrasena),
-            'imagen' => $request->imagen,
+            'imagen' => null,
             'rol_id' => 2
         ]);
 
