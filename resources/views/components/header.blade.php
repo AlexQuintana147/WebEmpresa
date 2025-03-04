@@ -4,7 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="auth-check" content="{{ Auth::check() }}">
     <title>WebEmpresa</title>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('modal', {
+                open: false
+            })
+        })
+    </script>
 </head>
 <body>
 <header class="bg-gradient-to-br from-gray-900 via-gray-800 to-black shadow-lg border-b border-gray-700 text-white relative overflow-hidden" x-data="{ isLogin: true }">
@@ -35,21 +44,42 @@
                         </div>
                     </div>
                     <div class="flex flex-col">
-                        <button @click="$store.modal.open = true" 
-                                class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-medium rounded-lg 
-                                       hover:from-blue-700 hover:to-blue-800 
-                                       focus:ring-4 focus:ring-blue-300/50 
-                                       shadow-md hover:shadow-xl 
-                                       transform hover:-translate-y-0.5 
-                                       transition-all duration-300 ease-out 
-                                       active:scale-95">
-                            <span class="flex items-center space-x-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                                </svg>
-                                <span>Ingresar</span>
-                            </span>
-                        </button>
+                        @auth
+                            <div class="flex items-center space-x-4">
+                                <span class="text-white text-sm font-medium">{{ Auth::user()->nombre }}</span>
+                                <button onclick="logout()" 
+                                        class="px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white text-sm font-medium rounded-lg 
+                                               hover:from-red-700 hover:to-red-800 
+                                               focus:ring-4 focus:ring-red-300/50 
+                                               shadow-md hover:shadow-xl 
+                                               transform hover:-translate-y-0.5 
+                                               transition-all duration-300 ease-out 
+                                               active:scale-95">
+                                    <span class="flex items-center space-x-2">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                        </svg>
+                                        <span>Salir</span>
+                                    </span>
+                                </button>
+                            </div>
+                        @else
+                            <button @click="$store.modal.open = true" 
+                                    class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-medium rounded-lg 
+                                           hover:from-blue-700 hover:to-blue-800 
+                                           focus:ring-4 focus:ring-blue-300/50 
+                                           shadow-md hover:shadow-xl 
+                                           transform hover:-translate-y-0.5 
+                                           transition-all duration-300 ease-out 
+                                           active:scale-95">
+                                <span class="flex items-center space-x-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                                    </svg>
+                                    <span>Ingresar</span>
+                                </span>
+                            </button>
+                        @endauth
                     </div>
                 </div>
             </div>
@@ -88,6 +118,7 @@
 
                 <!-- Login Form -->
                 <form x-show="isLogin" class="space-y-5">
+                    @csrf
                     <div class="space-y-1.5">
                         <label for="email" class="block text-sm font-semibold text-gray-700">Email</label>
                         <input type="email" id="email" name="email" 
@@ -213,3 +244,25 @@
     </div>
 </header>
 <script src="{{ asset('js/register.js') }}"></script>
+<script src="{{ asset('js/login.js') }}"></script>
+<script>
+function logout() {
+    fetch('/logout', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        window.location.href = '/';
+    })
+    .catch(error => {
+        console.error('Error during logout:', error);
+    });
+}
+</script>
+</body>
+</html>
