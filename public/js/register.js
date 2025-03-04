@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log('Registration successful');
                     showNotification('Registro exitoso', 'success');
                     setTimeout(() => {
-                        window.location.href = '/dashboard';
+                        window.location.href = window.location.href;
                     }, 1500);
                 } else {
                     console.error('Registration failed:', data);
