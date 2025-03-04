@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="auth-check" content="{{ Auth::check() }}">
     <title>WebEmpresa</title>
+    <style>[x-cloak]{display:none !important;}</style>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
         document.addEventListener('alpine:init', () => {
@@ -16,7 +17,7 @@
     </script>
 </head>
 <body>
-<header class="bg-gradient-to-br from-gray-900 via-gray-800 to-black shadow-lg border-b border-gray-700 text-white relative overflow-hidden" x-data="{ isLogin: true }">
+<header class="bg-gradient-to-br from-gray-900 via-gray-800 to-black shadow-lg border-b border-gray-700 text-white relative overflow-hidden" x-data="{ isLogin: true }" x-cloak>
     
     <div class="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-purple-500/5 pointer-events-none"></div>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
