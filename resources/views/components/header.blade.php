@@ -47,7 +47,22 @@
                     <div class="flex flex-col">
                         @auth
                             <div class="flex items-center space-x-4">
-                                <span class="text-white text-sm font-medium">{{ Auth::user()->nombre }}</span>
+                                <span class="text-white text-base font-medium">{{ Auth::user()->nombre }}</span>
+                                <button class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg 
+                                               border-2 border-blue-400
+                                               hover:from-blue-600 hover:to-blue-700
+                                               focus:ring-4 focus:ring-blue-300/50
+                                               shadow-md hover:shadow-xl
+                                               transform hover:-translate-y-0.5
+                                               transition-all duration-300 ease-out
+                                               active:scale-95">
+                                    <span class="flex items-center space-x-2">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                                        </svg>
+                                        <span>Opciones</span>
+                                    </span>
+                                </button>
                                 <button onclick="logout()" 
                                         class="px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white text-sm font-medium rounded-lg 
                                                hover:from-red-700 hover:to-red-800 
