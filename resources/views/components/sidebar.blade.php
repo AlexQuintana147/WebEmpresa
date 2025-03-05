@@ -50,11 +50,18 @@
         </a>
     </nav>
     <div class="mt-auto pt-6 border-t border-gray-700/30">
-        <div class="flex items-center px-5 py-3 space-x-3 text-sm text-gray-400">
-            <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-red-400/10 to-red-500/10">
-                <i class="fas fa-power-off text-red-400 text-lg"></i>
-            </div>
-            <span class="font-medium tracking-wide">Offline</span>
+        <div class="flex items-center px-5 py-3 space-x-3 text-sm">
+            @auth
+                <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-green-400/10 to-green-500/10">
+                    <i class="fas fa-power-off text-green-400 text-lg"></i>
+                </div>
+                <span class="font-medium tracking-wide text-green-400">Online</span>
+            @else
+                <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-red-400/10 to-red-500/10">
+                    <i class="fas fa-power-off text-red-400 text-lg"></i>
+                </div>
+                <span class="font-medium tracking-wide text-gray-400">Offline</span>
+            @endauth
         </div>
     </div>
 </div>
