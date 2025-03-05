@@ -32,6 +32,10 @@ Route::get('/inversiones', function () {
     return view('inversiones');
 });
 
+Route::get('/opciones', function () {
+    return view('opciones');
+});
+
 Route::post('/register', [RegisterController::class, 'register']);
 
 Route::post('/login', [LoginController::class, 'login']);
