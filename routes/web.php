@@ -34,7 +34,7 @@ Route::get('/inversiones', function () {
 
 Route::get('/opciones', function () {
     return view('opciones');
-});
+})->middleware(\App\Http\Middleware\RedirectIfNotAuthenticated::class);
 
 Route::post('/register', [RegisterController::class, 'register']);
 
