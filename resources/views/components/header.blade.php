@@ -40,7 +40,11 @@
                             
                             <!-- Status indicator -->
                             <div class="absolute -bottom-1 -right-1 rounded-full p-1 bg-gradient-to-r from-gray-900 to-black">
-                                <div class="h-3.5 w-3.5 rounded-full bg-gradient-to-r from-red-400 to-red-500 shadow-lg shadow-red-500/50 group-hover:animate-pulse"></div>
+                                @auth
+                                    <div class="h-3.5 w-3.5 rounded-full bg-gradient-to-r from-green-400 to-green-500 shadow-lg shadow-green-500/50 group-hover:animate-pulse"></div>
+                                @else
+                                    <div class="h-3.5 w-3.5 rounded-full bg-gradient-to-r from-red-400 to-red-500 shadow-lg shadow-red-500/50 group-hover:animate-pulse"></div>
+                                @endauth
                             </div>
                         </div>
                     </div>
