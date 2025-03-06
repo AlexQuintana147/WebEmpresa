@@ -52,7 +52,7 @@
                         @auth
                             <div class="flex items-center space-x-4">
                                 <span class="text-white text-base font-medium">{{ Auth::user()->nombre }}</span>
-                                <button class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg 
+                                <button onclick="window.location.href='/opciones'" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg 
                                                border-2 border-blue-400
                                                hover:from-blue-600 hover:to-blue-700
                                                focus:ring-4 focus:ring-blue-300/50
