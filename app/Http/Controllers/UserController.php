@@ -56,29 +56,56 @@ class UserController extends Controller
         return response()->json($user);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
-        $user = User::findOrFail($id);
+        $user = auth()->user();
 
         $validator = Validator::make($request->all(), [
-            'nombre' => 'string|max:255',
-            'correo' => 'string|email|max:255|unique:usuarios,correo,' . $id,
-            'imagen' => 'nullable|string'
+            'nombre' => 'required|string|max:255|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/',
+            'correo' => 'string|email|max:255|unique:usuarios,correo,' . $user->id,
+            'imagen' => 'nullable|string',
+            'current_password' => 'required_with:new_password',
+            'new_password' => 'nullable|min:6|regex:/[A-Z]/|regex:/[0-9]/|regex:/[@$!%*#?&]/',
+            'new_password_confirmation' => 'required_with:new_password|same:new_password'
+        ], [
+            'nombre.regex' => 'El nombre solo puede contener letras y espacios',
+            'new_password.min' => 'La contraseña debe tener al menos 6 caracteres',
+            'new_password.regex' => 'La contraseña debe contener al menos una mayúscula, un número y un carácter especial',
+            'new_password_confirmation.same' => 'Las contraseñas no coinciden'
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
-        $user->update($request->only(['nombre', 'correo', 'imagen']));
+        try {
+            if ($request->has('new_password')) {
+                if (!Hash::check($request->current_password, $user->contrasena)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'La contraseña actual es incorrecta'
+                    ], 422);
+                }
+                $user->contrasena = Hash::make($request->new_password);
+            }
 
-        if ($request->has('contrasena')) {
-            $user->update([
-                'contrasena' => Hash::make($request->contrasena)
+            $user->nombre = $request->nombre;
+            if ($request->has('imagen')) {
+                $user->imagen = $request->imagen;
+            }
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Perfil actualizado correctamente',
+                'user' => $user
             ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar el perfil'
+            ], 500);
         }
-
-        return response()->json($user);
     }
 
     public function destroy($id)

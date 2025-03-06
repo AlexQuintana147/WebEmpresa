@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     return view('dashboard');
@@ -40,3 +41,8 @@ Route::post('/register', [RegisterController::class, 'register']);
 
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout']);
+
+// Profile update route
+Route::post('/actualizar-perfil', [UserController::class, 'update'])
+    ->name('profile.update')
+    ->middleware('auth');
