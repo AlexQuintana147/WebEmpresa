@@ -264,6 +264,8 @@
             if (data.success) {
                 alert(successMessage);
                 location.reload();
+            } else if (data.errors && data.errors.nombre) {
+                alert(data.errors.nombre[0]);
             } else {
                 alert(data.message || 'Error al actualizar el perfil');
             }

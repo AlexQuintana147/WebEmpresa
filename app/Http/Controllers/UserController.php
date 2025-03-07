@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Routing\Controller;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -20,7 +21,20 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nombre' => 'required|string|max:255|regex:/^[a-zA-Z\s]+$/',
+            'nombre' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^[a-zA-Z\s]+$/',
+                function ($attribute, $value, $fail) {
+                    // Verificar si existe otro usuario con el mismo nombre (ignorando mayúsculas/minúsculas)
+                    $existingUser = User::whereRaw('LOWER(nombre) = ?', [strtolower($value)])->first();
+                    
+                    if ($existingUser) {
+                        $fail('El nombre de usuario ya existe');
+                    }
+                },
+            ],
             'correo' => 'required|string|email|max:255|unique:usuarios',
             'contrasena' => [
                 'required',
@@ -62,7 +76,22 @@ class UserController extends Controller
         $user = User::findOrFail(Auth::id());
 
         $validator = Validator::make($request->all(), [
-            'nombre' => 'required|string|max:255|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/',
+            'nombre' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/',
+                function ($attribute, $value, $fail) use ($user) {
+                    // Verificar si existe otro usuario con el mismo nombre (ignorando mayúsculas/minúsculas)
+                    $existingUser = User::where('id', '!=', $user->id)
+                                        ->whereRaw('LOWER(nombre) = ?', [strtolower($value)])
+                                        ->first();
+                    
+                    if ($existingUser) {
+                        $fail('El nombre de usuario ya existe');
+                    }
+                },
+            ],
             'correo' => 'string|email|max:255|unique:usuarios,correo,' . $user->id,
             'imagen' => 'nullable|string',
             'current_password' => 'required_with:new_password',
