@@ -74,9 +74,19 @@ class UserController extends Controller
     public function update(Request $request)
     {
         $user = User::findOrFail(Auth::id());
-
-        $validator = Validator::make($request->all(), [
-            'nombre' => [
+        
+        // Determine what type of update is being performed
+        $isPasswordUpdate = $request->has('new_password');
+        $isNameUpdate = $request->has('nombre');
+        $isImageUpdate = $request->has('imagen');
+        
+        // Define validation rules based on update type
+        $rules = [];
+        $messages = [];
+        
+        // Only validate name if it's being updated
+        if ($isNameUpdate) {
+            $rules['nombre'] = [
                 'required',
                 'string',
                 'max:255',
@@ -91,25 +101,39 @@ class UserController extends Controller
                         $fail('El nombre de usuario ya existe');
                     }
                 },
-            ],
-            'correo' => 'string|email|max:255|unique:usuarios,correo,' . $user->id,
-            'imagen' => 'nullable|string',
-            'current_password' => 'required_with:new_password',
-            'new_password' => 'nullable|min:6|regex:/[A-Z]/|regex:/[0-9]/|regex:/[@$!%*#?&]/',
-            'new_password_confirmation' => 'required_with:new_password|same:new_password'
-        ], [
-            'nombre.regex' => 'El nombre solo puede contener letras y espacios',
-            'new_password.min' => 'La contraseña debe tener al menos 6 caracteres',
-            'new_password.regex' => 'La contraseña debe contener al menos una mayúscula, un número y un carácter especial',
-            'new_password_confirmation.same' => 'Las contraseñas no coinciden'
-        ]);
+            ];
+            $messages['nombre.regex'] = 'El nombre solo puede contener letras y espacios';
+        }
+        
+        // Email validation if provided
+        if ($request->has('correo')) {
+            $rules['correo'] = 'string|email|max:255|unique:usuarios,correo,' . $user->id;
+        }
+        
+        // Image validation if provided
+        if ($isImageUpdate) {
+            $rules['imagen'] = 'nullable|string';
+        }
+        
+        // Password validation if provided
+        if ($isPasswordUpdate) {
+            $rules['current_password'] = 'required';
+            $rules['new_password'] = 'required|min:6|regex:/[A-Z]/|regex:/[0-9]/|regex:/[@$!%*#?&]/';
+            $rules['new_password_confirmation'] = 'required|same:new_password';
+            
+            $messages['new_password.min'] = 'La contraseña debe tener al menos 6 caracteres';
+            $messages['new_password.regex'] = 'La contraseña debe contener al menos una mayúscula, un número y un carácter especial';
+            $messages['new_password_confirmation.same'] = 'Las contraseñas no coinciden';
+        }
+
+        $validator = Validator::make($request->all(), $rules, $messages);
 
         if ($validator->fails()) {
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
         try {
-            if ($request->has('new_password')) {
+            if ($isPasswordUpdate) {
                 if (!Hash::check($request->current_password, $user->contrasena)) {
                     return response()->json([
                         'success' => false,
@@ -119,10 +143,14 @@ class UserController extends Controller
                 $user->contrasena = Hash::make($request->new_password);
             }
 
-            $user->nombre = $request->nombre;
-            if ($request->has('imagen')) {
+            if ($isNameUpdate) {
+                $user->nombre = $request->nombre;
+            }
+            
+            if ($isImageUpdate) {
                 $user->imagen = $request->imagen;
             }
+            
             $user->save();
 
             return response()->json([

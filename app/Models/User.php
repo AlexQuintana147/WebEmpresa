@@ -26,7 +26,7 @@ class User extends Authenticatable
 
     protected $casts = [
         'correo_verified_at' => 'datetime',
-        'contrasena' => 'hashed',
+        // Removemos el cast 'hashed' para evitar doble hash
     ];
 
     public function getAuthPassword()
