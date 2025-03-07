@@ -190,9 +190,17 @@
         
         if (fileInput.files.length > 0) {
             const file = fileInput.files[0];
+            
+            // Check file size before conversion
+            if (file.size > 2 * 1024 * 1024) { // 2MB limit
+                alert('La imagen es demasiado grande. El tamaño máximo permitido es 2MB.');
+                return;
+            }
+            
             const reader = new FileReader();
             reader.onload = function(e) {
-                formData.append('imagen', e.target.result);
+                const base64Image = e.target.result;
+                formData.append('imagen', base64Image);
                 formData.append('_token', csrfToken);
                 
                 submitFormData(formData, 'Imagen de perfil actualizada correctamente');
@@ -252,11 +260,12 @@
     });
     
     function submitFormData(formData, successMessage) {
+        // Asegurarse de que el token CSRF esté incluido en el FormData
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        formData.append('_token', csrfToken);
+        
         fetch('/actualizar-perfil', {
             method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
             body: formData
         })
         .then(response => response.json())

@@ -34,7 +34,7 @@
                             <!-- Profile image container -->
                             <div class="relative bg-gradient-to-br from-gray-900 to-black p-0.5 rounded-full">
                                 <img class="h-12 w-12 rounded-full object-cover shadow-lg ring-2 ring-gray-700/50 transform transition-all duration-300 group-hover:ring-red-500/50" 
-                                    src="{{ asset('images/iconPerfil.png') }}"
+                                    src="{{ Auth::user()->imagen ?? asset('images/iconPerfil.png') }}"
                                     alt="Profile picture">
                             </div>
                             

@@ -147,8 +147,27 @@ class UserController extends Controller
                 $user->nombre = $request->nombre;
             }
             
-            if ($isImageUpdate) {
-                $user->imagen = $request->imagen;
+            if ($isImageUpdate && $request->imagen) {
+                // Asegurarse de que la imagen es una cadena base64 válida
+                if (preg_match('/^data:image\/\w+;base64,/', $request->imagen)) {
+                    // Verificar que la cadena base64 es válida
+                    $base64Image = preg_replace('/^data:image\/\w+;base64,/', '', $request->imagen);
+                    $decodedImage = base64_decode($base64Image, true);
+                    
+                    if ($decodedImage === false) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'La imagen no es una cadena base64 válida'
+                        ], 422);
+                    }
+                    
+                    $user->imagen = $request->imagen;
+                } else {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Formato de imagen no válido. Debe ser una cadena base64 con formato data:image/tipo;base64,'
+                    ], 422);
+                }
             }
             
             $user->save();
@@ -157,11 +176,11 @@ class UserController extends Controller
                 'success' => true,
                 'message' => 'Perfil actualizado correctamente',
                 'user' => $user
-            ]);
-        } catch (\Exception $e) {
+            ]);}
+        catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al actualizar el perfil'
+                'message' => 'Error al actualizar el perfil: ' . $e->getMessage()
             ], 500);
         }
     }
