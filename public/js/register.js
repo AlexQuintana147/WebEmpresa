@@ -31,7 +31,72 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
 
+    // Función para validar formato de correo electrónico
+    function validateEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    // Función para mostrar error en un campo específico
+    function showFieldError(inputElement, message) {
+        // Eliminar mensajes de error previos
+        const parent = inputElement.parentNode;
+        parent.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+        
+        // Agregar clase de error y mensaje
+        inputElement.classList.add('is-invalid');
+        inputElement.classList.remove('is-valid');
+        
+        const feedback = document.createElement('div');
+        feedback.className = 'invalid-feedback text-red-500 text-sm mt-1';
+        feedback.textContent = message;
+        parent.appendChild(feedback);
+    }
+
+    // Función para mostrar estado válido en un campo
+    function showFieldValid(inputElement) {
+        // Eliminar mensajes de error previos
+        const parent = inputElement.parentNode;
+        parent.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+        
+        // Agregar clase de válido
+        inputElement.classList.remove('is-invalid');
+        inputElement.classList.add('is-valid');
+        inputElement.style.borderColor = '#10b981'; // Color verde para indicar validez
+    }
+
     if (registerForm) {
+        // Validación en tiempo real para el campo de correo
+        const emailInput = document.querySelector('#reg-email');
+        if (emailInput) {
+            emailInput.addEventListener('input', function() {
+                const email = this.value.trim();
+                
+                if (email === '') {
+                    // Si el campo está vacío, mostrar error
+                    this.style.borderColor = '#ef4444'; // Rojo
+                    showFieldError(this, 'El correo electrónico es obligatorio');
+                } else if (!validateEmail(email)) {
+                    // Si el formato no es válido, mostrar error
+                    this.style.borderColor = '#ef4444'; // Rojo
+                    showFieldError(this, 'Por favor ingrese un correo electrónico válido');
+                } else {
+                    // Si es válido, mostrar indicador de éxito
+                    showFieldValid(this);
+                }
+            });
+
+            // También validar al perder el foco
+            emailInput.addEventListener('blur', function() {
+                const email = this.value.trim();
+                if (email === '') {
+                    showFieldError(this, 'El correo electrónico es obligatorio');
+                } else if (!validateEmail(email)) {
+                    showFieldError(this, 'Por favor ingrese un correo electrónico válido');
+                }
+            });
+        }
+
         registerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             console.log('Form submission started');
@@ -47,6 +112,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 password_confirmation: document.querySelector('#reg-password-confirmation').value
             };
             console.log('Form data collected:', formData);
+
+            // Validar correo antes de enviar
+            const emailInput = document.querySelector('#reg-email');
+            if (!formData.correo || !validateEmail(formData.correo)) {
+                showFieldError(emailInput, 'Por favor ingrese un correo electrónico válido');
+                return; // Detener el envío si el correo no es válido
+            }
 
             try {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]');
