@@ -171,7 +171,34 @@
                     
                     // Encontrar la celda correspondiente usando los atributos data-day y data-hour
                     const hourParts = startHour.split(':');
-                    const hourOnly = `${hourParts[0]}:00`;
+                    const hourValue = parseInt(hourParts[0]);
+                    
+                    // Buscar la hora más cercana disponible en la tabla (8, 10, 12, 14, 16, 18)
+                    let nearestHour;
+                    const availableHours = [8, 10, 12, 14, 16, 18];
+                    
+                    // Encontrar la hora más cercana
+                    if (availableHours.includes(hourValue)) {
+                        nearestHour = hourValue;
+                    } else {
+                        // Encontrar la hora más cercana por abajo o por arriba
+                        const lowerHours = availableHours.filter(h => h <= hourValue);
+                        const higherHours = availableHours.filter(h => h >= hourValue);
+                        
+                        if (lowerHours.length === 0) {
+                            nearestHour = Math.min(...higherHours);
+                        } else if (higherHours.length === 0) {
+                            nearestHour = Math.max(...lowerHours);
+                        } else {
+                            const maxLower = Math.max(...lowerHours);
+                            const minHigher = Math.min(...higherHours);
+                            
+                            // Elegir la hora más cercana
+                            nearestHour = (hourValue - maxLower) <= (minHigher - hourValue) ? maxLower : minHigher;
+                        }
+                    }
+                    
+                    const hourOnly = `${nearestHour}:00`;
                     
                     // Buscar la celda que corresponde al día y hora más cercana
                     const targetCell = document.querySelector(`#weekly-calendar-table td[data-day="${diaSemana}"][data-hour="${hourOnly}"]`);
@@ -184,15 +211,21 @@
                     console.log(`Renderizando tarea "${tarea.titulo}" en día ${diaSemana} (${['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'][diaSemana]}) hora ${startHour}`);
                     
                     // Crear el elemento de la tarea con un diseño más limpio
-                    targetCell.innerHTML += `
-                        <div class="p-1 rounded text-xs overflow-hidden mb-1" style="background-color: ${tarea.color || '#3B82F6'}; color: white;">
-                            <div class="flex items-center">
-                                <i class="fas ${tarea.icono || 'fa-calendar'} mr-1"></i>
-                                <span class="font-medium truncate">${tarea.titulo}</span>
-                            </div>
-                            <div class="text-xs opacity-90">${tarea.hora_inicio.substring(0, 5)} - ${tarea.hora_fin.substring(0, 5)}</div>
+                    // Verificar si ya hay tareas en esta celda y ajustar la posición
+                    const taskElement = document.createElement('div');
+                    taskElement.className = 'p-1 rounded text-xs overflow-hidden mb-1';
+                    taskElement.style.backgroundColor = tarea.color || '#3B82F6';
+                    taskElement.style.color = 'white';
+                    taskElement.innerHTML = `
+                        <div class="flex items-center">
+                            <i class="fas ${tarea.icono || 'fa-calendar'} mr-1"></i>
+                            <span class="font-medium truncate">${tarea.titulo}</span>
                         </div>
+                        <div class="text-xs opacity-90">${tarea.hora_inicio.substring(0, 5)} - ${tarea.hora_fin.substring(0, 5)}</div>
                     `;
+                    
+                    // Añadir la tarea a la celda
+                    targetCell.appendChild(taskElement);
                 });
                 console.log('Renderizado de tareas completado.');
             }
@@ -403,68 +436,68 @@
                                         <!-- 8:00 AM -->
                                         <tr>
                                             <td class="p-2 text-center text-sm text-gray-600 bg-gray-50 border">8:00</td>
-                                            <td class="border p-1 h-16 align-top" data-day="1" data-hour="8:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="2" data-hour="8:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="3" data-hour="8:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="4" data-hour="8:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="5" data-hour="8:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="6" data-hour="8:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="7" data-hour="8:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="1" data-hour="8:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="2" data-hour="8:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="3" data-hour="8:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="4" data-hour="8:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="5" data-hour="8:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="6" data-hour="8:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="7" data-hour="8:00"></td>
                                         </tr>
                                         <!-- 10:00 AM -->
                                         <tr>
                                             <td class="p-2 text-center text-sm text-gray-600 bg-gray-50 border">10:00</td>
-                                            <td class="border p-1 h-16 align-top" data-day="1" data-hour="10:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="2" data-hour="10:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="3" data-hour="10:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="4" data-hour="10:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="5" data-hour="10:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="6" data-hour="10:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="7" data-hour="10:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="1" data-hour="10:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="2" data-hour="10:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="3" data-hour="10:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="4" data-hour="10:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="5" data-hour="10:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="6" data-hour="10:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="7" data-hour="10:00"></td>
                                         </tr>
                                         <!-- 12:00 PM -->
                                         <tr>
                                             <td class="p-2 text-center text-sm text-gray-600 bg-gray-50 border">12:00</td>
-                                            <td class="border p-1 h-16 align-top" data-day="1" data-hour="12:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="2" data-hour="12:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="3" data-hour="12:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="4" data-hour="12:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="5" data-hour="12:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="6" data-hour="12:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="7" data-hour="12:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="1" data-hour="12:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="2" data-hour="12:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="3" data-hour="12:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="4" data-hour="12:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="5" data-hour="12:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="6" data-hour="12:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="7" data-hour="12:00"></td>
                                         </tr>
                                         <!-- 2:00 PM -->
                                         <tr>
                                             <td class="p-2 text-center text-sm text-gray-600 bg-gray-50 border">14:00</td>
-                                            <td class="border p-1 h-16 align-top" data-day="1" data-hour="14:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="2" data-hour="14:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="3" data-hour="14:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="4" data-hour="14:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="5" data-hour="14:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="6" data-hour="14:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="7" data-hour="14:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="1" data-hour="14:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="2" data-hour="14:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="3" data-hour="14:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="4" data-hour="14:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="5" data-hour="14:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="6" data-hour="14:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="7" data-hour="14:00"></td>
                                         </tr>
                                         <!-- 4:00 PM -->
                                         <tr>
                                             <td class="p-2 text-center text-sm text-gray-600 bg-gray-50 border">16:00</td>
-                                            <td class="border p-1 h-16 align-top" data-day="1" data-hour="16:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="2" data-hour="16:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="3" data-hour="16:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="4" data-hour="16:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="5" data-hour="16:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="6" data-hour="16:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="7" data-hour="16:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="1" data-hour="16:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="2" data-hour="16:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="3" data-hour="16:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="4" data-hour="16:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="5" data-hour="16:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="6" data-hour="16:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="7" data-hour="16:00"></td>
                                         </tr>
                                         <!-- 6:00 PM -->
                                         <tr>
                                             <td class="p-2 text-center text-sm text-gray-600 bg-gray-50 border">18:00</td>
-                                            <td class="border p-1 h-16 align-top" data-day="1" data-hour="18:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="2" data-hour="18:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="3" data-hour="18:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="4" data-hour="18:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="5" data-hour="18:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="6" data-hour="18:00"></td>
-                                            <td class="border p-1 h-16 align-top" data-day="7" data-hour="18:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="1" data-hour="18:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="2" data-hour="18:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="3" data-hour="18:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="4" data-hour="18:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="5" data-hour="18:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="6" data-hour="18:00"></td>
+                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="7" data-hour="18:00"></td>
                                         </tr>
                                     </tbody>
                                 </table>
