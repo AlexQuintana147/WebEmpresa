@@ -12,6 +12,72 @@
                 open: false
             })
         })
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date();
+            let currentMonth = today.getMonth();
+            let currentYear = today.getFullYear();
+
+            function updateCalendar() {
+                const firstDay = new Date(currentYear, currentMonth, 1);
+                const lastDay = new Date(currentYear, currentMonth + 1, 0);
+                const prevMonthLastDay = new Date(currentYear, currentMonth, 0);
+                const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+                // Actualizar título del mes
+                document.querySelector('h2.text-xl.font-semibold').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+
+                const calendarGrid = document.querySelector('.grid.grid-cols-7.gap-2:not(.mb-4)');
+                calendarGrid.innerHTML = '';
+
+                // Días del mes anterior
+                for (let i = firstDay.getDay() - 1; i >= 0; i--) {
+                    const day = prevMonthLastDay.getDate() - i;
+                    calendarGrid.innerHTML += `<div class="p-2 text-center text-gray-400">${day}</div>`;
+                }
+
+                // Días del mes actual
+                for (let day = 1; day <= lastDay.getDate(); day++) {
+                    const isToday = day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear();
+                    calendarGrid.innerHTML += `
+                        <div class="p-2 text-center hover:bg-gray-50 rounded-lg cursor-pointer ${isToday ? 'bg-blue-100' : ''}">
+                            ${day}
+                            ${isToday ? '<div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-500 rounded-full"></div>' : ''}
+                        </div>`;
+                }
+
+                // Días del próximo mes
+                const remainingDays = 42 - (firstDay.getDay() + lastDay.getDate());
+                for (let day = 1; day <= remainingDays; day++) {
+                    calendarGrid.innerHTML += `<div class="p-2 text-center text-gray-400">${day}</div>`;
+                }
+            }
+
+            // Configurar botones de navegación
+            const prevButton = document.querySelector('.fa-chevron-left').parentElement;
+            const nextButton = document.querySelector('.fa-chevron-right').parentElement;
+
+            prevButton.addEventListener('click', () => {
+                currentMonth--;
+                if (currentMonth < 0) {
+                    currentMonth = 11;
+                    currentYear--;
+                }
+                updateCalendar();
+            });
+
+            nextButton.addEventListener('click', () => {
+                currentMonth++;
+                if (currentMonth > 11) {
+                    currentMonth = 0;
+                    currentYear++;
+                }
+                updateCalendar();
+            });
+
+            // Inicializar calendario
+            updateCalendar();
+        });
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
@@ -61,28 +127,7 @@
 
                         <!-- Calendar Grid -->
                         <div class="grid grid-cols-7 gap-2">
-                            <!-- Previous Month Days -->
-                            <div class="p-2 text-center text-gray-400">30</div>
-                            <div class="p-2 text-center text-gray-400">31</div>
-
-                            <!-- Current Month Days -->
-                            <div class="p-2 text-center hover:bg-gray-50 rounded-lg cursor-pointer">1</div>
-                            <div class="p-2 text-center hover:bg-gray-50 rounded-lg cursor-pointer">2</div>
-                            <div class="p-2 text-center hover:bg-gray-50 rounded-lg cursor-pointer">3</div>
-                            <div class="p-2 text-center hover:bg-gray-50 rounded-lg cursor-pointer">4</div>
-                            <div class="p-2 text-center hover:bg-gray-50 rounded-lg cursor-pointer">5</div>
-                            <div class="p-2 text-center hover:bg-gray-50 rounded-lg cursor-pointer relative">
-                                6
-                                <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-500 rounded-full"></div>
-                            </div>
-                            <div class="p-2 text-center hover:bg-gray-50 rounded-lg cursor-pointer">7</div>
-                            <div class="p-2 text-center hover:bg-gray-50 rounded-lg cursor-pointer">8</div>
-                            <div class="p-2 text-center hover:bg-gray-50 rounded-lg cursor-pointer">9</div>
-                            <div class="p-2 text-center hover:bg-gray-50 rounded-lg cursor-pointer relative">
-                                10
-                                <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-red-500 rounded-full"></div>
-                            </div>
-                            <!-- Continue with remaining days... -->
+                            <!-- Calendar will be dynamically populated by JavaScript -->
                         </div>
                     </div>
 
