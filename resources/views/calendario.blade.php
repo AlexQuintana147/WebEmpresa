@@ -260,6 +260,42 @@
                                             <option value="purple">Morado</option>
                                         </select>
                                     </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Icono</label>
+                                        <div class="grid grid-cols-5 gap-2 mt-2">
+                                            <div class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50" onclick="selectIcon('fa-tasks')">
+                                                <i class="fas fa-tasks text-lg"></i>
+                                            </div>
+                                            <div class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50" onclick="selectIcon('fa-calendar')">
+                                                <i class="fas fa-calendar text-lg"></i>
+                                            </div>
+                                            <div class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50" onclick="selectIcon('fa-handshake')">
+                                                <i class="fas fa-handshake text-lg"></i>
+                                            </div>
+                                            <div class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50" onclick="selectIcon('fa-clock')">
+                                                <i class="fas fa-clock text-lg"></i>
+                                            </div>
+                                            <div class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50" onclick="selectIcon('fa-users')">
+                                                <i class="fas fa-users text-lg"></i>
+                                            </div>
+                                            <div class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50" onclick="selectIcon('fa-file')">
+                                                <i class="fas fa-file text-lg"></i>
+                                            </div>
+                                            <div class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50" onclick="selectIcon('fa-chart-bar')">
+                                                <i class="fas fa-chart-bar text-lg"></i>
+                                            </div>
+                                            <div class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50" onclick="selectIcon('fa-envelope')">
+                                                <i class="fas fa-envelope text-lg"></i>
+                                            </div>
+                                            <div class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50" onclick="selectIcon('fa-phone')">
+                                                <i class="fas fa-phone text-lg"></i>
+                                            </div>
+                                            <div class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50" onclick="selectIcon('fa-star')">
+                                                <i class="fas fa-star text-lg"></i>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" id="selectedIcon" name="icon" value="fa-tasks">
+                                    </div>
                                     <div class="flex justify-end space-x-3">
                                         <button type="button" @click="modalOpen = false" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancelar</button>
                                         <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Guardar</button>
@@ -360,3 +396,17 @@
     </div>
 </body>
 </html>
+<script>
+    function selectIcon(iconName) {
+        // Update the hidden input value
+        document.getElementById('selectedIcon').value = iconName;
+        
+        // Remove highlight from all icons
+        document.querySelectorAll('.icon-grid div').forEach(div => {
+            div.classList.remove('bg-blue-50', 'border-blue-500');
+        });
+        
+        // Highlight the selected icon
+        event.currentTarget.classList.add('bg-blue-50', 'border-blue-500');
+    }
+</script>
