@@ -332,7 +332,68 @@
                                     <div class="text-center font-medium text-gray-600">Domingo</div>
                                 </div>
 
-                                
+                                <!-- Time Slots -->
+                                <div class="grid grid-cols-8 gap-2">
+                                    <!-- 8:00 AM -->
+                                    <div class="text-center py-3 text-sm text-gray-600 bg-gray-50">8:00</div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+
+                                    <!-- 10:00 AM -->
+                                    <div class="text-center py-3 text-sm text-gray-600 bg-gray-50">10:00</div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+
+                                    <!-- 12:00 PM -->
+                                    <div class="text-center py-3 text-sm text-gray-600 bg-gray-50">12:00</div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+
+                                    <!-- 2:00 PM -->
+                                    <div class="text-center py-3 text-sm text-gray-600 bg-gray-50">14:00</div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+
+                                    <!-- 4:00 PM -->
+                                    <div class="text-center py-3 text-sm text-gray-600 bg-gray-50">16:00</div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+
+                                    <!-- 6:00 PM -->
+                                    <div class="text-center py-3 text-sm text-gray-600 bg-gray-50">18:00</div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
