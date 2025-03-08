@@ -110,20 +110,13 @@
 
             // Función para actualizar la vista semanal
             function updateWeeklyView() {
-                // Calcular el inicio de la semana (lunes)
-                currentWeekStart = getMonday(new Date(selectedDate));
-                
-                // Calcular el fin de la semana (domingo)
-                currentWeekEnd = new Date(currentWeekStart);
-                currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
-                
                 // Actualizar el título de la semana
                 const weeklyHeader = document.querySelector('.bg-white.rounded-lg.shadow-md.p-6.mb-6.mt-8 h2.text-xl.font-semibold');
                 if (weeklyHeader) {
-                    weeklyHeader.textContent = `Vista Semanal: ${formatDate(currentWeekStart)} - ${formatDate(currentWeekEnd)} ${currentWeekStart.getFullYear()}`;
+                    weeklyHeader.textContent = 'Vista Semanal';
                 }
                 
-                // Resaltar el día actual en la vista semanal si está dentro de la semana mostrada
+                // Resaltar el día actual en la vista semanal
                 const weekDays = document.querySelectorAll('.grid.grid-cols-8.gap-2.border-b.pb-2.mb-2 div:not(:first-child)');
                 
                 // Quitar resaltado de todos los días
@@ -131,96 +124,77 @@
                     day.classList.remove('bg-blue-100', 'text-blue-800', 'font-bold');
                 });
                 
-                // Comprobar si el día actual está en la semana mostrada
-                if (today >= currentWeekStart && today <= currentWeekEnd) {
-                    const todayDayOfWeek = today.getDay() || 7; // 0 es domingo, lo convertimos a 7
-                    if (weekDays[todayDayOfWeek - 1]) {
-                        weekDays[todayDayOfWeek - 1].classList.add('bg-blue-100', 'text-blue-800', 'font-bold');
-                    }
+                // Resaltar el día actual
+                const todayDayOfWeek = today.getDay() || 7; // 0 es domingo, lo convertimos a 7
+                if (weekDays[todayDayOfWeek - 1]) {
+                    weekDays[todayDayOfWeek - 1].classList.add('bg-blue-100', 'text-blue-800', 'font-bold');
                 }
             }
             
-            // Configurar botones de navegación para la vista semanal
-            const weeklyPrevButton = document.querySelector('.bg-white.rounded-lg.shadow-md.p-6.mb-6.mt-8 .fa-chevron-left').parentElement;
-            const weeklyNextButton = document.querySelector('.bg-white.rounded-lg.shadow-md.p-6.mb-6.mt-8 .fa-chevron-right').parentElement;
+            // Eliminar los event listeners de navegación semanal
+            const weeklyPrevButton = document.querySelector('.bg-white.rounded-lg.shadow-md.p-6.mb-6.mt-8 .fa-chevron-left')?.parentElement;
+            const weeklyNextButton = document.querySelector('.bg-white.rounded-lg.shadow-md.p-6.mb-6.mt-8 .fa-chevron-right')?.parentElement;
             
-            weeklyPrevButton.addEventListener('click', () => {
-                selectedDate.setDate(selectedDate.getDate() - 7);
-                updateWeeklyView();
-            });
-            
-            weeklyNextButton.addEventListener('click', () => {
-                selectedDate.setDate(selectedDate.getDate() + 7);
-                updateWeeklyView();
-            });
+            if (weeklyPrevButton) weeklyPrevButton.style.display = 'none';
+            if (weeklyNextButton) weeklyNextButton.style.display = 'none';
             
             // Función para renderizar las tareas en la vista semanal
             function renderizarTareas() {
+                console.log('Iniciando renderizado de tareas...');
                 // Limpiar todas las celdas primero
-                const cells = document.querySelectorAll('.border.rounded-lg.p-1.h-16.hover\\:bg-gray-50');
-                cells.forEach(cell => {
+                const cells = document.querySelectorAll('#weekly-calendar-table td[data-day]');
+                console.log(`Número total de celdas encontradas: ${cells.length}`);
+                cells.forEach((cell) => {
                     cell.innerHTML = '';
-                    cell.className = 'border rounded-lg p-1 h-16 hover:bg-gray-50';
                 });
                 
-                // Mapear días de la semana a índices (0-6, donde 0 es lunes en nuestra vista)
-                const dayMap = {
-                    'Lunes': 0,
-                    'Martes': 1,
-                    'Miércoles': 2,
-                    'Jueves': 3,
-                    'Viernes': 4,
-                    'Sábado': 5,
-                    'Domingo': 6
-                };
-                
-                // Mapear horas a índices de fila
-                const hourMap = {
-                    '8:00': 0,
-                    '10:00': 1,
-                    '12:00': 2,
-                    '14:00': 3,
-                    '16:00': 4,
-                    '18:00': 5
-                };
-                
                 // Renderizar cada tarea
-                tareas.forEach(tarea => {
-                    // Obtener el índice del día (0-6)
-                    const dayIndex = dayMap[tarea.dia_semana];
-                    if (dayIndex === undefined) return;
+                tareas.forEach((tarea, index) => {
+                    console.log(`\nProcesando tarea ${index + 1}:`, {
+                        titulo: tarea.titulo,
+                        dia_semana: tarea.dia_semana,
+                        hora_inicio: tarea.hora_inicio
+                    });
+                
+                    // Obtener el día de la semana (1-7)
+                    const diaSemana = parseInt(tarea.dia_semana);
                     
-                    // Obtener la hora de inicio para determinar la fila
-                    const startHour = tarea.hora_inicio.substring(0, 5);
-                    let rowIndex = -1;
+                    console.log(`Día de la semana: ${diaSemana}`);
                     
-                    // Encontrar la fila más cercana para la hora de inicio
-                    for (const [hour, index] of Object.entries(hourMap)) {
-                        if (startHour >= hour) {
-                            rowIndex = index;
-                        }
+                    if (diaSemana < 1 || diaSemana > 7) {
+                        console.error(`Error: Valor de día inválido: ${diaSemana}`);
+                        return;
                     }
                     
-                    if (rowIndex === -1) return;
+                    // Obtener la hora de inicio para determinar la celda
+                    const startHour = tarea.hora_inicio.substring(0, 5);
                     
-                    // Calcular la posición de la celda (8 columnas por fila: 1 para la hora + 7 días)
-                    const cellIndex = rowIndex * 8 + dayIndex + 1; // +1 porque la primera columna es la hora
+                    // Encontrar la celda correspondiente usando los atributos data-day y data-hour
+                    const hourParts = startHour.split(':');
+                    const hourOnly = `${hourParts[0]}:00`;
                     
-                    // Obtener la celda correspondiente
-                    const cell = cells[cellIndex];
-                    if (!cell) return;
+                    // Buscar la celda que corresponde al día y hora más cercana
+                    const targetCell = document.querySelector(`#weekly-calendar-table td[data-day="${diaSemana}"][data-hour="${hourOnly}"]`);
                     
-                    // Crear el elemento de la tarea
-                    cell.innerHTML = `
-                        <div class="p-1 rounded text-xs overflow-hidden" style="background-color: ${tarea.color}; color: white;">
+                    if (!targetCell) {
+                        console.error(`Error: No se encontró celda para día ${diaSemana} y hora ${hourOnly}`);
+                        return;
+                    }
+                    
+                    console.log(`Renderizando tarea "${tarea.titulo}" en día ${diaSemana} (${['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'][diaSemana]}) hora ${startHour}`);
+                    
+                    // Crear el elemento de la tarea con un diseño más limpio
+                    targetCell.innerHTML += `
+                        <div class="p-1 rounded text-xs overflow-hidden mb-1" style="background-color: ${tarea.color || '#3B82F6'}; color: white;">
                             <div class="flex items-center">
-                                <i class="fas ${tarea.icono} mr-1"></i>
+                                <i class="fas ${tarea.icono || 'fa-calendar'} mr-1"></i>
                                 <span class="font-medium truncate">${tarea.titulo}</span>
                             </div>
                             <div class="text-xs opacity-90">${tarea.hora_inicio.substring(0, 5)} - ${tarea.hora_fin.substring(0, 5)}</div>
                         </div>
                     `;
                 });
+                console.log('Renderizado de tareas completado.');
             }
             
             // Inicializar calendario y vista semanal
@@ -317,13 +291,13 @@
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Día</label>
                                         <select name="dia_semana" class="w-full border border-gray-300 rounded-lg px-3 py-2" required>
-                                            <option value="Lunes">Lunes</option>
-                                            <option value="Martes">Martes</option>
-                                            <option value="Miércoles">Miércoles</option>
-                                            <option value="Jueves">Jueves</option>
-                                            <option value="Viernes">Viernes</option>
-                                            <option value="Sábado">Sábado</option>
-                                            <option value="Domingo">Domingo</option>
+                                            <option value="1">Lunes</option>
+                                            <option value="2">Martes</option>
+                                            <option value="3">Miércoles</option>
+                                            <option value="4">Jueves</option>
+                                            <option value="5">Viernes</option>
+                                            <option value="6">Sábado</option>
+                                            <option value="7">Domingo</option>
                                         </select>
                                     </div>
                                     <div x-data="{startTime: '', endTime: '', error: false, errorMessage: ''}">
@@ -397,7 +371,7 @@
 
                         <!-- Weekly Calendar Header -->
                         <div class="flex items-center justify-between mb-6">
-                            <h2 class="text-xl font-semibold">Vista Semanal: 9 - 15 Octubre 2023</h2>
+                            <h2 class="text-xl font-semibold">Vista Semanal</h2>
                             <div class="flex space-x-2">
                                 <button class="p-2 hover:bg-gray-100 rounded-full">
                                     <i class="fas fa-chevron-left text-gray-600"></i>
@@ -411,79 +385,89 @@
                         <!-- Weekly Calendar Grid -->
                         <div class="overflow-x-auto">
                             <div class="min-w-max">
-                                <!-- Time Column Headers -->
-                                <div class="grid grid-cols-8 gap-2 border-b pb-2 mb-2">
-                                    <div class="text-center font-medium text-gray-500 w-20">Hora</div>
-                                    <div class="text-center font-medium text-gray-600">Lunes</div>
-                                    <div class="text-center font-medium text-gray-600">Martes</div>
-                                    <div class="text-center font-medium text-gray-600">Miércoles</div>
-                                    <div class="text-center font-medium text-gray-600">Jueves</div>
-                                    <div class="text-center font-medium text-gray-600">Viernes</div>
-                                    <div class="text-center font-medium text-gray-600">Sábado</div>
-                                    <div class="text-center font-medium text-gray-600">Domingo</div>
-                                </div>
-
-                                <!-- Time Slots -->
-                                <div class="grid grid-cols-8 gap-2">
-                                    <!-- 8:00 AM -->
-                                    <div class="text-center py-3 text-sm text-gray-600 bg-gray-50">8:00</div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-
-                                    <!-- 10:00 AM -->
-                                    <div class="text-center py-3 text-sm text-gray-600 bg-gray-50">10:00</div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-
-                                    <!-- 12:00 PM -->
-                                    <div class="text-center py-3 text-sm text-gray-600 bg-gray-50">12:00</div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-
-                                    <!-- 2:00 PM -->
-                                    <div class="text-center py-3 text-sm text-gray-600 bg-gray-50">14:00</div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-
-                                    <!-- 4:00 PM -->
-                                    <div class="text-center py-3 text-sm text-gray-600 bg-gray-50">16:00</div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-
-                                    <!-- 6:00 PM -->
-                                    <div class="text-center py-3 text-sm text-gray-600 bg-gray-50">18:00</div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
-                                    <div class="border rounded-lg p-1 h-16 hover:bg-gray-50"></div>
+                                <!-- Time Slots - New Implementation with Table -->
+                                <table class="w-full border-collapse" id="weekly-calendar-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="w-20 p-2 text-center text-sm font-medium text-gray-600 bg-gray-50 border">Hora</th>
+                                            <th class="p-2 text-center font-medium text-gray-600 bg-gray-50 border">Lunes</th>
+                                            <th class="p-2 text-center font-medium text-gray-600 bg-gray-50 border">Martes</th>
+                                            <th class="p-2 text-center font-medium text-gray-600 bg-gray-50 border">Miércoles</th>
+                                            <th class="p-2 text-center font-medium text-gray-600 bg-gray-50 border">Jueves</th>
+                                            <th class="p-2 text-center font-medium text-gray-600 bg-gray-50 border">Viernes</th>
+                                            <th class="p-2 text-center font-medium text-gray-600 bg-gray-50 border">Sábado</th>
+                                            <th class="p-2 text-center font-medium text-gray-600 bg-gray-50 border">Domingo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- 8:00 AM -->
+                                        <tr>
+                                            <td class="p-2 text-center text-sm text-gray-600 bg-gray-50 border">8:00</td>
+                                            <td class="border p-1 h-16 align-top" data-day="1" data-hour="8:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="2" data-hour="8:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="3" data-hour="8:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="4" data-hour="8:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="5" data-hour="8:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="6" data-hour="8:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="7" data-hour="8:00"></td>
+                                        </tr>
+                                        <!-- 10:00 AM -->
+                                        <tr>
+                                            <td class="p-2 text-center text-sm text-gray-600 bg-gray-50 border">10:00</td>
+                                            <td class="border p-1 h-16 align-top" data-day="1" data-hour="10:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="2" data-hour="10:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="3" data-hour="10:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="4" data-hour="10:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="5" data-hour="10:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="6" data-hour="10:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="7" data-hour="10:00"></td>
+                                        </tr>
+                                        <!-- 12:00 PM -->
+                                        <tr>
+                                            <td class="p-2 text-center text-sm text-gray-600 bg-gray-50 border">12:00</td>
+                                            <td class="border p-1 h-16 align-top" data-day="1" data-hour="12:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="2" data-hour="12:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="3" data-hour="12:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="4" data-hour="12:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="5" data-hour="12:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="6" data-hour="12:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="7" data-hour="12:00"></td>
+                                        </tr>
+                                        <!-- 2:00 PM -->
+                                        <tr>
+                                            <td class="p-2 text-center text-sm text-gray-600 bg-gray-50 border">14:00</td>
+                                            <td class="border p-1 h-16 align-top" data-day="1" data-hour="14:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="2" data-hour="14:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="3" data-hour="14:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="4" data-hour="14:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="5" data-hour="14:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="6" data-hour="14:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="7" data-hour="14:00"></td>
+                                        </tr>
+                                        <!-- 4:00 PM -->
+                                        <tr>
+                                            <td class="p-2 text-center text-sm text-gray-600 bg-gray-50 border">16:00</td>
+                                            <td class="border p-1 h-16 align-top" data-day="1" data-hour="16:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="2" data-hour="16:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="3" data-hour="16:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="4" data-hour="16:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="5" data-hour="16:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="6" data-hour="16:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="7" data-hour="16:00"></td>
+                                        </tr>
+                                        <!-- 6:00 PM -->
+                                        <tr>
+                                            <td class="p-2 text-center text-sm text-gray-600 bg-gray-50 border">18:00</td>
+                                            <td class="border p-1 h-16 align-top" data-day="1" data-hour="18:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="2" data-hour="18:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="3" data-hour="18:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="4" data-hour="18:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="5" data-hour="18:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="6" data-hour="18:00"></td>
+                                            <td class="border p-1 h-16 align-top" data-day="7" data-hour="18:00"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                                 </div>
                             </div>
                         </div>

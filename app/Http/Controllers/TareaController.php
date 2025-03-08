@@ -34,7 +34,7 @@ class TareaController extends Controller
         $request->validate([
             'titulo' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
-            'dia_semana' => 'required|string',
+            'dia_semana' => 'required|integer|min:1|max:7',
             'hora_inicio' => 'required',
             'hora_fin' => 'required',
             'color' => 'nullable|string',
@@ -87,7 +87,7 @@ class TareaController extends Controller
         $request->validate([
             'titulo' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
-            'dia_semana' => 'required|string',
+            'dia_semana' => 'required|integer|min:1|max:7',
             'hora_inicio' => 'required',
             'hora_fin' => 'required',
             'color' => 'nullable|string',
