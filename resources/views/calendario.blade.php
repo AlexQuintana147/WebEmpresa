@@ -22,6 +22,20 @@
             let currentWeekStart = new Date();
             let currentWeekEnd = new Date();
             let selectedDate = new Date();
+            
+            // Cargar tareas desde el servidor
+            let tareas = [];
+            
+            // Función para cargar las tareas
+            function cargarTareas() {
+                fetch('{{ route("tareas.json") }}')
+                    .then(response => response.json())
+                    .then(data => {
+                        tareas = data;
+                        renderizarTareas();
+                    })
+                    .catch(error => console.error('Error cargando tareas:', error));
+            }
 
             function updateCalendar() {
                 const firstDay = new Date(currentYear, currentMonth, 1);
@@ -140,9 +154,86 @@
                 updateWeeklyView();
             });
             
+            // Función para renderizar las tareas en la vista semanal
+            function renderizarTareas() {
+                // Limpiar todas las celdas primero
+                const cells = document.querySelectorAll('.border.rounded-lg.p-1.h-16.hover\\:bg-gray-50');
+                cells.forEach(cell => {
+                    cell.innerHTML = '';
+                    cell.className = 'border rounded-lg p-1 h-16 hover:bg-gray-50';
+                });
+                
+                // Mapear días de la semana a índices (0-6, donde 0 es lunes en nuestra vista)
+                const dayMap = {
+                    'Lunes': 0,
+                    'Martes': 1,
+                    'Miércoles': 2,
+                    'Jueves': 3,
+                    'Viernes': 4,
+                    'Sábado': 5,
+                    'Domingo': 6
+                };
+                
+                // Mapear horas a índices de fila
+                const hourMap = {
+                    '8:00': 0,
+                    '10:00': 1,
+                    '12:00': 2,
+                    '14:00': 3,
+                    '16:00': 4,
+                    '18:00': 5
+                };
+                
+                // Renderizar cada tarea
+                tareas.forEach(tarea => {
+                    // Obtener el índice del día (0-6)
+                    const dayIndex = dayMap[tarea.dia_semana];
+                    if (dayIndex === undefined) return;
+                    
+                    // Obtener la hora de inicio para determinar la fila
+                    const startHour = tarea.hora_inicio.substring(0, 5);
+                    let rowIndex = -1;
+                    
+                    // Encontrar la fila más cercana para la hora de inicio
+                    for (const [hour, index] of Object.entries(hourMap)) {
+                        if (startHour >= hour) {
+                            rowIndex = index;
+                        }
+                    }
+                    
+                    if (rowIndex === -1) return;
+                    
+                    // Calcular la posición de la celda (8 columnas por fila: 1 para la hora + 7 días)
+                    const cellIndex = rowIndex * 8 + dayIndex + 1; // +1 porque la primera columna es la hora
+                    
+                    // Obtener la celda correspondiente
+                    const cell = cells[cellIndex];
+                    if (!cell) return;
+                    
+                    // Crear el elemento de la tarea
+                    cell.innerHTML = `
+                        <div class="p-1 rounded text-xs overflow-hidden" style="background-color: ${tarea.color}; color: white;">
+                            <div class="flex items-center">
+                                <i class="fas ${tarea.icono} mr-1"></i>
+                                <span class="font-medium truncate">${tarea.titulo}</span>
+                            </div>
+                            <div class="text-xs opacity-90">${tarea.hora_inicio.substring(0, 5)} - ${tarea.hora_fin.substring(0, 5)}</div>
+                        </div>
+                    `;
+                });
+            }
+            
             // Inicializar calendario y vista semanal
             updateCalendar();
             updateWeeklyView();
+            
+            // Cargar tareas al iniciar
+            cargarTareas();
+            
+            // Mostrar mensaje de éxito si existe
+            @if(session('success'))
+                alert('{{ session("success") }}');
+            @endif
         });
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
@@ -217,47 +308,47 @@
                                         <i class="fas fa-times"></i>
                                     </button>
                                 </div>
-                                <form class="space-y-4">
+                                <form class="space-y-4" action="{{ route('tareas.store') }}" method="POST">
+                                    @csrf
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
-                                        <input type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Título del evento">
+                                        <input type="text" name="titulo" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Título del evento" required>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Día</label>
-                                        <select class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                                            <option>Lunes</option>
-                                            <option>Martes</option>
-                                            <option>Miércoles</option>
-                                            <option>Jueves</option>
-                                            <option>Viernes</option>
-                                            <option>Sábado</option>
-                                            <option>Domingo</option>
+                                        <select name="dia_semana" class="w-full border border-gray-300 rounded-lg px-3 py-2" required>
+                                            <option value="Lunes">Lunes</option>
+                                            <option value="Martes">Martes</option>
+                                            <option value="Miércoles">Miércoles</option>
+                                            <option value="Jueves">Jueves</option>
+                                            <option value="Viernes">Viernes</option>
+                                            <option value="Sábado">Sábado</option>
+                                            <option value="Domingo">Domingo</option>
                                         </select>
                                     </div>
-                                    <div x-data="{startTime: '', endTime: '', error: false, errorMessage: ''}">  
+                                    <div x-data="{startTime: '', endTime: '', error: false, errorMessage: ''}">
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-1">Hora de inicio</label>
-                                            <input type="time" x-model="startTime" @change="if(endTime) { if(startTime > endTime) { error = true; errorMessage = 'La hora de fin no puede ser anterior a la hora de inicio'; } else if(startTime === endTime) { error = true; errorMessage = 'La hora de fin no puede ser igual a la hora de inicio'; } else { error = false; } }" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                                            <input type="time" name="hora_inicio" x-model="startTime" @change="if(endTime) { if(startTime > endTime) { error = true; errorMessage = 'La hora de fin no puede ser anterior a la hora de inicio'; } else if(startTime === endTime) { error = true; errorMessage = 'La hora de fin no puede ser igual a la hora de inicio'; } else { error = false; } }" class="w-full border border-gray-300 rounded-lg px-3 py-2" required>
                                         </div>
                                         <div class="mt-2">
                                             <label class="block text-sm font-medium text-gray-700 mb-1">Hora de fin</label>
-                                            <input type="time" x-model="endTime" @change="if(startTime) { if(startTime > endTime) { error = true; errorMessage = 'La hora de fin no puede ser anterior a la hora de inicio'; } else if(startTime === endTime) { error = true; errorMessage = 'La hora de fin no puede ser igual a la hora de inicio'; } else { error = false; } }" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                                            <input type="time" name="hora_fin" x-model="endTime" @change="if(startTime) { if(startTime > endTime) { error = true; errorMessage = 'La hora de fin no puede ser anterior a la hora de inicio'; } else if(startTime === endTime) { error = true; errorMessage = 'La hora de fin no puede ser igual a la hora de inicio'; } else { error = false; } }" class="w-full border border-gray-300 rounded-lg px-3 py-2" required>
                                         </div>
-                                        <div x-show="error" class="text-red-500 text-sm mt-1" x-text="errorMessage">
-                                        </div>
+                                        <div x-show="error" class="text-red-500 text-sm mt-1" x-text="errorMessage"></div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-                                        <textarea class="w-full border border-gray-300 rounded-lg px-3 py-2 h-24" placeholder="Descripción de la tarea"></textarea>
+                                        <textarea name="descripcion" class="w-full border border-gray-300 rounded-lg px-3 py-2 h-24" placeholder="Descripción de la tarea"></textarea>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
-                                        <select class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                                            <option value="blue">Azul</option>
-                                            <option value="green">Verde</option>
-                                            <option value="red">Rojo</option>
-                                            <option value="yellow">Amarillo</option>
-                                            <option value="purple">Morado</option>
+                                        <select name="color" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                                            <option value="#4A90E2">Azul</option>
+                                            <option value="#2ECC71">Verde</option>
+                                            <option value="#E74C3C">Rojo</option>
+                                            <option value="#F1C40F">Amarillo</option>
+                                            <option value="#9B59B6">Morado</option>
                                         </select>
                                     </div>
                                     <div>
@@ -294,7 +385,7 @@
                                                 <i class="fas fa-star text-lg"></i>
                                             </div>
                                         </div>
-                                        <input type="hidden" id="selectedIcon" name="icon" value="fa-tasks">
+                                        <input type="hidden" id="selectedIcon" name="icono" value="fa-tasks">
                                     </div>
                                     <div class="flex justify-end space-x-3">
                                         <button type="button" @click="modalOpen = false" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancelar</button>

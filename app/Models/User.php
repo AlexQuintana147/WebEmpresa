@@ -49,4 +49,12 @@ class User extends Authenticatable
             }
         });
     }
+    
+    /**
+     * Get the tasks for the user.
+     */
+    public function tareas()
+    {
+        return $this->hasMany(Tarea::class, 'usuario_id');
+    }
 }

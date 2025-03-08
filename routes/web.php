@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\TareaController;
 
 Route::get('/', function () {
     return view('dashboard');
@@ -21,13 +22,17 @@ Route::get('/presupuesto', function () {
     return view('presupuesto');
 });
 
-Route::get('/lista-de-actividades', function () {
-    return view('lista-de-actividades');
-});
+Route::get('/lista-de-actividades', [TareaController::class, 'index'])->name('actividades.index');
 
-Route::get('/calendario', function () {
-    return view('calendario');
-});
+Route::get('/calendario', [TareaController::class, 'create'])->name('calendario');
+
+// Rutas para la gestión de tareas
+Route::post('/tareas', [TareaController::class, 'store'])->name('tareas.store');
+Route::get('/tareas/{tarea}', [TareaController::class, 'show'])->name('tareas.show');
+Route::get('/tareas/{tarea}/edit', [TareaController::class, 'edit'])->name('tareas.edit');
+Route::put('/tareas/{tarea}', [TareaController::class, 'update'])->name('tareas.update');
+Route::delete('/tareas/{tarea}', [TareaController::class, 'destroy'])->name('tareas.destroy');
+Route::get('/tareas-json', [TareaController::class, 'getTareasJson'])->name('tareas.json');
 
 Route::get('/inversiones', function () {
     return view('inversiones');
