@@ -7,11 +7,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.store('modal', {
+        // Inicialización global de Alpine.js
+        window.addEventListener('DOMContentLoaded', () => {
+            window.Alpine = window.Alpine || {};
+            window.Alpine.store('modal', {
                 open: false
-            })
-        })
+            });
+        });
 
         document.addEventListener('DOMContentLoaded', () => {
             const today = new Date();
@@ -144,9 +146,10 @@
         });
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>[x-cloak] { display: none !important; }</style>
 </head>
 <body class="bg-gray-100">
-    <div class="min-h-screen flex">
+    <div class="min-h-screen flex" x-data="{ modalOpen: false }">
         <!-- Sidebar -->
         <x-sidebar />
 
@@ -197,6 +200,66 @@
 
                     <!-- Weekly Calendar View -->
                     <div class="bg-white rounded-lg shadow-md p-6 mb-6 mt-8">
+                        <!-- Add Task Button -->
+                        <div class="flex justify-end mb-4">
+                            <button @click="modalOpen = true" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                                <i class="fas fa-plus"></i>
+                                <span>Agregar Tarea</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Task Modal -->
+                        <div x-show="modalOpen" x-cloak @click.away="modalOpen = false" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                            <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="text-xl font-semibold">Nueva Tarea</h3>
+                                    <button @click="modalOpen = false" class="text-gray-500 hover:text-gray-700">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <form class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                                        <input type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Título de la tarea">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Día</label>
+                                        <select class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                                            <option>Lunes</option>
+                                            <option>Martes</option>
+                                            <option>Miércoles</option>
+                                            <option>Jueves</option>
+                                            <option>Viernes</option>
+                                            <option>Sábado</option>
+                                            <option>Domingo</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Hora</label>
+                                        <input type="time" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                                        <textarea class="w-full border border-gray-300 rounded-lg px-3 py-2 h-24" placeholder="Descripción de la tarea"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                                        <select class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                                            <option value="blue">Azul</option>
+                                            <option value="green">Verde</option>
+                                            <option value="red">Rojo</option>
+                                            <option value="yellow">Amarillo</option>
+                                            <option value="purple">Morado</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex justify-end space-x-3">
+                                        <button type="button" @click="modalOpen = false" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancelar</button>
+                                        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Guardar</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
                         <!-- Weekly Calendar Header -->
                         <div class="flex items-center justify-between mb-6">
                             <h2 class="text-xl font-semibold">Vista Semanal: 9 - 15 Octubre 2023</h2>
@@ -225,144 +288,7 @@
                                     <div class="text-center font-medium text-gray-600">Domingo</div>
                                 </div>
 
-                                <!-- Time Slots -->
-                                <!-- 8:00 AM -->
-                                <div class="grid grid-cols-8 gap-2 border-b py-2">
-                                    <div class="text-center text-sm text-gray-500 w-20">8:00 AM</div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                </div>
-
-                                <!-- 9:00 AM -->
-                                <div class="grid grid-cols-8 gap-2 border-b py-2">
-                                    <div class="text-center text-sm text-gray-500 w-20">9:00 AM</div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg bg-green-100 text-green-800 border border-green-200">
-                                        <p class="font-medium">Presentación</p>
-                                        <p>9:00 - 10:30</p>
-                                    </div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                </div>
-
-                                <!-- 10:00 AM -->
-                                <div class="grid grid-cols-8 gap-2 border-b py-2">
-                                    <div class="text-center text-sm text-gray-500 w-20">10:00 AM</div>
-                                    <div class="p-1 text-xs rounded-lg bg-blue-100 text-blue-800 border border-blue-200">
-                                        <p class="font-medium">Reunión Equipo</p>
-                                        <p>10:00 - 11:30</p>
-                                    </div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                </div>
-
-                                <!-- 11:00 AM -->
-                                <div class="grid grid-cols-8 gap-2 border-b py-2">
-                                    <div class="text-center text-sm text-gray-500 w-20">11:00 AM</div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                </div>
-
-                                <!-- 12:00 PM -->
-                                <div class="grid grid-cols-8 gap-2 border-b py-2">
-                                    <div class="text-center text-sm text-gray-500 w-20">12:00 PM</div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg bg-yellow-100 text-yellow-800 border border-yellow-200">
-                                        <p class="font-medium">Almuerzo Cliente</p>
-                                        <p>12:00 - 1:30</p>
-                                    </div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                </div>
-
-                                <!-- 1:00 PM -->
-                                <div class="grid grid-cols-8 gap-2 border-b py-2">
-                                    <div class="text-center text-sm text-gray-500 w-20">1:00 PM</div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                </div>
-
-                                <!-- 2:00 PM -->
-                                <div class="grid grid-cols-8 gap-2 border-b py-2">
-                                    <div class="text-center text-sm text-gray-500 w-20">2:00 PM</div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg bg-purple-100 text-purple-800 border border-purple-200">
-                                        <p class="font-medium">Videoconferencia</p>
-                                        <p>2:00 - 3:00</p>
-                                    </div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                </div>
-
-                                <!-- 3:00 PM -->
-                                <div class="grid grid-cols-8 gap-2 border-b py-2">
-                                    <div class="text-center text-sm text-gray-500 w-20">3:00 PM</div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg bg-red-100 text-red-800 border border-red-200">
-                                        <p class="font-medium">Revisión Proyecto</p>
-                                        <p>3:00 - 4:30</p>
-                                    </div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                </div>
-
-                                <!-- 4:00 PM -->
-                                <div class="grid grid-cols-8 gap-2 border-b py-2">
-                                    <div class="text-center text-sm text-gray-500 w-20">4:00 PM</div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                </div>
-
-                                <!-- 5:00 PM -->
-                                <div class="grid grid-cols-8 gap-2 py-2">
-                                    <div class="text-center text-sm text-gray-500 w-20">5:00 PM</div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                    <div class="p-1 text-xs rounded-lg bg-indigo-100 text-indigo-800 border border-indigo-200">
-                                        <p class="font-medium">Evento Social</p>
-                                        <p>5:00 - 7:00</p>
-                                    </div>
-                                    <div class="p-1 text-xs rounded-lg"></div>
-                                </div>
+                                
                             </div>
                         </div>
                     </div>
