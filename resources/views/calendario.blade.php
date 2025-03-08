@@ -220,7 +220,7 @@
                                 <form class="space-y-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
-                                        <input type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Título de la tarea">
+                                        <input type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Título del evento">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Día</label>
@@ -234,9 +234,17 @@
                                             <option>Domingo</option>
                                         </select>
                                     </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Hora</label>
-                                        <input type="time" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                                    <div x-data="{startTime: '', endTime: '', error: false, errorMessage: ''}">  
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Hora de inicio</label>
+                                            <input type="time" x-model="startTime" @change="if(endTime) { if(startTime > endTime) { error = true; errorMessage = 'La hora de fin no puede ser anterior a la hora de inicio'; } else if(startTime === endTime) { error = true; errorMessage = 'La hora de fin no puede ser igual a la hora de inicio'; } else { error = false; } }" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                                        </div>
+                                        <div class="mt-2">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Hora de fin</label>
+                                            <input type="time" x-model="endTime" @change="if(startTime) { if(startTime > endTime) { error = true; errorMessage = 'La hora de fin no puede ser anterior a la hora de inicio'; } else if(startTime === endTime) { error = true; errorMessage = 'La hora de fin no puede ser igual a la hora de inicio'; } else { error = false; } }" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                                        </div>
+                                        <div x-show="error" class="text-red-500 text-sm mt-1" x-text="errorMessage">
+                                        </div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
