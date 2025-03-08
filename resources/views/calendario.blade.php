@@ -262,7 +262,7 @@
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Icono</label>
-                                        <div class="grid grid-cols-5 gap-2 mt-2">
+                                        <div class="grid grid-cols-5 gap-2 mt-2 icon-grid">
                                             <div class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50" onclick="selectIcon('fa-tasks')">
                                                 <i class="fas fa-tasks text-lg"></i>
                                             </div>
