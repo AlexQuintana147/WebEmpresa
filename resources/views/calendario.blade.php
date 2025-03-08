@@ -17,6 +17,9 @@
             const today = new Date();
             let currentMonth = today.getMonth();
             let currentYear = today.getFullYear();
+            let currentWeekStart = new Date();
+            let currentWeekEnd = new Date();
+            let selectedDate = new Date();
 
             function updateCalendar() {
                 const firstDay = new Date(currentYear, currentMonth, 1);
@@ -75,8 +78,69 @@
                 updateCalendar();
             });
 
-            // Inicializar calendario
+            // Función para obtener el primer día de la semana (lunes)
+            function getMonday(d) {
+                const day = d.getDay();
+                const diff = d.getDate() - day + (day === 0 ? -6 : 1); // ajuste cuando es domingo
+                return new Date(d.setDate(diff));
+            }
+
+            // Función para formatear fecha como DD Mes
+            function formatDate(date) {
+                const day = date.getDate();
+                const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                return day + ' ' + monthNames[date.getMonth()];
+            }
+
+            // Función para actualizar la vista semanal
+            function updateWeeklyView() {
+                // Calcular el inicio de la semana (lunes)
+                currentWeekStart = getMonday(new Date(selectedDate));
+                
+                // Calcular el fin de la semana (domingo)
+                currentWeekEnd = new Date(currentWeekStart);
+                currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
+                
+                // Actualizar el título de la semana
+                const weeklyHeader = document.querySelector('.bg-white.rounded-lg.shadow-md.p-6.mb-6.mt-8 h2.text-xl.font-semibold');
+                if (weeklyHeader) {
+                    weeklyHeader.textContent = `Vista Semanal: ${formatDate(currentWeekStart)} - ${formatDate(currentWeekEnd)} ${currentWeekStart.getFullYear()}`;
+                }
+                
+                // Resaltar el día actual en la vista semanal si está dentro de la semana mostrada
+                const weekDays = document.querySelectorAll('.grid.grid-cols-8.gap-2.border-b.pb-2.mb-2 div:not(:first-child)');
+                
+                // Quitar resaltado de todos los días
+                weekDays.forEach(day => {
+                    day.classList.remove('bg-blue-100', 'text-blue-800', 'font-bold');
+                });
+                
+                // Comprobar si el día actual está en la semana mostrada
+                if (today >= currentWeekStart && today <= currentWeekEnd) {
+                    const todayDayOfWeek = today.getDay() || 7; // 0 es domingo, lo convertimos a 7
+                    if (weekDays[todayDayOfWeek - 1]) {
+                        weekDays[todayDayOfWeek - 1].classList.add('bg-blue-100', 'text-blue-800', 'font-bold');
+                    }
+                }
+            }
+            
+            // Configurar botones de navegación para la vista semanal
+            const weeklyPrevButton = document.querySelector('.bg-white.rounded-lg.shadow-md.p-6.mb-6.mt-8 .fa-chevron-left').parentElement;
+            const weeklyNextButton = document.querySelector('.bg-white.rounded-lg.shadow-md.p-6.mb-6.mt-8 .fa-chevron-right').parentElement;
+            
+            weeklyPrevButton.addEventListener('click', () => {
+                selectedDate.setDate(selectedDate.getDate() - 7);
+                updateWeeklyView();
+            });
+            
+            weeklyNextButton.addEventListener('click', () => {
+                selectedDate.setDate(selectedDate.getDate() + 7);
+                updateWeeklyView();
+            });
+            
+            // Inicializar calendario y vista semanal
             updateCalendar();
+            updateWeeklyView();
         });
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
