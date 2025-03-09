@@ -59,7 +59,7 @@
                 for (let day = 1; day <= lastDay.getDate(); day++) {
                     const isToday = day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear();
                     calendarGrid.innerHTML += `
-                        <div class="p-2 text-center hover:bg-gray-50 rounded-lg cursor-pointer ${isToday ? 'bg-blue-100' : ''}">
+                        <div class="relative p-2 text-center hover:bg-gray-50 rounded-lg cursor-pointer ${isToday ? 'bg-blue-100' : ''}">
                             ${day}
                             ${isToday ? '<div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-500 rounded-full"></div>' : ''}
                         </div>`;
