@@ -307,96 +307,199 @@
                         </div>
                         
                         <!-- Task Modal -->
-                        <div x-show="modalOpen" x-cloak @click.away="modalOpen = false" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                            <div class="bg-white rounded-lg p-6 w-full max-w-md">
-                                <div class="flex justify-between items-center mb-4">
-                                    <h3 class="text-xl font-semibold">Nueva Tarea</h3>
-                                    <button @click="modalOpen = false" class="text-gray-500 hover:text-gray-700">
+                        <div x-show="modalOpen" x-cloak @click.away="modalOpen = false" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm transition-all duration-300">
+                            <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl transform transition-all duration-300" 
+                                 x-transition:enter="ease-out duration-300" 
+                                 x-transition:enter-start="opacity-0 scale-95" 
+                                 x-transition:enter-end="opacity-100 scale-100">
+                                <!-- Header with gradient background -->
+                                <div class="flex justify-between items-center mb-6 pb-3 border-b border-gray-100">
+                                    <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                                        <span class="bg-gradient-to-r from-blue-500 to-purple-600 h-8 w-1 rounded-full mr-3"></span>
+                                        Nueva Tarea
+                                    </h3>
+                                    <button @click="modalOpen = false" class="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors duration-200">
                                         <i class="fas fa-times"></i>
                                     </button>
                                 </div>
-                                <form class="space-y-4" action="{{ route('tareas.store') }}" method="POST">
+                                
+                                <form class="space-y-5" action="{{ route('tareas.store') }}" method="POST">
                                     @csrf
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
-                                        <input type="text" name="titulo" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Título del evento" required>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Día</label>
-                                        <select name="dia_semana" class="w-full border border-gray-300 rounded-lg px-3 py-2" required>
-                                            <option value="1">Lunes</option>
-                                            <option value="2">Martes</option>
-                                            <option value="3">Miércoles</option>
-                                            <option value="4">Jueves</option>
-                                            <option value="5">Viernes</option>
-                                            <option value="6">Sábado</option>
-                                            <option value="7">Domingo</option>
-                                        </select>
-                                    </div>
-                                    <div x-data="{startTime: '', endTime: '', error: false, errorMessage: ''}">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Hora de inicio</label>
-                                            <input type="time" name="hora_inicio" x-model="startTime" @change="if(endTime) { if(startTime > endTime) { error = true; errorMessage = 'La hora de fin no puede ser anterior a la hora de inicio'; } else if(startTime === endTime) { error = true; errorMessage = 'La hora de fin no puede ser igual a la hora de inicio'; } else { error = false; } }" class="w-full border border-gray-300 rounded-lg px-3 py-2" required>
+                                    <!-- Título field with icon -->
+                                    <div class="group">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                            <i class="fas fa-heading text-blue-500 mr-2"></i>
+                                            Título
+                                        </label>
+                                        <div class="relative">
+                                            <input type="text" name="titulo" 
+                                                class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 outline-none" 
+                                                placeholder="Título del evento" required>
                                         </div>
-                                        <div class="mt-2">
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Hora de fin</label>
-                                            <input type="time" name="hora_fin" x-model="endTime" @change="if(startTime) { if(startTime > endTime) { error = true; errorMessage = 'La hora de fin no puede ser anterior a la hora de inicio'; } else if(startTime === endTime) { error = true; errorMessage = 'La hora de fin no puede ser igual a la hora de inicio'; } else { error = false; } }" class="w-full border border-gray-300 rounded-lg px-3 py-2" required>
+                                    </div>
+                                    
+                                    <!-- Día field with icon -->
+                                    <div class="group">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                            <i class="fas fa-calendar-day text-green-500 mr-2"></i>
+                                            Día
+                                        </label>
+                                        <div class="relative">
+                                            <select name="dia_semana" 
+                                                class="w-full border border-gray-300 rounded-lg px-4 py-3 appearance-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 outline-none bg-white" 
+                                                required>
+                                                <option value="1">Lunes</option>
+                                                <option value="2">Martes</option>
+                                                <option value="3">Miércoles</option>
+                                                <option value="4">Jueves</option>
+                                                <option value="5">Viernes</option>
+                                                <option value="6">Sábado</option>
+                                                <option value="7">Domingo</option>
+                                            </select>
+                                            <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                                                <i class="fas fa-chevron-down text-gray-400"></i>
+                                            </div>
                                         </div>
-                                        <div x-show="error" class="text-red-500 text-sm mt-1" x-text="errorMessage"></div>
                                     </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-                                        <textarea name="descripcion" class="w-full border border-gray-300 rounded-lg px-3 py-2 h-24" placeholder="Descripción de la tarea"></textarea>
+                                    
+                                    <!-- Time fields with validation -->
+                                    <div x-data="{startTime: '', endTime: '', error: false, errorMessage: ''}" class="grid grid-cols-2 gap-4">
+                                        <div class="group">
+                                            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                                <i class="fas fa-hourglass-start text-orange-500 mr-2"></i>
+                                                Hora de inicio
+                                            </label>
+                                            <div class="relative">
+                                                <input type="time" name="hora_inicio" x-model="startTime" 
+                                                    @change="if(endTime) { if(startTime > endTime) { error = true; errorMessage = 'La hora de fin no puede ser anterior a la hora de inicio'; } else if(startTime === endTime) { error = true; errorMessage = 'La hora de fin no puede ser igual a la hora de inicio'; } else { error = false; } }" 
+                                                    class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 outline-none" 
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <div class="group">
+                                            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                                <i class="fas fa-hourglass-end text-red-500 mr-2"></i>
+                                                Hora de fin
+                                            </label>
+                                            <div class="relative">
+                                                <input type="time" name="hora_fin" x-model="endTime" 
+                                                    @change="if(startTime) { if(startTime > endTime) { error = true; errorMessage = 'La hora de fin no puede ser anterior a la hora de inicio'; } else if(startTime === endTime) { error = true; errorMessage = 'La hora de fin no puede ser igual a la hora de inicio'; } else { error = false; } }" 
+                                                    class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 outline-none" 
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <div x-show="error" class="col-span-2 text-red-500 text-sm mt-1 bg-red-50 p-2 rounded-lg flex items-center" x-transition>
+                                            <i class="fas fa-exclamation-circle mr-2"></i>
+                                            <span x-text="errorMessage"></span>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
-                                        <select name="color" class="w-full border border-gray-300 rounded-lg px-3 py-2">
-                                            <option value="#4A90E2">Azul</option>
-                                            <option value="#2ECC71">Verde</option>
-                                            <option value="#E74C3C">Rojo</option>
-                                            <option value="#F1C40F">Amarillo</option>
-                                            <option value="#9B59B6">Morado</option>
-                                        </select>
+                                    
+                                    <!-- Descripción field with icon -->
+                                    <div class="group">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                            <i class="fas fa-align-left text-purple-500 mr-2"></i>
+                                            Descripción
+                                        </label>
+                                        <div class="relative">
+                                            <textarea name="descripcion" 
+                                                class="w-full border border-gray-300 rounded-lg px-4 py-3 h-24 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 outline-none" 
+                                                placeholder="Descripción de la tarea"></textarea>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Icono</label>
-                                        <div class="grid grid-cols-5 gap-2 mt-2 icon-grid">
-                                            <div class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50" onclick="selectIcon('fa-tasks')">
-                                                <i class="fas fa-tasks text-lg"></i>
+                                    
+                                    <!-- Color field with visual color indicators -->
+                                    <div class="group">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                            <i class="fas fa-palette text-yellow-500 mr-2"></i>
+                                            Color
+                                        </label>
+                                        <div class="relative">
+                                            <select name="color" 
+                                                class="w-full border border-gray-300 rounded-lg px-4 py-3 appearance-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all duration-200 outline-none bg-white" 
+                                                x-data="{color: '#4A90E2'}" 
+                                                x-model="color" 
+                                                x-bind:style="'background-image: linear-gradient(to right, ' + color + '10, white 80%);'">
+                                                <option value="#4A90E2">Azul</option>
+                                                <option value="#2ECC71">Verde</option>
+                                                <option value="#E74C3C">Rojo</option>
+                                                <option value="#F1C40F">Amarillo</option>
+                                                <option value="#9B59B6">Morado</option>
+                                            </select>
+                                            <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                                                <i class="fas fa-chevron-down text-gray-400"></i>
                                             </div>
-                                            <div class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50" onclick="selectIcon('fa-calendar')">
-                                                <i class="fas fa-calendar text-lg"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Icon selection with improved grid -->
+                                    <div class="group" x-data="{selectedIconClass: 'fa-tasks'}">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                            <i class="fas fa-icons text-blue-500 mr-2"></i>
+                                            Icono
+                                        </label>
+                                        <div class="grid grid-cols-5 gap-3 mt-2 icon-grid">
+                                            <div class="flex items-center justify-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200 hover:bg-blue-50 hover:border-blue-300 hover:shadow-md" 
+                                                 :class="{'bg-blue-100 border-blue-500 ring-2 ring-blue-300': selectedIconClass === 'fa-tasks'}" 
+                                                 @click="selectedIconClass = 'fa-tasks'; document.getElementById('selectedIcon').value = 'fa-tasks'">
+                                                <i class="fas fa-tasks text-xl text-gray-700"></i>
                                             </div>
-                                            <div class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50" onclick="selectIcon('fa-handshake')">
-                                                <i class="fas fa-handshake text-lg"></i>
+                                            <div class="flex items-center justify-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200 hover:bg-blue-50 hover:border-blue-300 hover:shadow-md" 
+                                                 :class="{'bg-blue-100 border-blue-500 ring-2 ring-blue-300': selectedIconClass === 'fa-calendar'}" 
+                                                 @click="selectedIconClass = 'fa-calendar'; document.getElementById('selectedIcon').value = 'fa-calendar'">
+                                                <i class="fas fa-calendar text-xl text-gray-700"></i>
                                             </div>
-                                            <div class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50" onclick="selectIcon('fa-clock')">
-                                                <i class="fas fa-clock text-lg"></i>
+                                            <div class="flex items-center justify-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200 hover:bg-blue-50 hover:border-blue-300 hover:shadow-md" 
+                                                 :class="{'bg-blue-100 border-blue-500 ring-2 ring-blue-300': selectedIconClass === 'fa-handshake'}" 
+                                                 @click="selectedIconClass = 'fa-handshake'; document.getElementById('selectedIcon').value = 'fa-handshake'">
+                                                <i class="fas fa-handshake text-xl text-gray-700"></i>
                                             </div>
-                                            <div class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50" onclick="selectIcon('fa-users')">
-                                                <i class="fas fa-users text-lg"></i>
+                                            <div class="flex items-center justify-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200 hover:bg-blue-50 hover:border-blue-300 hover:shadow-md" 
+                                                 :class="{'bg-blue-100 border-blue-500 ring-2 ring-blue-300': selectedIconClass === 'fa-clock'}" 
+                                                 @click="selectedIconClass = 'fa-clock'; document.getElementById('selectedIcon').value = 'fa-clock'">
+                                                <i class="fas fa-clock text-xl text-gray-700"></i>
                                             </div>
-                                            <div class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50" onclick="selectIcon('fa-file')">
-                                                <i class="fas fa-file text-lg"></i>
+                                            <div class="flex items-center justify-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200 hover:bg-blue-50 hover:border-blue-300 hover:shadow-md" 
+                                                 :class="{'bg-blue-100 border-blue-500 ring-2 ring-blue-300': selectedIconClass === 'fa-users'}" 
+                                                 @click="selectedIconClass = 'fa-users'; document.getElementById('selectedIcon').value = 'fa-users'">
+                                                <i class="fas fa-users text-xl text-gray-700"></i>
                                             </div>
-                                            <div class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50" onclick="selectIcon('fa-chart-bar')">
-                                                <i class="fas fa-chart-bar text-lg"></i>
+                                            <div class="flex items-center justify-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200 hover:bg-blue-50 hover:border-blue-300 hover:shadow-md" 
+                                                 :class="{'bg-blue-100 border-blue-500 ring-2 ring-blue-300': selectedIconClass === 'fa-file'}" 
+                                                 @click="selectedIconClass = 'fa-file'; document.getElementById('selectedIcon').value = 'fa-file'">
+                                                <i class="fas fa-file text-xl text-gray-700"></i>
                                             </div>
-                                            <div class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50" onclick="selectIcon('fa-envelope')">
-                                                <i class="fas fa-envelope text-lg"></i>
+                                            <div class="flex items-center justify-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200 hover:bg-blue-50 hover:border-blue-300 hover:shadow-md" 
+                                                 :class="{'bg-blue-100 border-blue-500 ring-2 ring-blue-300': selectedIconClass === 'fa-chart-bar'}" 
+                                                 @click="selectedIconClass = 'fa-chart-bar'; document.getElementById('selectedIcon').value = 'fa-chart-bar'">
+                                                <i class="fas fa-chart-bar text-xl text-gray-700"></i>
                                             </div>
-                                            <div class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50" onclick="selectIcon('fa-phone')">
-                                                <i class="fas fa-phone text-lg"></i>
+                                            <div class="flex items-center justify-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200 hover:bg-blue-50 hover:border-blue-300 hover:shadow-md" 
+                                                 :class="{'bg-blue-100 border-blue-500 ring-2 ring-blue-300': selectedIconClass === 'fa-envelope'}" 
+                                                 @click="selectedIconClass = 'fa-envelope'; document.getElementById('selectedIcon').value = 'fa-envelope'">
+                                                <i class="fas fa-envelope text-xl text-gray-700"></i>
                                             </div>
-                                            <div class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50" onclick="selectIcon('fa-star')">
-                                                <i class="fas fa-star text-lg"></i>
+                                            <div class="flex items-center justify-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200 hover:bg-blue-50 hover:border-blue-300 hover:shadow-md" 
+                                                 :class="{'bg-blue-100 border-blue-500 ring-2 ring-blue-300': selectedIconClass === 'fa-phone'}" 
+                                                 @click="selectedIconClass = 'fa-phone'; document.getElementById('selectedIcon').value = 'fa-phone'">
+                                                <i class="fas fa-phone text-xl text-gray-700"></i>
+                                            </div>
+                                            <div class="flex items-center justify-center p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200 hover:bg-blue-50 hover:border-blue-300 hover:shadow-md" 
+                                                 :class="{'bg-blue-100 border-blue-500 ring-2 ring-blue-300': selectedIconClass === 'fa-star'}" 
+                                                 @click="selectedIconClass = 'fa-star'; document.getElementById('selectedIcon').value = 'fa-star'">
+                                                <i class="fas fa-star text-xl text-gray-700"></i>
                                             </div>
                                         </div>
                                         <input type="hidden" id="selectedIcon" name="icono" value="fa-tasks">
                                     </div>
-                                    <div class="flex justify-end space-x-3">
-                                        <button type="button" @click="modalOpen = false" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancelar</button>
-                                        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Guardar</button>
+                                    <div class="flex justify-end space-x-3 mt-6">
+                                        <button type="button" @click="modalOpen = false" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 flex items-center">
+                                            <i class="fas fa-times mr-2"></i>
+                                            Cancelar
+                                        </button>
+                                        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 flex items-center">
+                                            <i class="fas fa-save mr-2"></i>
+                                            Guardar
+                                        </button>
                                     </div>
                                 </form>
                             </div>
