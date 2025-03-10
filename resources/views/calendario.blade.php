@@ -689,7 +689,7 @@
     }
 </script>
 <!-- Edit Task Modal -->
-<div x-data x-show="$store.modal.editOpen" x-cloak @click.away="$store.modal.editOpen = false" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm transition-all duration-300">
+<div x-data="{ tareas: [] }" x-init="$watch('$store.modal.editOpen', value => { if(value) { tareas = window.tareas } })" x-show="$store.modal.editOpen" x-cloak @click.away="$store.modal.editOpen = false" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm transition-all duration-300">
     <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl transform transition-all duration-300" 
          x-transition:enter="ease-out duration-300" 
          x-transition:enter-start="opacity-0 scale-95" 
@@ -748,6 +748,9 @@ window.addEventListener('DOMContentLoaded', () => {
         const dayNames = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
         return dayNames[dayNumber] || '';
     };
+    
+    // Cargar las tareas al iniciar la página
+    cargarTareas();
     
     // No need for manual event listener since we're using Alpine.js directives
     console.log('Alpine modal store initialized and ready:', Alpine.store('modal'));
