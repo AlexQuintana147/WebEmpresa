@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Calendario</title>
     <style>[x-cloak] { display: none !important; }</style>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,6 +19,62 @@
                 open: false,
                 editOpen: false
             });
+            
+            // Store para manejar la edición de tareas
+            Alpine.store('editTask', {
+                selectedTask: null,
+                isEditing: false,
+                
+                // Método para seleccionar una tarea para editar
+                selectTask(task) {
+                    this.selectedTask = JSON.parse(JSON.stringify(task)); // Clonar la tarea para evitar modificar la original
+                    this.isEditing = true;
+                },
+                
+                // Método para cancelar la edición
+                cancelEdit() {
+                    this.selectedTask = null;
+                    this.isEditing = false;
+                },
+                
+                // Método para guardar los cambios
+                saveChanges() {
+                    // Crear un formulario para enviar los datos
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/tareas/${this.selectedTask.id}`;
+                    form.style.display = 'none';
+                    
+                    // Método PUT para actualizar
+                    const methodInput = document.createElement('input');
+                    methodInput.type = 'hidden';
+                    methodInput.name = '_method';
+                    methodInput.value = 'PUT';
+                    form.appendChild(methodInput);
+                    
+                    // Token CSRF
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = '_token';
+                    csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    form.appendChild(csrfInput);
+                    
+                    // Campos a actualizar
+                    const fields = ['titulo', 'descripcion', 'color', 'hora_inicio', 'hora_fin', 'dia_semana'];
+                    fields.forEach(field => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = field;
+                        input.value = this.selectedTask[field];
+                        form.appendChild(input);
+                    });
+                    
+                    // Añadir el formulario al documento y enviarlo
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+            
             console.log('Modal store initialized:', Alpine.store('modal'));
         });
 
@@ -698,15 +755,67 @@
         <div class="flex justify-between items-center mb-6 pb-3 border-b border-gray-100">
             <h3 class="text-xl font-bold text-gray-800 flex items-center">
                 <span class="bg-gradient-to-r from-green-500 to-teal-600 h-8 w-1 rounded-full mr-3"></span>
-                Tareas Semanales
+                <span x-text="$store.editTask.isEditing ? 'Editar Tarea' : 'Tareas Semanales'"></span>
             </h3>
-            <button @click="$store.modal.editOpen = false" class="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors duration-200">
+            <button @click="$store.modal.editOpen = false; $store.editTask.cancelEdit()" class="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors duration-200">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         
+        <!-- Edit Task Form -->
+        <div x-show="$store.editTask.isEditing" class="mb-4">
+            <form @submit.prevent="$store.editTask.saveChanges()">
+                <!-- Título -->
+                <div class="mb-4">
+                    <label for="titulo" class="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                    <input type="text" id="titulo" x-model="$store.editTask.selectedTask.titulo" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                
+                <!-- Descripción -->
+                <div class="mb-4">
+                    <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                    <textarea id="descripcion" x-model="$store.editTask.selectedTask.descripcion" 
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-24"></textarea>
+                </div>
+                
+                <!-- Color -->
+                <div class="mb-4">
+                    <label for="color" class="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                    <input type="color" id="color" x-model="$store.editTask.selectedTask.color" 
+                           class="w-full h-10 border border-gray-300 rounded-md cursor-pointer">
+                </div>
+                
+                <!-- Hora Inicio -->
+                <div class="mb-4">
+                    <label for="hora_inicio" class="block text-sm font-medium text-gray-700 mb-1">Hora de inicio</label>
+                    <input type="time" id="hora_inicio" x-model="$store.editTask.selectedTask.hora_inicio" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                
+                <!-- Hora Fin -->
+                <div class="mb-4">
+                    <label for="hora_fin" class="block text-sm font-medium text-gray-700 mb-1">Hora de fin</label>
+                    <input type="time" id="hora_fin" x-model="$store.editTask.selectedTask.hora_fin" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                
+                <!-- Botones -->
+                <div class="flex justify-end space-x-2 mt-6">
+                    <button type="button" @click="$store.editTask.cancelEdit()" 
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                        Guardar cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+        
         <!-- Task List -->
-        <div class="max-h-96 overflow-y-auto">
+        <div x-show="!$store.editTask.isEditing" class="max-h-96 overflow-y-auto">
             <template x-if="tareas.length === 0">
                 <div class="text-center py-8">
                     <i class="fas fa-calendar-times text-gray-300 text-5xl mb-4"></i>
@@ -715,8 +824,9 @@
             </template>
             
             <template x-for="(tarea, index) in tareas" :key="index">
-                <div class="mb-4 p-4 rounded-lg transition-colors duration-200" 
-                     :style="{ backgroundColor: tarea.color || '#3B82F6', color: 'white', borderLeft: '4px solid ' + (tarea.color ? tarea.color.replace('F6', 'D6') : '#2563EB') }">
+                <div class="mb-4 p-4 rounded-lg transition-colors duration-200 cursor-pointer" 
+                     :style="{ backgroundColor: tarea.color || '#3B82F6', color: 'white', borderLeft: '4px solid ' + (tarea.color ? tarea.color.replace('F6', 'D6') : '#2563EB') }"
+                     @click="$store.editTask.selectTask(tarea)">
                     <div class="flex justify-between items-start">
                         <div>
                             <h4 class="font-medium" x-text="tarea.titulo"></h4>
