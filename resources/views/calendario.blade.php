@@ -11,7 +11,7 @@
     <script>
         // Inicialización global de Alpine.js
         // Definir tareas como variable global para que esté disponible en todos los componentes Alpine
-        window.tareas = [];
+        window.tareas = window.tareas || [];
         
         document.addEventListener('alpine:init', () => {
             console.log('Alpine initialized');
@@ -39,39 +39,52 @@
                 
                 // Método para guardar los cambios
                 saveChanges() {
-                    // Crear un formulario para enviar los datos
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = `/tareas/${this.selectedTask.id}`;
-                    form.style.display = 'none';
+                    // Verificar que selectedTask no sea null antes de continuar
+                    if (!this.selectedTask) {
+                        console.error('Error: No hay tarea seleccionada para guardar');
+                        return;
+                    }
                     
-                    // Método PUT para actualizar
-                    const methodInput = document.createElement('input');
-                    methodInput.type = 'hidden';
-                    methodInput.name = '_method';
-                    methodInput.value = 'PUT';
-                    form.appendChild(methodInput);
-                    
-                    // Token CSRF
-                    const csrfInput = document.createElement('input');
-                    csrfInput.type = 'hidden';
-                    csrfInput.name = '_token';
-                    csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                    form.appendChild(csrfInput);
-                    
-                    // Campos a actualizar
-                    const fields = ['titulo', 'descripcion', 'color', 'hora_inicio', 'hora_fin', 'dia_semana'];
-                    fields.forEach(field => {
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = field;
-                        input.value = this.selectedTask[field];
-                        form.appendChild(input);
-                    });
-                    
-                    // Añadir el formulario al documento y enviarlo
-                    document.body.appendChild(form);
-                    form.submit();
+                    try {
+                        // Crear un formulario para enviar los datos
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `/tareas/${this.selectedTask.id}`;
+                        form.style.display = 'none';
+                        
+                        // Método PUT para actualizar
+                        const methodInput = document.createElement('input');
+                        methodInput.type = 'hidden';
+                        methodInput.name = '_method';
+                        methodInput.value = 'PUT';
+                        form.appendChild(methodInput);
+                        
+                        // Token CSRF
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = '_token';
+                        csrfInput.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                        form.appendChild(csrfInput);
+                        
+                        // Campos a actualizar
+                        const fields = ['titulo', 'descripcion', 'color', 'hora_inicio', 'hora_fin', 'dia_semana'];
+                        fields.forEach(field => {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = field;
+                            // Verificar que el campo existe en selectedTask antes de acceder a él
+                            input.value = (this.selectedTask && this.selectedTask[field] !== undefined) 
+                                ? this.selectedTask[field] || '' 
+                                : ''; // Añadir valor por defecto vacío si es null o undefined
+                            form.appendChild(input);
+                        });
+                        
+                        // Añadir el formulario al documento y enviarlo
+                        document.body.appendChild(form);
+                        form.submit();
+                    } catch (error) {
+                        console.error('Error al guardar los cambios:', error);
+                    }
                 }
             });
             
@@ -86,16 +99,21 @@
             let currentWeekEnd = new Date();
             let selectedDate = new Date();
             
-            // Función para cargar las tareas
-            function cargarTareas() {
+            // Definir cargarTareas en el ámbito global para que esté disponible en toda la página
+            window.cargarTareas = function() {
                 fetch('{{ route("tareas.json") }}')
                     .then(response => response.json())
                     .then(data => {
                         // Asignar a la variable global window.tareas
-                        window.tareas = data;
+                        window.tareas = data || [];
                         renderizarTareas();
                     })
                     .catch(error => console.error('Error cargando tareas:', error));
+            };
+            
+            // Función para cargar las tareas (mantener para compatibilidad)
+            function cargarTareas() {
+                window.cargarTareas();
             }
 
             function updateCalendar() {
@@ -763,7 +781,7 @@
         </div>
         
         <!-- Edit Task Form -->
-        <div x-show="$store.editTask.isEditing" class="mb-4">
+        <div x-show="$store.editTask.isEditing && $store.editTask.selectedTask" class="mb-4">
             <form @submit.prevent="$store.editTask.saveChanges()">
                 <!-- Título -->
                 <div class="mb-4">
@@ -814,7 +832,7 @@
             </form>
         </div>
         
-        <!-- Task List -->
+        <!-- Task List Grouped by Day -->
         <div x-show="!$store.editTask.isEditing" class="max-h-96 overflow-y-auto">
             <template x-if="tareas.length === 0">
                 <div class="text-center py-8">
@@ -823,28 +841,36 @@
                 </div>
             </template>
             
-            <template x-for="(tarea, index) in tareas" :key="index">
-                <div class="mb-4 p-4 rounded-lg transition-colors duration-200 cursor-pointer" 
-                     :style="{ backgroundColor: tarea.color || '#3B82F6', color: 'white', borderLeft: '4px solid ' + (tarea.color ? tarea.color.replace('F6', 'D6') : '#2563EB') }"
-                     @click="$store.editTask.selectTask(tarea)">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h4 class="font-medium" x-text="tarea.titulo"></h4>
-                            <p class="text-sm opacity-90 mt-1" x-text="tarea.descripcion || 'Sin descripción'"></p>
+            <!-- Group tasks by day of the week -->
+            <template x-for="dayNumber in [1, 2, 3, 4, 5, 6, 7]" :key="dayNumber">
+                <div>
+                    <!-- Day header -->
+                    <template x-if="tareas.filter(t => parseInt(t.dia_semana) === dayNumber).length > 0">
+                        <div class="flex items-center py-2 px-1 mb-2 border-b border-gray-200">
+                            <i class="fas fa-calendar-day mr-2 text-gray-600"></i>
+                            <h3 class="font-medium text-gray-700" x-text="getDayName(dayNumber)"></h3>
                         </div>
-                    </div>
-                    <div class="flex items-center justify-between mt-3 text-sm">
-                        <div class="flex items-center space-x-4">
-                            <span class="flex items-center">
-                                <i class="fas fa-calendar-day mr-1"></i>
-                                <span x-text="getDayName(tarea.dia_semana)"></span>
-                            </span>
-                            <span class="flex items-center">
-                                <i class="fas fa-clock mr-1"></i>
-                                <span x-text="tarea.hora_inicio + ' - ' + tarea.hora_fin"></span>
-                            </span>
+                    </template>
+                    
+                    <!-- Tasks for this day -->
+                    <template x-for="(tarea, index) in tareas.filter(t => parseInt(t.dia_semana) === dayNumber)" :key="index">
+                        <div class="mb-4 p-4 rounded-lg transition-colors duration-200 cursor-pointer" 
+                             :style="{ backgroundColor: tarea.color || '#3B82F6', color: 'white', borderLeft: '4px solid ' + (tarea.color ? tarea.color.replace('F6', 'D6') : '#2563EB') }"
+                             @click="$store.editTask.selectTask(tarea)">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-medium" x-text="tarea.titulo"></h4>
+                                    <p class="text-sm opacity-90 mt-1" x-text="tarea.descripcion || 'Sin descripción'"></p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between mt-3 text-sm">
+                                <div class="flex items-center">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    <span x-text="tarea.hora_inicio + ' - ' + tarea.hora_fin"></span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    </template>
                 </div>
             </template>
         </div>
@@ -861,7 +887,12 @@ window.addEventListener('DOMContentLoaded', () => {
     };
     
     // Cargar las tareas al iniciar la página
-    cargarTareas();
+    // Verificar que la función existe antes de llamarla
+    if (typeof window.cargarTareas === 'function') {
+        window.cargarTareas();
+    } else {
+        console.error('La función cargarTareas no está definida');
+    }
     
     // No need for manual event listener since we're using Alpine.js directives
     console.log('Alpine modal store initialized and ready:', Alpine.store('modal'));
