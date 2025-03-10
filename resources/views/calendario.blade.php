@@ -715,20 +715,21 @@
             </template>
             
             <template x-for="(tarea, index) in tareas" :key="index">
-                <div class="mb-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                <div class="mb-4 p-4 rounded-lg transition-colors duration-200" 
+                     :style="{ backgroundColor: tarea.color || '#3B82F6', color: 'white', borderLeft: '4px solid ' + (tarea.color ? tarea.color.replace('F6', 'D6') : '#2563EB') }">
                     <div class="flex justify-between items-start">
                         <div>
-                            <h4 class="font-medium text-gray-800" x-text="tarea.titulo"></h4>
-                            <p class="text-sm text-gray-600 mt-1" x-text="tarea.descripcion || 'Sin descripción'"></p>
+                            <h4 class="font-medium" x-text="tarea.titulo"></h4>
+                            <p class="text-sm opacity-90 mt-1" x-text="tarea.descripcion || 'Sin descripción'"></p>
                         </div>
                     </div>
                     <div class="flex items-center justify-between mt-3 text-sm">
                         <div class="flex items-center space-x-4">
-                            <span class="flex items-center text-gray-500">
+                            <span class="flex items-center">
                                 <i class="fas fa-calendar-day mr-1"></i>
                                 <span x-text="getDayName(tarea.dia_semana)"></span>
                             </span>
-                            <span class="flex items-center text-gray-500">
+                            <span class="flex items-center">
                                 <i class="fas fa-clock mr-1"></i>
                                 <span x-text="tarea.hora_inicio + ' - ' + tarea.hora_fin"></span>
                             </span>
