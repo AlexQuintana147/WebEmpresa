@@ -4,15 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calendario</title>
+    <style>[x-cloak] { display: none !important; }</style>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
         // Inicialización global de Alpine.js
-        window.addEventListener('DOMContentLoaded', () => {
-            window.Alpine = window.Alpine || {};
-            window.Alpine.store('modal', {
-                open: false
+        // Definir tareas como variable global para que esté disponible en todos los componentes Alpine
+        window.tareas = [];
+        
+        document.addEventListener('alpine:init', () => {
+            console.log('Alpine initialized');
+            Alpine.store('modal', {
+                open: false,
+                editOpen: false
             });
+            console.log('Modal store initialized:', Alpine.store('modal'));
         });
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -23,15 +29,13 @@
             let currentWeekEnd = new Date();
             let selectedDate = new Date();
             
-            // Cargar tareas desde el servidor
-            let tareas = [];
-            
             // Función para cargar las tareas
             function cargarTareas() {
                 fetch('{{ route("tareas.json") }}')
                     .then(response => response.json())
                     .then(data => {
-                        tareas = data;
+                        // Asignar a la variable global window.tareas
+                        window.tareas = data;
                         renderizarTareas();
                     })
                     .catch(error => console.error('Error cargando tareas:', error));
@@ -507,6 +511,10 @@
                                     <i class="fas fa-plus"></i>
                                     <span>Agregar Tarea</span>
                                 </button>
+                                <button @click="$store.modal.editOpen = true" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 mr-4">
+                                    <i class="fas fa-edit"></i>
+                                    <span>Editar Tarea</span>
+                                </button>
                                 <button class="p-2 hover:bg-gray-100 rounded-full">
                                     <i class="fas fa-chevron-left text-gray-600"></i>
                                 </button>
@@ -679,4 +687,73 @@
         // Highlight the selected icon
         event.currentTarget.classList.add('bg-blue-50', 'border-blue-500');
     }
+</script>
+<!-- Edit Task Modal -->
+<div x-data x-show="$store.modal.editOpen" x-cloak @click.away="$store.modal.editOpen = false" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm transition-all duration-300">
+    <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl transform transition-all duration-300" 
+         x-transition:enter="ease-out duration-300" 
+         x-transition:enter-start="opacity-0 scale-95" 
+         x-transition:enter-end="opacity-100 scale-100">
+        <!-- Header with gradient background -->
+        <div class="flex justify-between items-center mb-6 pb-3 border-b border-gray-100">
+            <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                <span class="bg-gradient-to-r from-green-500 to-teal-600 h-8 w-1 rounded-full mr-3"></span>
+                Tareas Semanales
+            </h3>
+            <button @click="$store.modal.editOpen = false" class="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors duration-200">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <!-- Task List -->
+        <div class="max-h-96 overflow-y-auto">
+            <template x-if="tareas.length === 0">
+                <div class="text-center py-8">
+                    <i class="fas fa-calendar-times text-gray-300 text-5xl mb-4"></i>
+                    <p class="text-gray-500">No hay tareas programadas</p>
+                </div>
+            </template>
+            
+            <template x-for="(tarea, index) in tareas" :key="index">
+                <div class="mb-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-medium text-gray-800" x-text="tarea.titulo"></h4>
+                            <p class="text-sm text-gray-600 mt-1" x-text="tarea.descripcion || 'Sin descripción'"></p>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between mt-3 text-sm">
+                        <div class="flex items-center space-x-4">
+                            <span class="flex items-center text-gray-500">
+                                <i class="fas fa-calendar-day mr-1"></i>
+                                <span x-text="getDayName(tarea.dia_semana)"></span>
+                            </span>
+                            <span class="flex items-center text-gray-500">
+                                <i class="fas fa-clock mr-1"></i>
+                                <span x-text="tarea.hora_inicio + ' - ' + tarea.hora_fin"></span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+</div>
+
+<script>
+// Make getDayName available to Alpine.js templates by adding it to the window object
+window.addEventListener('DOMContentLoaded', () => {
+    // Make getDayName available to Alpine templates
+    window.getDayName = function(dayNumber) {
+        const dayNames = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+        return dayNames[dayNumber] || '';
+    };
+    
+    // No need for manual event listener since we're using Alpine.js directives
+    console.log('Alpine modal store initialized and ready:', Alpine.store('modal'));
+    
+    // Ensure the modal is visible by checking if Alpine.js is properly initialized
+    console.log('Alpine available in DOMContentLoaded:', window.Alpine);
+    console.log('Current modal state:', Alpine.store('modal'));
+});
 </script>
