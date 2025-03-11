@@ -88,6 +88,57 @@
                     }
                 }
             });
+            // Store para manejar la eliminación de tareas
+            Alpine.store('deleteTask', {
+                selectedTask: null,
+                
+                // Método para seleccionar una tarea para eliminar
+                selectTask(task) {
+                    this.selectedTask = JSON.parse(JSON.stringify(task)); // Clonar la tarea para evitar modificar la original
+                },
+                
+                // Método para cancelar la eliminación
+                cancelDelete() {
+                    this.selectedTask = null;
+                },
+                
+                // Método para eliminar la tarea
+                deleteTask() {
+                    // Verificar que selectedTask no sea null antes de continuar
+                    if (!this.selectedTask) {
+                        console.error('Error: No hay tarea seleccionada para eliminar');
+                        return;
+                    }
+                    
+                    try {
+                        // Crear un formulario para enviar los datos
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `/tareas/${this.selectedTask.id}`;
+                        form.style.display = 'none';
+                        
+                        // Método DELETE para eliminar
+                        const methodInput = document.createElement('input');
+                        methodInput.type = 'hidden';
+                        methodInput.name = '_method';
+                        methodInput.value = 'DELETE';
+                        form.appendChild(methodInput);
+                        
+                        // Token CSRF
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = '_token';
+                        csrfInput.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                        form.appendChild(csrfInput);
+                        
+                        // Añadir el formulario al documento y enviarlo
+                        document.body.appendChild(form);
+                        form.submit();
+                    } catch (error) {
+                        console.error('Error al eliminar la tarea:', error);
+                    }
+                }
+            });
             
             console.log('Modal store initialized:', Alpine.store('modal'));
         });
@@ -655,8 +706,8 @@
                             <h2 class="text-xl font-semibold">Vista Semanal</h2>
                             <div class="flex items-center space-x-2">
                                 <button @click="modalOpen = true" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 mr-4">
-                                    <i class="fas fa-plus"></i>
-                                    <span>Agregar Tarea</span>
+                                    <i class="fas fa-calendar-plus"></i>
+                                    <span class="ml-2">Agregar Tarea</span>
                                 </button>
                                 <button @click="$store.modal.editOpen = true" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 mr-4">
                                     <i class="fas fa-edit"></i>
@@ -937,6 +988,93 @@
                                 <div>
                                     <h4 class="font-medium" x-text="tarea.titulo"></h4>
                                     <p class="text-sm opacity-90 mt-1" x-text="tarea.descripcion || 'Sin descripción'"></p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between mt-3 text-sm">
+                                <div class="flex items-center">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    <span x-text="tarea.hora_inicio + ' - ' + tarea.hora_fin"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Task Modal -->
+<div x-data="{ tareas: [] }" x-init="$watch('$store.modal.deleteOpen', value => { if(value) { tareas = window.tareas } })" x-show="$store.modal.deleteOpen" x-cloak @click.away="$store.modal.deleteOpen = false" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm transition-all duration-300">
+    <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl transform transition-all duration-300" 
+         x-transition:enter="ease-out duration-300" 
+         x-transition:enter-start="opacity-0 scale-95" 
+         x-transition:enter-end="opacity-100 scale-100">
+        <!-- Header with gradient background -->
+        <div class="flex justify-between items-center mb-6 pb-3 border-b border-gray-100">
+            <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                <span class="bg-gradient-to-r from-red-500 to-red-600 h-8 w-1 rounded-full mr-3"></span>
+                <span>Eliminar Tarea</span>
+            </h3>
+            <button @click="$store.modal.deleteOpen = false; $store.deleteTask.cancelDelete()" class="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors duration-200">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <!-- Delete Task Confirmation -->
+        <div x-show="$store.deleteTask.selectedTask" class="mb-4">
+            <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle text-red-500 mr-3"></i>
+                    <p class="text-red-700">¿Estás seguro de que deseas eliminar esta tarea?</p>
+                </div>
+                <p class="mt-2 text-red-600" x-text="'Tarea: ' + $store.deleteTask.selectedTask.titulo"></p>
+            </div>
+            
+            <div class="flex justify-end space-x-2 mt-6">
+                <button @click="$store.deleteTask.cancelDelete(); $store.modal.deleteOpen = false" 
+                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">
+                    Cancelar
+                </button>
+                <button @click="$store.deleteTask.deleteTask()" 
+                        class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+                    Eliminar
+                </button>
+            </div>
+        </div>
+        
+        <!-- Task List Grouped by Day -->
+        <div x-show="!$store.deleteTask.selectedTask" class="max-h-96 overflow-y-auto">
+            <template x-if="tareas.length === 0">
+                <div class="text-center py-8">
+                    <i class="fas fa-calendar-times text-gray-300 text-5xl mb-4"></i>
+                    <p class="text-gray-500">No hay tareas semanales para eliminar</p>
+                </div>
+            </template>
+            
+            <!-- Group tasks by day of the week -->
+            <template x-for="dayNumber in [1, 2, 3, 4, 5, 6, 7]" :key="dayNumber">
+                <div>
+                    <!-- Day header -->
+                    <template x-if="tareas.filter(t => parseInt(t.dia_semana) === dayNumber).length > 0">
+                        <div class="flex items-center py-2 px-1 mb-2 border-b border-gray-200">
+                            <i class="fas fa-calendar-day mr-2 text-gray-600"></i>
+                            <h3 class="font-medium text-gray-700" x-text="getDayName(dayNumber)"></h3>
+                        </div>
+                    </template>
+                    
+                    <!-- Tasks for this day -->
+                    <template x-for="(tarea, index) in tareas.filter(t => parseInt(t.dia_semana) === dayNumber)" :key="index">
+                        <div class="mb-4 p-4 rounded-lg transition-colors duration-200 cursor-pointer hover:opacity-90" 
+                             :style="{ backgroundColor: tarea.color || '#EF4444', color: 'white', borderLeft: '4px solid ' + (tarea.color ? tarea.color.replace('44', '22') : '#B91C1C') }"
+                             @click="$store.deleteTask.selectTask(tarea)">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-medium" x-text="tarea.titulo"></h4>
+                                    <p class="text-sm opacity-90 mt-1" x-text="tarea.descripcion || 'Sin descripción'"></p>
+                                </div>
+                                <div>
+                                    <i class="fas fa-trash-alt hover:text-red-200"></i>
                                 </div>
                             </div>
                             <div class="flex items-center justify-between mt-3 text-sm">
