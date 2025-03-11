@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @if(session('success'))
+    <meta name="success-message" content="{{ session('success') }}">
+    @endif
+    @if(session('error'))
+    <meta name="error-message" content="{{ session('error') }}">
+    @endif
     <title>Calendario</title>
     <style>[x-cloak] { display: none !important; }</style>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -439,10 +445,7 @@
             // Cargar tareas al iniciar
             cargarTareas();
             
-            // Mostrar mensaje de éxito si existe
-            @if(session('success'))
-                alert('{{ session("success") }}');
-            @endif
+            // Los mensajes de sesión ahora se manejan a través de meta tags y el sistema de notificaciones mejorado
         });
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
