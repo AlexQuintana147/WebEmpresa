@@ -147,7 +147,42 @@
                                 <h2 class="text-xl font-semibold mb-4 flex items-center">
                                     <i class="fas fa-plus-circle text-blue-500 mr-2"></i> Nueva Nota
                                 </h2>
-                                <form @submit.prevent="@auth fetch('/notas', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content }, body: JSON.stringify({ titulo: newNote.title, contenido: newNote.content, categoria: newNote.category, color: newNote.color, isPinned: newNote.isPinned }) }).then(response => response.json()).then(data => { if(data.success) { window.location.reload(); } else { alert('Error al crear la nota'); } }).catch(error => alert('Error al crear la nota')); @else notes.push({id: Date.now(), title: newNote.title, content: newNote.content, category: newNote.category, color: newNote.color, date: new Date().toLocaleDateString('es-ES', {day: '2-digit', month: 'short', year: 'numeric'}), isPinned: newNote.isPinned, isArchived: false}); @endauth newNote.title = ''; newNote.content = '';" class="space-y-4">
+                                <form @submit.prevent="@auth fetch('/notas', { 
+                                method: 'POST', 
+                                headers: { 
+                                'Content-Type': 'application/json', 
+                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content 
+                                }, 
+                                body: JSON.stringify({ 
+                                titulo: newNote.title, 
+                                contenido: newNote.content, 
+                                categoria: newNote.category, 
+                                color: newNote.color, 
+                                isPinned: newNote.isPinned 
+                                }) 
+                                }).then(response => {
+                                if (!response.ok) {
+                                throw new Error('Error en la respuesta del servidor');
+                                }
+                                // Check if the response is JSON before trying to parse it
+                                const contentType = response.headers.get('content-type');
+                                if (contentType && contentType.includes('application/json')) {
+                                  return response.json();
+                                } else {
+                                  // If not JSON, just reload the page as the form was likely submitted successfully
+                                  window.location.reload();
+                                  return { success: true };
+                                }
+                                }).then(data => { 
+                                if(data.success) { 
+                                window.location.reload(); 
+                                } else { 
+                                alert(data.message || 'Error al crear la nota'); 
+                                } 
+                                }).catch(error => {
+                                console.error('Error:', error);
+                                alert('Error al crear la nota: ' + error.message);
+                                }); @else notes.push({id: Date.now(), title: newNote.title, content: newNote.content, category: newNote.category, color: newNote.color, date: new Date().toLocaleDateString('es-ES', {day: '2-digit', month: 'short', year: 'numeric'}), isPinned: newNote.isPinned, isArchived: false}); @endauth newNote.title = ''; newNote.content = '';" class="space-y-4">
                                     <div>
                                         <label for="note-title" class="block text-sm font-medium text-gray-700 mb-1">Título</label>
                                         <input type="text" id="note-title" x-model="newNote.title" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Título de la nota" required>

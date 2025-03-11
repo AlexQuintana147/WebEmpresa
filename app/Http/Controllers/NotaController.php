@@ -54,9 +54,14 @@ class NotaController extends Controller
 
         $nota->save();
 
+        // Check if the request expects a JSON response
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Nota creada correctamente']);
+        }
+        
         return redirect()->route('notas.index')->with('success', 'Nota creada correctamente');
     }
-
+    
     /**
      * Update the specified note in storage.
      *
@@ -64,6 +69,7 @@ class NotaController extends Controller
      * @param  \App\Models\Nota  $nota
      * @return \Illuminate\Http\Response
      */
+
     public function update(Request $request, Nota $nota)
     {
         // Check if the note belongs to the authenticated user
@@ -146,3 +152,4 @@ class NotaController extends Controller
         return response()->json(['success' => true, 'isArchived' => $nota->isArchived]);
     }
 }
+
