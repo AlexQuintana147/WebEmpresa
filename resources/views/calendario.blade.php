@@ -17,7 +17,8 @@
             console.log('Alpine initialized');
             Alpine.store('modal', {
                 open: false,
-                editOpen: false
+                editOpen: false,
+                deleteOpen: false
             });
             
             // Store para manejar la edición de tareas
@@ -418,7 +419,7 @@
                     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
                         <!-- Calendar Header -->
                         <div class="flex items-center justify-between mb-6">
-                            <h2 class="text-xl font-semibold">Octubre 2023</h2>
+                            <h2 class="text-xl font-semibold">Calendario</h2>
                             <div class="flex space-x-2">
                                 <button class="p-2 hover:bg-gray-100 rounded-full">
                                     <i class="fas fa-chevron-left text-gray-600"></i>
@@ -660,6 +661,10 @@
                                 <button @click="$store.modal.editOpen = true" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 mr-4">
                                     <i class="fas fa-edit"></i>
                                     <span>Editar Tarea</span>
+                                </button>
+                                <button @click="$store.modal.deleteOpen = true" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 mr-4">
+                                    <i class="fas fa-trash"></i>
+                                    <span>Eliminar Tarea</span>
                                 </button>
                                 <button class="p-2 hover:bg-gray-100 rounded-full">
                                     <i class="fas fa-chevron-left text-gray-600"></i>
