@@ -227,6 +227,15 @@
                     cell.innerHTML = '';
                 });
                 
+                // Crear un elemento para el tooltip si no existe
+                let tooltip = document.getElementById('task-tooltip');
+                if (!tooltip) {
+                    tooltip = document.createElement('div');
+                    tooltip.id = 'task-tooltip';
+                    tooltip.className = 'fixed hidden z-50 p-2 bg-gray-800 text-white text-sm rounded shadow-lg max-w-xs';
+                    document.body.appendChild(tooltip);
+                }
+                
                 // Renderizar cada tarea
                 tareas.forEach((tarea, index) => {
                     console.log(`\nProcesando tarea ${index + 1}:`, {
@@ -302,6 +311,28 @@
                         </div>
                         <div class="text-xs opacity-90">${tarea.hora_inicio.substring(0, 5)} - ${tarea.hora_fin.substring(0, 5)}</div>
                     `;
+                    
+                    // Añadir eventos para mostrar/ocultar tooltip con la descripción
+                    taskElement.addEventListener('mouseenter', (e) => {
+                        // Preparar contenido del tooltip
+                        const descripcion = tarea.descripcion || 'Sin descripción';
+                        tooltip.innerHTML = `
+                            <div class="font-bold mb-1">${tarea.titulo}</div>
+                            <div>${descripcion}</div>
+                        `;
+                        
+                        // Posicionar el tooltip cerca del cursor
+                        tooltip.style.left = `${e.pageX + 10}px`;
+                        tooltip.style.top = `${e.pageY + 10}px`;
+                        
+                        // Mostrar el tooltip
+                        tooltip.classList.remove('hidden');
+                    });
+                    
+                    taskElement.addEventListener('mouseleave', () => {
+                        // Ocultar el tooltip
+                        tooltip.classList.add('hidden');
+                    });
                     
                     // Añadir la tarea a la celda
                     targetCell.appendChild(taskElement);
