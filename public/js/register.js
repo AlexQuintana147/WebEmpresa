@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function showNotification(message, type = 'error') {
         const notification = document.createElement('div');
         notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 transform transition-all duration-300 ease-in-out ${
-            type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            type === 'success' ? 'bg-green-500' : 'bg-blue-500'
         } text-white`;
         notification.textContent = message;
 

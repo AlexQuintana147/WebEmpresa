@@ -446,6 +446,7 @@
         });
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="{{ asset('js/calendario.js') }}"></script>
     <style>[x-cloak] { display: none !important; }</style>
 </head>
 <body class="bg-gray-100">
