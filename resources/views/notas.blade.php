@@ -300,6 +300,72 @@
                                                         </span>
                                                     </div>
                                                 </div>
+                                                <!-- Action Buttons -->
+                                                <div class="flex space-x-1">
+                                                    <!-- Edit Button -->
+                                                    <button @click.stop="window.location.href = `/notas/${note.id}/edit`" class="p-1 text-gray-500 hover:text-blue-500 transition-colors duration-200" title="Editar nota">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <!-- Pin/Unpin Button -->
+                                                    <button @click.stop="
+                                                        fetch(`/notas/${note.id}/toggle-pin`, {
+                                                            method: 'POST',
+                                                            headers: {
+                                                                'Content-Type': 'application/json',
+                                                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+                                                            }
+                                                        })
+                                                        .then(response => response.json())
+                                                        .then(data => {
+                                                            if(data.success) {
+                                                                note.isPinned = data.isPinned;
+                                                            }
+                                                        })" 
+                                                        class="p-1 transition-colors duration-200" 
+                                                        :class="note.isPinned ? 'text-blue-500 hover:text-blue-700' : 'text-gray-500 hover:text-blue-500'" 
+                                                        title="Fijar/Desfijar nota">
+                                                        <i class="fas fa-thumbtack"></i>
+                                                    </button>
+                                                    <!-- Archive/Unarchive Button -->
+                                                    <button @click.stop="
+                                                        fetch(`/notas/${note.id}/toggle-archive`, {
+                                                            method: 'POST',
+                                                            headers: {
+                                                                'Content-Type': 'application/json',
+                                                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+                                                            }
+                                                        })
+                                                        .then(response => response.json())
+                                                        .then(data => {
+                                                            if(data.success) {
+                                                                note.isArchived = data.isArchived;
+                                                            }
+                                                        })" 
+                                                        class="p-1 transition-colors duration-200" 
+                                                        :class="note.isArchived ? 'text-purple-500 hover:text-purple-700' : 'text-gray-500 hover:text-purple-500'" 
+                                                        title="Archivar/Desarchivar nota">
+                                                        <i class="fas" :class="note.isArchived ? 'fa-box-open' : 'fa-archive'"></i>
+                                                    </button>
+                                                    <!-- Delete Button -->
+                                                    <button @click.stop="
+                                                        if(confirm('¿Estás seguro de que deseas eliminar esta nota?')) {
+                                                            fetch(`/notas/${note.id}`, {
+                                                                method: 'DELETE',
+                                                                headers: {
+                                                                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+                                                                }
+                                                            })
+                                                            .then(response => {
+                                                                if(response.ok) {
+                                                                    window.location.reload();
+                                                                }
+                                                            });
+                                                        }" 
+                                                        class="p-1 text-gray-500 hover:text-red-500 transition-colors duration-200" 
+                                                        title="Eliminar nota">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </div>
                                             </div>
                                             <p class="text-gray-600 mb-4" x-text="note.content"></p>
                                             <div class="flex justify-between items-center text-sm text-gray-500">
