@@ -28,11 +28,15 @@
             <!-- Main Content Area -->
             <main class="p-6" x-data="{ 
                 newNote: {title: '', content: '', category: 'personal', color: 'blue', isPinned: false}, 
-                notes: [
-                    {id: 1, title: 'Reunión importante', content: 'Reunión con el cliente el viernes a las 10:00 AM', date: '10 Jun 2024', color: 'blue', category: 'trabajo', isPinned: true, isArchived: false}, 
-                    {id: 2, title: 'Pago de facturas', content: 'Recordar pagar las facturas de servicios antes del día 15', date: '12 Jun 2024', color: 'red', category: 'finanzas', isPinned: false, isArchived: false}, 
-                    {id: 3, title: 'Ideas para proyecto', content: 'Investigar nuevas tecnologías para implementar en el próximo proyecto', date: '15 Jun 2024', color: 'green', category: 'trabajo', isPinned: false, isArchived: false}
-                ],
+                notes: @auth
+                    [] // Empty array for authenticated users
+                @else
+                    [
+                        {id: 1, title: 'Reunión importante', content: 'Reunión con el cliente el viernes a las 10:00 AM', date: '10 Jun 2024', color: 'blue', category: 'trabajo', isPinned: true, isArchived: false}, 
+                        {id: 2, title: 'Pago de facturas', content: 'Recordar pagar las facturas de servicios antes del día 15', date: '12 Jun 2024', color: 'red', category: 'finanzas', isPinned: false, isArchived: false}, 
+                        {id: 3, title: 'Ideas para proyecto', content: 'Investigar nuevas tecnologías para implementar en el próximo proyecto', date: '15 Jun 2024', color: 'green', category: 'trabajo', isPinned: false, isArchived: false}
+                    ]
+                @endauth,
                 categories: ['personal', 'trabajo', 'finanzas', 'ideas', 'otros'],
                 colors: ['blue', 'green', 'red', 'purple', 'yellow', 'teal', 'orange', 'pink'],
                 searchQuery: '',
@@ -186,19 +190,49 @@
 
                         <!-- Notes List -->
                         <div class="lg:col-span-2">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <template x-for="note in filteredNotes()" :key="note.id">
-                                    <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 border-t-4" :class="{
-                                        'border-blue-500': note.color === 'blue',
-                                        'border-green-500': note.color === 'green',
-                                        'border-red-500': note.color === 'red',
-                                        'border-purple-500': note.color === 'purple',
-                                        'border-yellow-500': note.color === 'yellow',
-                                        'border-teal-500': note.color === 'teal',
-                                        'border-orange-500': note.color === 'orange',
-                                        'border-pink-500': note.color === 'pink',
-                                        'ring-4 ring-blue-300': note.isPinned
-                                    }">
+                            @auth
+                                @if(count($notas ?? []) === 0)
+                                    <!-- Empty state for authenticated users with no notes -->
+                                    <div class="flex flex-col items-center justify-center h-64 bg-white rounded-xl shadow-md p-6 text-center">
+                                        <div class="text-gray-400 mb-4">
+                                            <i class="fas fa-sticky-note text-5xl"></i>
+                                        </div>
+                                        <h3 class="text-xl font-semibold text-gray-700 mb-2">No tienes notas todavía</h3>
+                                        <p class="text-gray-500 mb-4">Crea tu primera nota utilizando el formulario de la izquierda</p>
+                                        <div class="text-blue-500">
+                                            <i class="fas fa-arrow-left animate-pulse text-xl"></i>
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <template x-for="note in filteredNotes()" :key="note.id">
+                                            <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 border-t-4" :class="{
+                                                'border-blue-500': note.color === 'blue',
+                                                'border-green-500': note.color === 'green',
+                                                'border-red-500': note.color === 'red',
+                                                'border-purple-500': note.color === 'purple',
+                                                'border-yellow-500': note.color === 'yellow',
+                                                'border-teal-500': note.color === 'teal',
+                                                'border-orange-500': note.color === 'orange',
+                                                'border-pink-500': note.color === 'pink',
+                                                'ring-4 ring-blue-300': note.isPinned
+                                            }">
+                                @endif
+                            @else
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <template x-for="note in filteredNotes()" :key="note.id">
+                                        <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 border-t-4" :class="{
+                                            'border-blue-500': note.color === 'blue',
+                                            'border-green-500': note.color === 'green',
+                                            'border-red-500': note.color === 'red',
+                                            'border-purple-500': note.color === 'purple',
+                                            'border-yellow-500': note.color === 'yellow',
+                                            'border-teal-500': note.color === 'teal',
+                                            'border-orange-500': note.color === 'orange',
+                                            'border-pink-500': note.color === 'pink',
+                                            'ring-4 ring-blue-300': note.isPinned
+                                        }">
+                            @endauth
                                         <div class="p-6">
                                             <div class="flex justify-between items-start mb-4">
                                                 <div>
@@ -217,24 +251,10 @@
                                                         </span>
                                                     </div>
                                                 </div>
-                                                <div class="flex space-x-2">
-                                                    <button class="text-gray-400 hover:text-blue-500 transition-colors" @click="togglePin(note)">
-                                                        <i class="fas" :class="note.isPinned ? 'fa-thumbtack text-blue-500' : 'fa-thumbtack'"></i>
-                                                    </button>
-                                                    <button class="text-gray-400 hover:text-purple-500 transition-colors" @click="toggleArchive(note)">
-                                                        <i class="fas" :class="note.isArchived ? 'fa-box-open text-purple-500' : 'fa-archive'"></i>
-                                                    </button>
-                                                    <button class="text-gray-400 hover:text-blue-500 transition-colors">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button class="text-gray-400 hover:text-red-500 transition-colors" @click="notes = notes.filter(n => n.id !== note.id)">
-                                                        <i class="fas fa-trash-alt"></i>
-                                                    </button>
-                                                </div>
                                             </div>
                                             <p class="text-gray-600 mb-4" x-text="note.content"></p>
                                             <div class="flex justify-between items-center text-sm text-gray-500">
-                                                <span><i class="far fa-calendar-alt mr-1"></i> <span x-text="note.date"></span></span>
+                                                <span><span x-text="note.date"></span></span>
                                             </div>
                                         </div>
                                     </div>

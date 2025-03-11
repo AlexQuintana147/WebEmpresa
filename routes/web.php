@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TareaController;
+use App\Http\Controllers\NotaController;
 
 Route::get('/', function () {
     return view('dashboard');
@@ -37,9 +38,12 @@ Route::put('/tareas/{tarea}', [TareaController::class, 'update'])->name('tareas.
 Route::delete('/tareas/{tarea}', [TareaController::class, 'destroy'])->name('tareas.destroy');
 Route::get('/tareas-json', [TareaController::class, 'getTareasJson'])->name('tareas.json');
 
-Route::get('/notas', function () {
-    return view('notas');
-});
+Route::get('/notas', [NotaController::class, 'index'])->name('notas.index');
+Route::post('/notas', [NotaController::class, 'store'])->name('notas.store');
+Route::put('/notas/{nota}', [NotaController::class, 'update'])->name('notas.update');
+Route::delete('/notas/{nota}', [NotaController::class, 'destroy'])->name('notas.destroy');
+Route::patch('/notas/{nota}/pin', [NotaController::class, 'togglePin'])->name('notas.pin');
+Route::patch('/notas/{nota}/archive', [NotaController::class, 'toggleArchive'])->name('notas.archive');
 
 Route::get('/opciones', function () {
     return view('opciones');
