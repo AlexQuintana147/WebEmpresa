@@ -705,15 +705,36 @@
                         <div class="flex items-center justify-between mb-6">
                             <h2 class="text-xl font-semibold">Vista Semanal</h2>
                             <div class="flex items-center space-x-2">
-                                <button @click="modalOpen = true" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 mr-4">
+                                <button @click="
+                                    const isAuthenticated = document.querySelector('meta[name=\'auth-check\']').content === '1';
+                                    if (!isAuthenticated) {
+                                        alert('Primero debe iniciar sesión para agregar una tarea semanal');
+                                    } else {
+                                        modalOpen = true;
+                                    }
+                                " class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 mr-4">
                                     <i class="fas fa-calendar-plus"></i>
                                     <span class="ml-2">Agregar Tarea</span>
                                 </button>
-                                <button @click="$store.modal.editOpen = true" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 mr-4">
+                                <button @click="
+                                    const isAuthenticated = document.querySelector('meta[name=\'auth-check\']').content === '1';
+                                    if (!isAuthenticated) {
+                                        alert('Primero debe iniciar sesión para editar una tarea');
+                                    } else {
+                                        $store.modal.editOpen = true;
+                                    }
+                                " class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 mr-4">
                                     <i class="fas fa-edit"></i>
                                     <span>Editar Tarea</span>
                                 </button>
-                                <button @click="$store.modal.deleteOpen = true" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 mr-4">
+                                <button @click="
+                                    const isAuthenticated = document.querySelector('meta[name=\'auth-check\']').content === '1';
+                                    if (!isAuthenticated) {
+                                        alert('Primero debe iniciar sesión para eliminar una tarea');
+                                    } else {
+                                        $store.modal.deleteOpen = true;
+                                    }
+                                " class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 mr-4">
                                     <i class="fas fa-trash"></i>
                                     <span>Eliminar Tarea</span>
                                 </button>
