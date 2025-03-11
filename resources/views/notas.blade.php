@@ -29,7 +29,20 @@
             <main class="p-6" x-data="{ 
                 newNote: {title: '', content: '', category: 'personal', color: 'blue', isPinned: false}, 
                 notes: @auth
-                    [] // Empty array for authenticated users
+                    [
+                        @foreach($notas as $nota)
+                            {
+                                id: {{ $nota->id }},
+                                title: '{{ addslashes($nota->titulo) }}',
+                                content: '{{ addslashes($nota->contenido) }}',
+                                category: '{{ $nota->categoria }}',
+                                color: '{{ $nota->color }}',
+                                date: '{{ $nota->created_at->format('d M Y') }}',
+                                isPinned: {{ $nota->isPinned ? 'true' : 'false' }},
+                                isArchived: {{ $nota->isArchived ? 'true' : 'false' }}
+                            }@if(!$loop->last),@endif
+                        @endforeach
+                    ]
                 @else
                     [
                         {id: 1, title: 'Reunión importante', content: 'Reunión con el cliente el viernes a las 10:00 AM', date: '10 Jun 2024', color: 'blue', category: 'trabajo', isPinned: true, isArchived: false}, 
