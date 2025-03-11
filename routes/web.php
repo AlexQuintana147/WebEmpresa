@@ -26,6 +26,9 @@ Route::get('/lista-de-actividades', [TareaController::class, 'index'])->name('ac
 
 Route::get('/calendario', [TareaController::class, 'create'])->name('calendario');
 
+// Redirect from /tareas to /calendario
+Route::redirect('/tareas', '/calendario');
+
 // Rutas para la gestión de tareas
 Route::post('/tareas', [TareaController::class, 'store'])->name('tareas.store');
 Route::get('/tareas/{tarea}', [TareaController::class, 'show'])->name('tareas.show');
@@ -41,6 +44,9 @@ Route::get('/inversiones', function () {
 Route::get('/opciones', function () {
     return view('opciones');
 })->middleware(\App\Http\Middleware\RedirectIfNotAuthenticated::class);
+
+// Redirect from /actualizar-perfil to /opciones
+Route::redirect('/actualizar-perfil', '/opciones');
 
 Route::post('/register', [RegisterController::class, 'register']);
 
