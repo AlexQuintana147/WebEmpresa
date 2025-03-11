@@ -42,11 +42,11 @@
             </div>
             <span class="font-medium tracking-wide group-hover:text-fuchsia-300 transition-colors duration-300">Calendario</span>
         </a>
-        <a href="/inversiones" class="group flex items-center py-3.5 px-5 rounded-xl transition-all duration-300 hover:bg-white/10 hover:translate-x-1 {{ request()->is('inversiones') ? 'bg-gradient-to-r from-teal-500/20 to-teal-500/10 border-r-4 border-teal-400' : '' }}">
+        <a href="/notas" class="group flex items-center py-3.5 px-5 rounded-xl transition-all duration-300 hover:bg-white/10 hover:translate-x-1 {{ request()->is('inversiones') ? 'bg-gradient-to-r from-teal-500/20 to-teal-500/10 border-r-4 border-teal-400' : '' }}">
             <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-teal-400/20 to-teal-500/20 group-hover:from-teal-400/30 group-hover:to-teal-500/30 transition-all duration-300 mr-3">
-                <i class="fas fa-chart-pie text-teal-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                <i class="fas fa-sticky-note text-teal-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
             </div>
-            <span class="font-medium tracking-wide group-hover:text-teal-300 transition-colors duration-300">Inversiones</span>
+            <span class="font-medium tracking-wide group-hover:text-teal-300 transition-colors duration-300">Notas</span>
         </a>
     </nav>
     <div class="mt-auto pt-6 border-t border-gray-700/30">

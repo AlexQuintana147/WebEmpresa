@@ -37,8 +37,8 @@ Route::put('/tareas/{tarea}', [TareaController::class, 'update'])->name('tareas.
 Route::delete('/tareas/{tarea}', [TareaController::class, 'destroy'])->name('tareas.destroy');
 Route::get('/tareas-json', [TareaController::class, 'getTareasJson'])->name('tareas.json');
 
-Route::get('/inversiones', function () {
-    return view('inversiones');
+Route::get('/notas', function () {
+    return view('notas');
 });
 
 Route::get('/opciones', function () {
