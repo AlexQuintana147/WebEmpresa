@@ -232,7 +232,9 @@
                 if (!tooltip) {
                     tooltip = document.createElement('div');
                     tooltip.id = 'task-tooltip';
-                    tooltip.className = 'fixed hidden z-50 p-2 bg-gray-800 text-white text-sm rounded shadow-lg max-w-xs';
+                    tooltip.className = 'fixed hidden z-50 p-4 bg-white text-gray-800 text-sm rounded-lg shadow-xl max-w-xs border-l-4 border border-gray-200 transition-all duration-300 ease-in-out';
+                    tooltip.style.minWidth = '220px';
+                    tooltip.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
                     document.body.appendChild(tooltip);
                 }
                 
@@ -316,22 +318,60 @@
                     taskElement.addEventListener('mouseenter', (e) => {
                         // Preparar contenido del tooltip
                         const descripcion = tarea.descripcion || 'Sin descripción';
+                        
+                        // Usar el color de la tarea para el borde izquierdo del tooltip
+                        tooltip.style.borderLeftColor = tarea.color || '#3B82F6';
+                        
                         tooltip.innerHTML = `
-                            <div class="font-bold mb-1">${tarea.titulo}</div>
-                            <div>${descripcion}</div>
+                            <div class="font-bold text-base mb-2 pb-1 border-b border-gray-200 flex items-center">
+                                <i class="fas ${tarea.icono || 'fa-calendar'} mr-2" style="color: ${tarea.color || '#3B82F6'}"></i>
+                                <span>${tarea.titulo}</span>
+                            </div>
+                            <div class="text-gray-600 leading-relaxed">${descripcion}</div>
+                            <div class="mt-2 pt-1 border-t border-gray-200 text-xs text-gray-500 flex justify-between">
+                                <span><i class="far fa-clock mr-1"></i>${tarea.hora_inicio.substring(0, 5)} - ${tarea.hora_fin.substring(0, 5)}</span>
+                                <span><i class="far fa-calendar-alt mr-1"></i>${['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'][parseInt(tarea.dia_semana)]}</span>
+                            </div>
                         `;
                         
-                        // Posicionar el tooltip cerca del cursor
-                        tooltip.style.left = `${e.pageX + 10}px`;
-                        tooltip.style.top = `${e.pageY + 10}px`;
+                        // Posicionar el tooltip cerca del elemento (no del cursor)
+                        const rect = taskElement.getBoundingClientRect();
+                        const tooltipHeight = 150; // Altura estimada actualizada
                         
-                        // Mostrar el tooltip
+                        // Posicionar arriba o abajo dependiendo del espacio disponible
+                        const spaceBelow = window.innerHeight - rect.bottom;
+                        if (spaceBelow < tooltipHeight + 10) {
+                            // Posicionar arriba
+                            tooltip.style.left = `${rect.left}px`;
+                            tooltip.style.top = `${rect.top - tooltipHeight - 10}px`;
+                        } else {
+                            // Posicionar abajo
+                            tooltip.style.left = `${rect.left}px`;
+                            tooltip.style.top = `${rect.bottom + 10}px`;
+                        }
+                        
+                        // Mostrar el tooltip con animación
                         tooltip.classList.remove('hidden');
+                        tooltip.style.opacity = '0';
+                        tooltip.style.transform = 'translateY(10px)';
+                        
+                        // Forzar un reflow para que la animación funcione
+                        void tooltip.offsetWidth;
+                        
+                        tooltip.style.opacity = '1';
+                        tooltip.style.transform = 'translateY(0)';
                     });
                     
                     taskElement.addEventListener('mouseleave', () => {
-                        // Ocultar el tooltip
-                        tooltip.classList.add('hidden');
+                        // Ocultar el tooltip con animación
+                        tooltip.style.opacity = '0';
+                        tooltip.style.transform = 'translateY(10px)';
+                        
+                        setTimeout(() => {
+                            if (!tooltip.matches(':hover')) {
+                                tooltip.classList.add('hidden');
+                            }
+                        }, 300);
                     });
                     
                     // Añadir la tarea a la celda
