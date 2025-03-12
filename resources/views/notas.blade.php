@@ -17,6 +17,10 @@
                 open: false,
                 note: null
             })
+            Alpine.store('deleteModal', {
+                open: false,
+                note: null
+            })
             Alpine.store('notification', {
                 show: false,
                 message: '',
@@ -412,20 +416,7 @@
                                                         <i class="fas" :class="note.isArchived ? 'fa-box-open' : 'fa-archive'"></i>
                                                     </button>
                                                     <!-- Delete Button -->
-                                                    <button @click.stop="
-                                                        if(confirm('¿Estás seguro de que deseas eliminar esta nota?')) {
-                                                            fetch(`/notas/${note.id}`, {
-                                                                method: 'DELETE',
-                                                                headers: {
-                                                                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
-                                                                }
-                                                            })
-                                                            .then(response => {
-                                                                if(response.ok) {
-                                                                    window.location.reload();
-                                                                }
-                                                            })
-                                                        }" 
+                                                    <button @click.stop="$store.deleteModal.open = true; $store.deleteModal.note = JSON.parse(JSON.stringify(note))" 
                                                         class="p-1 text-gray-500 hover:text-red-500 transition-colors duration-200" 
                                                         title="Eliminar nota">
                                                         <i class="fas fa-trash-alt"></i>
@@ -513,6 +504,70 @@
                                             </button>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Delete Note Modal -->
+                    <div x-cloak x-show="$store.deleteModal.open" class="fixed inset-0 z-50 overflow-y-auto">
+                        <div class="flex items-center justify-center min-h-screen px-4">
+                            <!-- Backdrop -->
+                            <div @click="$store.deleteModal.open = false" class="fixed inset-0 transition-opacity">
+                                <div class="absolute inset-0 bg-gray-900 opacity-75"></div>
+                            </div>
+                            
+                            <!-- Modal Content -->
+                            <div class="bg-white rounded-xl shadow-2xl overflow-hidden w-full max-w-md transform transition-all" @click.stop>
+                                <div class="border-t-4 border-red-500"></div>
+                                
+                                <!-- Header -->
+                                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                                    <h3 class="text-xl font-semibold text-gray-800">Eliminar Nota</h3>
+                                    <button @click="$store.deleteModal.open = false" class="text-gray-400 hover:text-gray-600">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                
+                                <!-- Content -->
+                                <div class="px-6 py-4">
+                                    <div class="flex items-center mb-4 text-red-500">
+                                        <i class="fas fa-exclamation-triangle text-2xl mr-3"></i>
+                                        <p class="text-gray-700">¿Estás seguro de que deseas eliminar esta nota? Esta acción no se puede deshacer.</p>
+                                    </div>
+                                    <div class="bg-gray-50 p-3 rounded-lg mb-4">
+                                        <h4 class="font-medium text-gray-800" x-text="$store.deleteModal.note?.title"></h4>
+                                    </div>
+                                </div>
+                                
+                                <!-- Footer -->
+                                <div class="px-6 py-4 bg-gray-50 flex justify-end space-x-3">
+                                    <button @click="$store.deleteModal.open = false" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors duration-200">
+                                        Cancelar
+                                    </button>
+                                    <button @click="
+                                        fetch(`/notas/${$store.deleteModal.note.id}`, {
+                                            method: 'DELETE',
+                                            headers: {
+                                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+                                            }
+                                        })
+                                        .then(response => {
+                                            if(response.ok) {
+                                                $store.notification.showNotification('Nota eliminada correctamente', 'success');
+                                                window.location.reload();
+                                            } else {
+                                                $store.notification.showNotification('Error al eliminar la nota', 'error');
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error('Error:', error);
+                                            $store.notification.showNotification('Error al eliminar la nota: ' + error.message, 'error');
+                                        });
+                                        $store.deleteModal.open = false;
+                                    " class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-200">
+                                        Eliminar
+                                    </button>
                                 </div>
                             </div>
                         </div>
