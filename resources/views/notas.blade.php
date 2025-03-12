@@ -547,10 +547,14 @@
                                     </button>
                                     <button @click="
                                         fetch(`/notas/${$store.deleteModal.note.id}`, {
-                                            method: 'DELETE',
+                                            method: 'POST',
                                             headers: {
-                                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
-                                            }
+                                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                                'Content-Type': 'application/json'
+                                            },
+                                            body: JSON.stringify({
+                                                _method: 'DELETE'
+                                            })
                                         })
                                         .then(response => {
                                             if(response.ok) {
