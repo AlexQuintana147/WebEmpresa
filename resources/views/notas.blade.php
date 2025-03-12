@@ -368,7 +368,7 @@
                                                 <!-- Action Buttons -->
                                                 <div class="flex space-x-1">
                                                     <!-- Edit Button -->
-                                                    <button @click.stop="$store.editModal.open = true; $store.editModal.note = note" class="p-1 text-gray-500 hover:text-blue-500 transition-colors duration-200" title="Editar nota">
+                                                    <button @click.stop="$store.editModal.open = true; $store.editModal.note = JSON.parse(JSON.stringify(note))" class="p-1 text-gray-500 hover:text-blue-500 transition-colors duration-200" title="Editar nota">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
                                                     <!-- Pin/Unpin Button -->
@@ -550,12 +550,13 @@
                                 <!-- Form -->
                                 <form @submit.prevent="
                                     fetch(`/notas/${$store.editModal.note.id}`, { 
-                                        method: 'PUT', 
+                                        method: 'POST', 
                                         headers: { 
                                             'Content-Type': 'application/json', 
                                             'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content 
                                         }, 
                                         body: JSON.stringify({ 
+                                            _method: 'PUT',
                                             titulo: $store.editModal.note.title, 
                                             contenido: $store.editModal.note.content, 
                                             categoria: $store.editModal.note.category, 
@@ -568,8 +569,22 @@
                                         if (!response.ok) {
                                             throw new Error('Error en la respuesta del servidor');
                                         }
-                                        $store.notification.showNotification('Nota editada correctamente', 'success');
-                                        window.location.reload();
+                                        // Check if the response is JSON before trying to parse it
+                                        const contentType = response.headers.get('content-type');
+                                        if (contentType && contentType.includes('application/json')) {
+                                            return response.json().then(data => {
+                                                if(data.success) {
+                                                    $store.notification.showNotification('Nota editada correctamente', 'success');
+                                                } else {
+                                                    $store.notification.showNotification(data.message || 'Error al actualizar la nota', 'error');
+                                                }
+                                                window.location.reload();
+                                            });
+                                        } else {
+                                            // If not JSON, just reload the page as the form was likely submitted successfully
+                                            $store.notification.showNotification('Nota editada correctamente', 'success');
+                                            window.location.reload();
+                                        }
                                     })
                                     .catch(error => {
                                         console.error('Error:', error);

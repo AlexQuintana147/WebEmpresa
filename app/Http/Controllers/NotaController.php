@@ -74,6 +74,9 @@ class NotaController extends Controller
     {
         // Check if the note belongs to the authenticated user
         if ($nota->usuario_id !== Auth::id()) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json(['error' => 'No tienes permiso para editar esta nota'], 403);
+            }
             return redirect()->route('notas.index')->with('error', 'No tienes permiso para editar esta nota');
         }
 
@@ -95,6 +98,11 @@ class NotaController extends Controller
             'isArchived' => $request->isArchived ?? false,
         ]);
 
+        // Check if the request expects a JSON response
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Nota actualizada correctamente']);
+        }
+        
         return redirect()->route('notas.index')->with('success', 'Nota actualizada correctamente');
     }
 
