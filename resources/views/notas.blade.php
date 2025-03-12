@@ -7,10 +7,15 @@
     <title>Inversiones</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>[x-cloak] { display: none !important; }</style>
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.store('modal', {
                 open: false
+            })
+            Alpine.store('editModal', {
+                open: false,
+                note: null
             })
         })
     </script>
@@ -303,7 +308,7 @@
                                                 <!-- Action Buttons -->
                                                 <div class="flex space-x-1">
                                                     <!-- Edit Button -->
-                                                    <button @click.stop="window.location.href = `/notas/${note.id}/edit`" class="p-1 text-gray-500 hover:text-blue-500 transition-colors duration-200" title="Editar nota">
+                                                    <button @click.stop="$store.editModal.open = true; $store.editModal.note = note" class="p-1 text-gray-500 hover:text-blue-500 transition-colors duration-200" title="Editar nota">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
                                                     <!-- Pin/Unpin Button -->
@@ -359,7 +364,7 @@
                                                                 if(response.ok) {
                                                                     window.location.reload();
                                                                 }
-                                                            });
+                                                            })
                                                         }" 
                                                         class="p-1 text-gray-500 hover:text-red-500 transition-colors duration-200" 
                                                         title="Eliminar nota">
@@ -449,6 +454,139 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Edit Note Modal -->
+                    <div x-cloak x-show="$store.editModal.open" class="fixed inset-0 z-50 overflow-y-auto">
+                        <div class="flex items-center justify-center min-h-screen px-4">
+                            <!-- Backdrop -->
+                            <div @click="$store.editModal.open = false" class="fixed inset-0 transition-opacity">
+                                <div class="absolute inset-0 bg-gray-900 opacity-75"></div>
+                            </div>
+                            
+                            <!-- Modal Content -->
+                            <div class="bg-white rounded-xl shadow-2xl overflow-hidden w-full max-w-2xl transform transition-all sm:max-w-lg" @click.stop>
+                                <div class="border-t-4" :class="{
+                                    'border-blue-500': $store.editModal.note?.color === 'blue',
+                                    'border-green-500': $store.editModal.note?.color === 'green',
+                                    'border-red-500': $store.editModal.note?.color === 'red',
+                                    'border-purple-500': $store.editModal.note?.color === 'purple',
+                                    'border-yellow-500': $store.editModal.note?.color === 'yellow',
+                                    'border-teal-500': $store.editModal.note?.color === 'teal',
+                                    'border-orange-500': $store.editModal.note?.color === 'orange',
+                                    'border-pink-500': $store.editModal.note?.color === 'pink'
+                                }"></div>
+                                
+                                <!-- Header -->
+                                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                                    <h3 class="text-xl font-semibold text-gray-800">Editar Nota</h3>
+                                    <button @click="$store.editModal.open = false" class="text-gray-400 hover:text-gray-600">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                
+                                <!-- Form -->
+                                <form @submit.prevent="
+                                    fetch(`/notas/${$store.editModal.note.id}`, { 
+                                        method: 'PUT', 
+                                        headers: { 
+                                            'Content-Type': 'application/json', 
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content 
+                                        }, 
+                                        body: JSON.stringify({ 
+                                            titulo: $store.editModal.note.title, 
+                                            contenido: $store.editModal.note.content, 
+                                            categoria: $store.editModal.note.category, 
+                                            color: $store.editModal.note.color, 
+                                            isPinned: $store.editModal.note.isPinned,
+                                            isArchived: $store.editModal.note.isArchived
+                                        }) 
+                                    })
+                                    .then(response => {
+                                        if (!response.ok) {
+                                            throw new Error('Error en la respuesta del servidor');
+                                        }
+                                        window.location.reload();
+                                    })
+                                    .catch(error => {
+                                        console.error('Error:', error);
+                                        alert('Error al actualizar la nota: ' + error.message);
+                                    });
+                                    $store.editModal.open = false;
+                                ">
+                                    <div class="px-6 py-4 space-y-4">
+                                        <!-- Title -->
+                                        <div>
+                                            <label for="edit-note-title" class="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                                            <input type="text" id="edit-note-title" x-model="$store.editModal.note.title" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Título de la nota" required>
+                                        </div>
+                                        
+                                        <!-- Content -->
+                                        <div>
+                                            <label for="edit-note-content" class="block text-sm font-medium text-gray-700 mb-1">Contenido</label>
+                                            <textarea id="edit-note-content" x-model="$store.editModal.note.content" rows="5" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Escribe tu nota aquí..." required></textarea>
+                                        </div>
+                                        
+                                        <!-- Category Selection -->
+                                        <div>
+                                            <label for="edit-note-category" class="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+                                            <select id="edit-note-category" x-model="$store.editModal.note.category" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                                <template x-for="category in categories">
+                                                    <option :value="category" x-text="category.charAt(0).toUpperCase() + category.slice(1)"></option>
+                                                </template>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- Color Selection -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Color</label>
+                                            <div class="flex flex-wrap gap-2">
+                                                <template x-for="color in colors">
+                                                    <button type="button" @click="$store.editModal.note.color = color" 
+                                                        class="w-8 h-8 rounded-full border-2 transition-all duration-200" 
+                                                        :class="{
+                                                            'border-blue-500 bg-blue-500': color === 'blue',
+                                                            'border-green-500 bg-green-500': color === 'green',
+                                                            'border-red-500 bg-red-500': color === 'red',
+                                                            'border-purple-500 bg-purple-500': color === 'purple',
+                                                            'border-yellow-500 bg-yellow-500': color === 'yellow',
+                                                            'border-teal-500 bg-teal-500': color === 'teal',
+                                                            'border-orange-500 bg-orange-500': color === 'orange',
+                                                            'border-pink-500 bg-pink-500': color === 'pink',
+                                                            'ring-4 ring-offset-2': $store.editModal.note.color === color
+                                                        }"></button>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Options -->
+                                        <div class="flex space-x-4">
+                                            <!-- Pin Option -->
+                                            <div class="flex items-center">
+                                                <input id="edit-pin-note" type="checkbox" x-model="$store.editModal.note.isPinned" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                                <label for="edit-pin-note" class="ml-2 text-sm font-medium text-gray-700">Fijar nota</label>
+                                            </div>
+                                            
+                                            <!-- Archive Option -->
+                                            <div class="flex items-center">
+                                                <input id="edit-archive-note" type="checkbox" x-model="$store.editModal.note.isArchived" class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                                                <label for="edit-archive-note" class="ml-2 text-sm font-medium text-gray-700">Archivar nota</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Footer -->
+                                    <div class="px-6 py-4 bg-gray-50 flex justify-end space-x-2">
+                                        <button type="button" @click="$store.editModal.open = false" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors duration-200">
+                                            Cancelar
+                                        </button>
+                                        <button type="submit" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 focus:ring-4 focus:ring-blue-300/50 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300 ease-out active:scale-95">
+                                            <i class="fas fa-save mr-2"></i> Guardar Cambios
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
