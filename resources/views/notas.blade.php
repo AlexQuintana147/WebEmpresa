@@ -113,7 +113,8 @@
                         @endforeach
                     ]
                 @else
-                    [
+                    // For non-logged-in users, load notes from localStorage or use example notes
+                    JSON.parse(localStorage.getItem('guestNotes')) || [
                         {id: 1, title: 'Reunión importante', content: 'Reunión con el cliente el viernes a las 10:00 AM', date: '10 Jun 2024', color: 'blue', category: 'trabajo', isPinned: true, isArchived: false}, 
                         {id: 2, title: 'Pago de facturas', content: 'Recordar pagar las facturas de servicios antes del día 15', date: '12 Jun 2024', color: 'red', category: 'finanzas', isPinned: false, isArchived: false}, 
                         {id: 3, title: 'Ideas para proyecto', content: 'Investigar nuevas tecnologías para implementar en el próximo proyecto', date: '15 Jun 2024', color: 'green', category: 'trabajo', isPinned: false, isArchived: false}
@@ -377,6 +378,7 @@
                                                     </button>
                                                     <!-- Pin/Unpin Button -->
                                                     <button @click.stop="
+                                                        @auth
                                                         fetch(`/notas/${note.id}/toggle-pin`, {
                                                             method: 'POST',
                                                             headers: {
@@ -399,7 +401,21 @@
                                                         .catch(error => {
                                                             console.error('Error:', error);
                                                             $store.notification.showNotification('Error al actualizar la nota: ' + error.message, 'error');
-                                                        })" 
+                                                        })
+                                                        @else
+                                                        note.isPinned = !note.isPinned;
+                                                        // Update the note in localStorage
+                                                        let localNotes = JSON.parse(localStorage.getItem('guestNotes') || '[]');
+                                                        const noteIndex = localNotes.findIndex(n => n.id === note.id);
+                                                        if (noteIndex !== -1) {
+                                                            localNotes[noteIndex] = note;
+                                                            localStorage.setItem('guestNotes', JSON.stringify(localNotes));
+                                                        }
+                                                        $store.notification.showNotification(
+                                                            note.isPinned ? 'Nota fijada correctamente' : 'Nota desfijada correctamente', 
+                                                            'success'
+                                                        );
+                                                        @endauth" 
                                                         class="p-1 transition-colors duration-200" 
                                                         :class="note.isPinned ? 'text-blue-500 hover:text-blue-700' : 'text-gray-500 hover:text-blue-500'" 
                                                         title="Fijar/Desfijar nota">
@@ -407,6 +423,7 @@
                                                     </button>
                                                     <!-- Archive/Unarchive Button -->
                                                     <button @click.stop="
+                                                        @auth
                                                         fetch(`/notas/${note.id}/toggle-archive`, {
                                                             method: 'POST',
                                                             headers: {
@@ -429,7 +446,21 @@
                                                         .catch(error => {
                                                             console.error('Error:', error);
                                                             $store.notification.showNotification('Error al actualizar la nota: ' + error.message, 'error');
-                                                        })" 
+                                                        })
+                                                        @else
+                                                        note.isArchived = !note.isArchived;
+                                                        // Update the note in localStorage
+                                                        let localNotes = JSON.parse(localStorage.getItem('guestNotes') || '[]');
+                                                        const noteIndex = localNotes.findIndex(n => n.id === note.id);
+                                                        if (noteIndex !== -1) {
+                                                            localNotes[noteIndex] = note;
+                                                            localStorage.setItem('guestNotes', JSON.stringify(localNotes));
+                                                        }
+                                                        $store.notification.showNotification(
+                                                            note.isArchived ? 'Nota archivada correctamente' : 'Nota desarchivada correctamente', 
+                                                            'success'
+                                                        );
+                                                        @endauth" 
                                                         class="p-1 transition-colors duration-200" 
                                                         :class="note.isArchived ? 'text-purple-500 hover:text-purple-700' : 'text-gray-500 hover:text-purple-500'" 
                                                         title="Archivar/Desarchivar nota">
@@ -566,6 +597,7 @@
                                         Cancelar
                                     </button>
                                     <button @click="
+                                        @auth
                                         fetch(`/notas/${$store.deleteModal.note.id}`, {
                                             method: 'POST',
                                             headers: {
@@ -588,6 +620,23 @@
                                             console.error('Error:', error);
                                             $store.notification.showNotification('Error al eliminar la nota: ' + error.message, 'error');
                                         });
+                                        @else
+                                        // For non-logged-in users, remove the note from the local array and localStorage
+                                        const noteIndex = notes.findIndex(n => n.id === $store.deleteModal.note.id);
+                                        if (noteIndex !== -1) {
+                                            notes.splice(noteIndex, 1);
+                                            
+                                            // Update localStorage
+                                            let localNotes = JSON.parse(localStorage.getItem('guestNotes') || '[]');
+                                            const localIndex = localNotes.findIndex(n => n.id === $store.deleteModal.note.id);
+                                            if (localIndex !== -1) {
+                                                localNotes.splice(localIndex, 1);
+                                                localStorage.setItem('guestNotes', JSON.stringify(localNotes));
+                                            }
+                                            
+                                            $store.notification.showNotification('Nota eliminada correctamente', 'success');
+                                        }
+                                        @endauth
                                         $store.deleteModal.open = false;
                                     " class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-200">
                                         Eliminar
@@ -628,6 +677,7 @@
                                 
                                 <!-- Form -->
                                 <form @submit.prevent="
+                                    @auth
                                     fetch(`/notas/${$store.editModal.note.id}`, { 
                                         method: 'POST', 
                                         headers: { 
@@ -669,6 +719,30 @@
                                         console.error('Error:', error);
                                         $store.notification.showNotification('Error al actualizar la nota: ' + error.message, 'error');
                                     });
+                                    @else
+                                    // For non-logged-in users, update the note in the local array and localStorage
+                                    const noteIndex = notes.findIndex(n => n.id === $store.editModal.note.id);
+                                    if (noteIndex !== -1) {
+                                        notes[noteIndex] = {
+                                            ...$store.editModal.note,
+                                            // Ensure we keep the original ID and date
+                                            id: notes[noteIndex].id,
+                                            date: notes[noteIndex].date
+                                        };
+                                        
+                                        // Update localStorage
+                                        let localNotes = JSON.parse(localStorage.getItem('guestNotes') || '[]');
+                                        const localIndex = localNotes.findIndex(n => n.id === $store.editModal.note.id);
+                                        if (localIndex !== -1) {
+                                            localNotes[localIndex] = notes[noteIndex];
+                                        } else {
+                                            localNotes.push(notes[noteIndex]);
+                                        }
+                                        localStorage.setItem('guestNotes', JSON.stringify(localNotes));
+                                        
+                                        $store.notification.showNotification('Nota editada correctamente', 'success');
+                                    }
+                                    @endauth
                                     $store.editModal.open = false;
                                 ">
                                     <div class="px-6 py-4 space-y-4">
