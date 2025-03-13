@@ -374,9 +374,17 @@
                                                     </div>
                                                 </div>
                                                 <!-- Action Buttons -->
+                                                <!-- Action Buttons -->
                                                 <div class="flex space-x-1">
                                                     <!-- Edit Button -->
-                                                    <button @click.stop="$store.editModal.open = true; $store.editModal.note = JSON.parse(JSON.stringify(note))" class="p-1 text-gray-500 hover:text-blue-500 transition-colors duration-200" title="Editar nota">
+                                                    <button @click.stop="
+                                                        @auth
+                                                        $store.editModal.open = true; 
+                                                        $store.editModal.note = JSON.parse(JSON.stringify(note))
+                                                        @else
+                                                        $store.notification.showNotification('Esto es solo una muestra, inicie sesión para usar', 'warning')
+                                                        @endauth
+                                                    " class="p-1 text-gray-500 hover:text-blue-500 transition-colors duration-200" title="Editar nota">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
                                                     <!-- Pin/Unpin Button -->
