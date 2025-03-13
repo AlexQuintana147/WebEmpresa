@@ -59,20 +59,23 @@
          class="fixed top-4 right-4 z-50 max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden"
          :class="{
             'bg-green-50': $store.notification.type === 'success',
-            'bg-red-50': $store.notification.type === 'error'
+            'bg-red-50': $store.notification.type === 'error',
+            'bg-amber-50': $store.notification.type === 'warning'
          }">
         <div class="p-4">
             <div class="flex items-start">
                 <div class="flex-shrink-0">
                     <i class="fas" :class="{
                         'fa-check-circle text-green-400': $store.notification.type === 'success',
-                        'fa-exclamation-circle text-red-400': $store.notification.type === 'error'
+                        'fa-exclamation-circle text-red-400': $store.notification.type === 'error',
+                        'fa-exclamation-triangle text-amber-400': $store.notification.type === 'warning'
                     }"></i>
                 </div>
                 <div class="ml-3 w-0 flex-1 pt-0.5">
                     <p class="text-sm font-medium" :class="{
                         'text-green-800': $store.notification.type === 'success',
-                        'text-red-800': $store.notification.type === 'error'
+                        'text-red-800': $store.notification.type === 'error',
+                        'text-amber-800': $store.notification.type === 'warning'
                     }" x-text="$store.notification.message"></p>
                 </div>
                 <div class="ml-4 flex-shrink-0 flex">
@@ -620,24 +623,13 @@
                                             console.error('Error:', error);
                                             $store.notification.showNotification('Error al eliminar la nota: ' + error.message, 'error');
                                         });
-                                        @else
-                                        // For non-logged-in users, remove the note from the local array and localStorage
-                                        const noteIndex = notes.findIndex(n => n.id === $store.deleteModal.note.id);
-                                        if (noteIndex !== -1) {
-                                            notes.splice(noteIndex, 1);
-                                            
-                                            // Update localStorage
-                                            let localNotes = JSON.parse(localStorage.getItem('guestNotes') || '[]');
-                                            const localIndex = localNotes.findIndex(n => n.id === $store.deleteModal.note.id);
-                                            if (localIndex !== -1) {
-                                                localNotes.splice(localIndex, 1);
-                                                localStorage.setItem('guestNotes', JSON.stringify(localNotes));
-                                            }
-                                            
-                                            $store.notification.showNotification('Nota eliminada correctamente', 'success');
-                                        }
-                                        @endauth
+                                        
                                         $store.deleteModal.open = false;
+                                        @else
+                                        // For non-logged-in users, show a warning message instead of deleting
+                                        $store.notification.showNotification('Esto solo es una muestra, para que funcione inicie sesión', 'warning');
+                                        $store.deleteModal.open = false;
+                                        @endauth
                                     " class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-200">
                                         Eliminar
                                     </button>
