@@ -388,7 +388,17 @@
                                                         .then(data => {
                                                             if(data.success) {
                                                                 note.isPinned = data.isPinned;
+                                                                $store.notification.showNotification(
+                                                                    note.isPinned ? 'Nota fijada correctamente' : 'Nota desfijada correctamente', 
+                                                                    'success'
+                                                                );
+                                                            } else {
+                                                                $store.notification.showNotification(data.message || 'Error al actualizar la nota', 'error');
                                                             }
+                                                        })
+                                                        .catch(error => {
+                                                            console.error('Error:', error);
+                                                            $store.notification.showNotification('Error al actualizar la nota: ' + error.message, 'error');
                                                         })" 
                                                         class="p-1 transition-colors duration-200" 
                                                         :class="note.isPinned ? 'text-blue-500 hover:text-blue-700' : 'text-gray-500 hover:text-blue-500'" 
@@ -408,7 +418,17 @@
                                                         .then(data => {
                                                             if(data.success) {
                                                                 note.isArchived = data.isArchived;
+                                                                $store.notification.showNotification(
+                                                                    note.isArchived ? 'Nota archivada correctamente' : 'Nota desarchivada correctamente', 
+                                                                    'success'
+                                                                );
+                                                            } else {
+                                                                $store.notification.showNotification(data.message || 'Error al actualizar la nota', 'error');
                                                             }
+                                                        })
+                                                        .catch(error => {
+                                                            console.error('Error:', error);
+                                                            $store.notification.showNotification('Error al actualizar la nota: ' + error.message, 'error');
                                                         })" 
                                                         class="p-1 transition-colors duration-200" 
                                                         :class="note.isArchived ? 'text-purple-500 hover:text-purple-700' : 'text-gray-500 hover:text-purple-500'" 

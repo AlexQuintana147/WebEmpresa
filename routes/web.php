@@ -42,8 +42,8 @@ Route::get('/notas', [NotaController::class, 'index'])->name('notas.index');
 Route::post('/notas', [NotaController::class, 'store'])->name('notas.store');
 Route::put('/notas/{nota}', [NotaController::class, 'update'])->name('notas.update');
 Route::delete('/notas/{nota}', [NotaController::class, 'destroy'])->name('notas.destroy');
-Route::patch('/notas/{nota}/pin', [NotaController::class, 'togglePin'])->name('notas.pin');
-Route::patch('/notas/{nota}/archive', [NotaController::class, 'toggleArchive'])->name('notas.archive');
+Route::post('/notas/{nota}/toggle-pin', [NotaController::class, 'togglePin'])->name('notas.pin');
+Route::post('/notas/{nota}/toggle-archive', [NotaController::class, 'toggleArchive'])->name('notas.archive');
 
 Route::get('/opciones', function () {
     return view('opciones');
