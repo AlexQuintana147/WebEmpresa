@@ -326,7 +326,26 @@
                                         </div>
                                     </div>
                                 @else
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <!-- Check if there are notes but none are displayed because they're all archived -->
+                                    <template x-if="!showArchived && notes.length > 0 && filteredNotes().length === 0">
+                                        <div class="flex flex-col items-center justify-center h-64 bg-white rounded-xl shadow-md p-6 text-center">
+                                            <div class="text-gray-400 mb-4">
+                                                <i class="fas fa-archive text-5xl"></i>
+                                            </div>
+                                            <h3 class="text-xl font-semibold text-gray-700 mb-2">Tienes tus notas archivadas</h3>
+                                            <p class="text-gray-500 mb-4">Crea una nueva nota utilizando el formulario de la izquierda o haz clic en "Ver Archivadas" para ver tus notas archivadas</p>
+                                            <div class="flex space-x-4">
+                                                <div class="text-blue-500">
+                                                    <i class="fas fa-arrow-left animate-pulse text-xl"></i>
+                                                </div>
+                                                <button @click="showArchived = true" class="text-purple-500 hover:text-purple-700 transition-colors duration-200">
+                                                    <i class="fas fa-box-open mr-1"></i> Ver Archivadas
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    
+                                    <div x-show="filteredNotes().length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <template x-for="note in filteredNotes()" :key="note.id">
                                             <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 border-t-4" :class="{
                                                 'border-blue-500': note.color === 'blue',
@@ -341,7 +360,26 @@
                                             }">
                                 @endif
                             @else
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Check if there are notes but none are displayed because they're all archived (for guest users) -->
+                                <template x-if="!showArchived && notes.length > 0 && filteredNotes().length === 0">
+                                    <div class="flex flex-col items-center justify-center h-64 bg-white rounded-xl shadow-md p-6 text-center">
+                                        <div class="text-gray-400 mb-4">
+                                            <i class="fas fa-archive text-5xl"></i>
+                                        </div>
+                                        <h3 class="text-xl font-semibold text-gray-700 mb-2">Tienes tus notas archivadas</h3>
+                                        <p class="text-gray-500 mb-4">Crea una nueva nota utilizando el formulario de la izquierda o haz clic en "Ver Archivadas" para ver tus notas archivadas</p>
+                                        <div class="flex space-x-4">
+                                            <div class="text-blue-500">
+                                                <i class="fas fa-arrow-left animate-pulse text-xl"></i>
+                                            </div>
+                                            <button @click="showArchived = true" class="text-purple-500 hover:text-purple-700 transition-colors duration-200">
+                                                <i class="fas fa-box-open mr-1"></i> Ver Archivadas
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                                
+                                <div x-show="filteredNotes().length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <template x-for="note in filteredNotes()" :key="note.id">
                                         <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 border-t-4" :class="{
                                             'border-blue-500': note.color === 'blue',
