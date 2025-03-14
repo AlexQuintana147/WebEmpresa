@@ -355,141 +355,144 @@
                                             'ring-4 ring-blue-300': note.isPinned
                                         }">
                             @endauth
-                                        <div class="p-6">
-                                            <div class="flex justify-between items-start mb-4">
-                                                <div>
-                                                    <h3 class="font-bold text-lg text-gray-800" x-text="note.title"></h3>
-                                                    <div class="flex items-center mt-1 space-x-2">
-                                                        <span class="px-2 py-1 text-xs font-medium rounded-full" 
-                                                            :class="{
-                                                                'bg-blue-100 text-blue-800': note.category === 'personal',
-                                                                'bg-green-100 text-green-800': note.category === 'trabajo',
-                                                                'bg-red-100 text-red-800': note.category === 'finanzas',
-                                                                'bg-purple-100 text-purple-800': note.category === 'ideas',
-                                                                'bg-gray-100 text-gray-800': note.category === 'otros'
-                                                            }" x-text="note.category.charAt(0).toUpperCase() + note.category.slice(1)"></span>
-                                                        <span x-show="note.isPinned" class="flex items-center text-xs text-blue-600">
-                                                            <i class="fas fa-thumbtack mr-1"></i> Fijada
-                                                        </span>
+                                        <!-- Only show note content if we're in the notes loop -->
+                                        <template x-if="note">
+                                            <div class="p-6">
+                                                <div class="flex justify-between items-start mb-4">
+                                                    <div>
+                                                        <h3 class="font-bold text-lg text-gray-800" x-text="note.title"></h3>
+                                                        <div class="flex items-center mt-1 space-x-2">
+                                                            <span class="px-2 py-1 text-xs font-medium rounded-full" 
+                                                                :class="{
+                                                                    'bg-blue-100 text-blue-800': note.category === 'personal',
+                                                                    'bg-green-100 text-green-800': note.category === 'trabajo',
+                                                                    'bg-red-100 text-red-800': note.category === 'finanzas',
+                                                                    'bg-purple-100 text-purple-800': note.category === 'ideas',
+                                                                    'bg-gray-100 text-gray-800': note.category === 'otros'
+                                                                }" x-text="note.category.charAt(0).toUpperCase() + note.category.slice(1)"></span>
+                                                            <span x-show="note.isPinned" class="flex items-center text-xs text-blue-600">
+                                                                <i class="fas fa-thumbtack mr-1"></i> Fijada
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <!-- Action Buttons -->
+                                                    <!-- Action Buttons -->
+                                                    <div class="flex space-x-1">
+                                                        <!-- Edit Button -->
+                                                        <button @click.stop="
+                                                            @auth
+                                                            $store.editModal.open = true; 
+                                                            $store.editModal.note = JSON.parse(JSON.stringify(note))
+                                                            @else
+                                                            $store.notification.showNotification('Esto es solo una muestra, inicie sesión para usar', 'warning')
+                                                            @endauth
+                                                        " class="p-1 text-gray-500 hover:text-blue-500 transition-colors duration-200" title="Editar nota">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <!-- Pin/Unpin Button -->
+                                                        <button @click.stop="
+                                                            @auth
+                                                            fetch(`/notas/${note.id}/toggle-pin`, {
+                                                                method: 'POST',
+                                                                headers: {
+                                                                    'Content-Type': 'application/json',
+                                                                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+                                                                }
+                                                            })
+                                                            .then(response => response.json())
+                                                            .then(data => {
+                                                                if(data.success) {
+                                                                    note.isPinned = data.isPinned;
+                                                                    $store.notification.showNotification(
+                                                                        note.isPinned ? 'Nota fijada correctamente' : 'Nota desfijada correctamente', 
+                                                                        'success'
+                                                                    );
+                                                                } else {
+                                                                    $store.notification.showNotification(data.message || 'Error al actualizar la nota', 'error');
+                                                                }
+                                                            })
+                                                            .catch(error => {
+                                                                console.error('Error:', error);
+                                                                $store.notification.showNotification('Error al actualizar la nota: ' + error.message, 'error');
+                                                            })
+                                                            @else
+                                                            note.isPinned = !note.isPinned;
+                                                            // Update the note in localStorage
+                                                            let localNotes = JSON.parse(localStorage.getItem('guestNotes') || '[]');
+                                                            const noteIndex = localNotes.findIndex(n => n.id === note.id);
+                                                            if (noteIndex !== -1) {
+                                                                localNotes[noteIndex] = note;
+                                                                localStorage.setItem('guestNotes', JSON.stringify(localNotes));
+                                                            }
+                                                            $store.notification.showNotification(
+                                                                note.isPinned ? 'Nota fijada correctamente' : 'Nota desfijada correctamente', 
+                                                                'success'
+                                                            );
+                                                            @endauth" 
+                                                            class="p-1 transition-colors duration-200" 
+                                                            :class="note.isPinned ? 'text-blue-500 hover:text-blue-700' : 'text-gray-500 hover:text-blue-500'" 
+                                                            title="Fijar/Desfijar nota">
+                                                            <i class="fas fa-thumbtack"></i>
+                                                        </button>
+                                                        <!-- Archive/Unarchive Button -->
+                                                        <button @click.stop="
+                                                            @auth
+                                                            fetch(`/notas/${note.id}/toggle-archive`, {
+                                                                method: 'POST',
+                                                                headers: {
+                                                                    'Content-Type': 'application/json',
+                                                                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+                                                                }
+                                                            })
+                                                            .then(response => response.json())
+                                                            .then(data => {
+                                                                if(data.success) {
+                                                                    note.isArchived = data.isArchived;
+                                                                    $store.notification.showNotification(
+                                                                        note.isArchived ? 'Nota archivada correctamente' : 'Nota desarchivada correctamente', 
+                                                                        'success'
+                                                                    );
+                                                                } else {
+                                                                    $store.notification.showNotification(data.message || 'Error al actualizar la nota', 'error');
+                                                                }
+                                                            })
+                                                            .catch(error => {
+                                                                console.error('Error:', error);
+                                                                $store.notification.showNotification('Error al actualizar la nota: ' + error.message, 'error');
+                                                            })
+                                                            @else
+                                                            note.isArchived = !note.isArchived;
+                                                            // Update the note in localStorage
+                                                            let localNotes = JSON.parse(localStorage.getItem('guestNotes') || '[]');
+                                                            const noteIndex = localNotes.findIndex(n => n.id === note.id);
+                                                            if (noteIndex !== -1) {
+                                                                localNotes[noteIndex] = note;
+                                                                localStorage.setItem('guestNotes', JSON.stringify(localNotes));
+                                                            }
+                                                            $store.notification.showNotification(
+                                                                note.isArchived ? 'Nota archivada correctamente' : 'Nota desarchivada correctamente', 
+                                                                'success'
+                                                            );
+                                                            @endauth" 
+                                                            class="p-1 transition-colors duration-200" 
+                                                            :class="note.isArchived ? 'text-purple-500 hover:text-purple-700' : 'text-gray-500 hover:text-purple-500'" 
+                                                            title="Archivar/Desarchivar nota">
+                                                            <i class="fas" :class="note.isArchived ? 'fa-box-open' : 'fa-archive'"></i>
+                                                        </button>
+                                                        <!-- Delete Button -->
+                                                        <button @click.stop="$store.deleteModal.open = true; $store.deleteModal.note = JSON.parse(JSON.stringify(note))" 
+                                                            class="p-1 text-gray-500 hover:text-red-500 transition-colors duration-200" 
+                                                            title="Eliminar nota">
+                                                            <i class="fas fa-trash-alt"></i>
+                                                        </button>
                                                     </div>
                                                 </div>
-                                                <!-- Action Buttons -->
-                                                <!-- Action Buttons -->
-                                                <div class="flex space-x-1">
-                                                    <!-- Edit Button -->
-                                                    <button @click.stop="
-                                                        @auth
-                                                        $store.editModal.open = true; 
-                                                        $store.editModal.note = JSON.parse(JSON.stringify(note))
-                                                        @else
-                                                        $store.notification.showNotification('Esto es solo una muestra, inicie sesión para usar', 'warning')
-                                                        @endauth
-                                                    " class="p-1 text-gray-500 hover:text-blue-500 transition-colors duration-200" title="Editar nota">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <!-- Pin/Unpin Button -->
-                                                    <button @click.stop="
-                                                        @auth
-                                                        fetch(`/notas/${note.id}/toggle-pin`, {
-                                                            method: 'POST',
-                                                            headers: {
-                                                                'Content-Type': 'application/json',
-                                                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
-                                                            }
-                                                        })
-                                                        .then(response => response.json())
-                                                        .then(data => {
-                                                            if(data.success) {
-                                                                note.isPinned = data.isPinned;
-                                                                $store.notification.showNotification(
-                                                                    note.isPinned ? 'Nota fijada correctamente' : 'Nota desfijada correctamente', 
-                                                                    'success'
-                                                                );
-                                                            } else {
-                                                                $store.notification.showNotification(data.message || 'Error al actualizar la nota', 'error');
-                                                            }
-                                                        })
-                                                        .catch(error => {
-                                                            console.error('Error:', error);
-                                                            $store.notification.showNotification('Error al actualizar la nota: ' + error.message, 'error');
-                                                        })
-                                                        @else
-                                                        note.isPinned = !note.isPinned;
-                                                        // Update the note in localStorage
-                                                        let localNotes = JSON.parse(localStorage.getItem('guestNotes') || '[]');
-                                                        const noteIndex = localNotes.findIndex(n => n.id === note.id);
-                                                        if (noteIndex !== -1) {
-                                                            localNotes[noteIndex] = note;
-                                                            localStorage.setItem('guestNotes', JSON.stringify(localNotes));
-                                                        }
-                                                        $store.notification.showNotification(
-                                                            note.isPinned ? 'Nota fijada correctamente' : 'Nota desfijada correctamente', 
-                                                            'success'
-                                                        );
-                                                        @endauth" 
-                                                        class="p-1 transition-colors duration-200" 
-                                                        :class="note.isPinned ? 'text-blue-500 hover:text-blue-700' : 'text-gray-500 hover:text-blue-500'" 
-                                                        title="Fijar/Desfijar nota">
-                                                        <i class="fas fa-thumbtack"></i>
-                                                    </button>
-                                                    <!-- Archive/Unarchive Button -->
-                                                    <button @click.stop="
-                                                        @auth
-                                                        fetch(`/notas/${note.id}/toggle-archive`, {
-                                                            method: 'POST',
-                                                            headers: {
-                                                                'Content-Type': 'application/json',
-                                                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
-                                                            }
-                                                        })
-                                                        .then(response => response.json())
-                                                        .then(data => {
-                                                            if(data.success) {
-                                                                note.isArchived = data.isArchived;
-                                                                $store.notification.showNotification(
-                                                                    note.isArchived ? 'Nota archivada correctamente' : 'Nota desarchivada correctamente', 
-                                                                    'success'
-                                                                );
-                                                            } else {
-                                                                $store.notification.showNotification(data.message || 'Error al actualizar la nota', 'error');
-                                                            }
-                                                        })
-                                                        .catch(error => {
-                                                            console.error('Error:', error);
-                                                            $store.notification.showNotification('Error al actualizar la nota: ' + error.message, 'error');
-                                                        })
-                                                        @else
-                                                        note.isArchived = !note.isArchived;
-                                                        // Update the note in localStorage
-                                                        let localNotes = JSON.parse(localStorage.getItem('guestNotes') || '[]');
-                                                        const noteIndex = localNotes.findIndex(n => n.id === note.id);
-                                                        if (noteIndex !== -1) {
-                                                            localNotes[noteIndex] = note;
-                                                            localStorage.setItem('guestNotes', JSON.stringify(localNotes));
-                                                        }
-                                                        $store.notification.showNotification(
-                                                            note.isArchived ? 'Nota archivada correctamente' : 'Nota desarchivada correctamente', 
-                                                            'success'
-                                                        );
-                                                        @endauth" 
-                                                        class="p-1 transition-colors duration-200" 
-                                                        :class="note.isArchived ? 'text-purple-500 hover:text-purple-700' : 'text-gray-500 hover:text-purple-500'" 
-                                                        title="Archivar/Desarchivar nota">
-                                                        <i class="fas" :class="note.isArchived ? 'fa-box-open' : 'fa-archive'"></i>
-                                                    </button>
-                                                    <!-- Delete Button -->
-                                                    <button @click.stop="$store.deleteModal.open = true; $store.deleteModal.note = JSON.parse(JSON.stringify(note))" 
-                                                        class="p-1 text-gray-500 hover:text-red-500 transition-colors duration-200" 
-                                                        title="Eliminar nota">
-                                                        <i class="fas fa-trash-alt"></i>
-                                                    </button>
+                                                <p class="text-gray-600 mb-4" x-text="note.content"></p>
+                                                <div class="flex justify-between items-center text-sm text-gray-500">
+                                                    <span><span x-text="note.date"></span></span>
                                                 </div>
                                             </div>
-                                            <p class="text-gray-600 mb-4" x-text="note.content"></p>
-                                            <div class="flex justify-between items-center text-sm text-gray-500">
-                                                <span><span x-text="note.date"></span></span>
-                                            </div>
-                                        </div>
+                                        </template>
                                     </div>
                                 </template>
                             </div>
