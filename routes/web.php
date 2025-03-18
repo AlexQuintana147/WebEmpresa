@@ -19,9 +19,17 @@ Route::get('/instrucciones', function () {
     return view('instrucciones');
 });
 
-Route::get('/presupuesto', function () {
-    return view('presupuesto');
-});
+Route::get('/presupuesto', [App\Http\Controllers\PresupuestoController::class, 'index'])->name('presupuesto.index');
+
+// Rutas para categorías de presupuesto
+Route::post('/categorias', [App\Http\Controllers\PresupuestoController::class, 'storeCategoria'])->name('categorias.store');
+Route::put('/categorias/{categoria}', [App\Http\Controllers\PresupuestoController::class, 'updateCategoria'])->name('categorias.update');
+Route::delete('/categorias/{categoria}', [App\Http\Controllers\PresupuestoController::class, 'destroyCategoria'])->name('categorias.destroy');
+
+// Rutas para transacciones
+Route::post('/transacciones', [App\Http\Controllers\PresupuestoController::class, 'storeTransaccion'])->name('transacciones.store');
+Route::put('/transacciones/{transaccion}', [App\Http\Controllers\PresupuestoController::class, 'updateTransaccion'])->name('transacciones.update');
+Route::delete('/transacciones/{transaccion}', [App\Http\Controllers\PresupuestoController::class, 'destroyTransaccion'])->name('transacciones.destroy');
 
 Route::get('/lista-de-actividades', [TareaController::class, 'index'])->name('actividades.index');
 
