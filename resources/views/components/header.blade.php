@@ -10,9 +10,19 @@
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
         document.addEventListener('alpine:init', () => {
+            // Store para el modal de login
             Alpine.store('modal', {
-                open: false
-            })
+                open: false,
+                type: null,
+                item: null
+            });
+            
+            // No inicializar los stores de presupuesto aquí para evitar conflictos
+            // Los stores específicos se inicializan en sus respectivas páginas
+            
+            console.log('Store modal inicializado en header:', {
+                modal: Alpine.store('modal')
+            });
         })
     </script>
 </head>

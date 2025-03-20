@@ -4,21 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Presupuesto</title>
+    <style>[x-cloak] { display: none !important; }</style>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Usamos la misma versión de Alpine.js que en el header para evitar conflictos -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.store('modal', {
-                open: false,
-                type: null,
-                item: null
-            })
-        })
+        // Inicializar los stores directamente para evitar problemas de sincronización
+        window.addEventListener('DOMContentLoaded', function() {
+            if (typeof Alpine !== 'undefined') {
+                // Si Alpine ya está disponible, inicializar los stores inmediatamente
+                initializeStores();
+            } else {
+                // Si Alpine aún no está disponible, esperar a que se inicialice
+                document.addEventListener('alpine:init', initializeStores);
+            }
+            
+            function initializeStores() {
+                // Stores específicos para los modales de presupuesto
+                // Usar nombres únicos para evitar conflictos con otros stores
+                Alpine.store('categoriaModal', {
+                    open: false,
+                    item: null
+                });
+                
+                Alpine.store('transaccionModal', {
+                    open: false,
+                    item: null
+                });
+                
+                console.log('Stores inicializados en presupuesto:', {
+                    categoriaModal: Alpine.store('categoriaModal'),
+                    transaccionModal: Alpine.store('transaccionModal')
+                });
+            }
+        });
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body class="bg-gray-100">
-    <div class="min-h-screen flex">
+    <div class="min-h-screen flex" x-data="{}"
         <!-- Sidebar -->
         <x-sidebar />
 
@@ -261,8 +285,8 @@
                         <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
                             <div class="flex items-center justify-between mb-6">
                                 <h2 class="text-xl font-semibold">Categorías de Gastos</h2>
-                                <button type="button" @click="$store.modal.open = true; $store.modal.type = 'categoria'" class="flex items-center justify-center p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300">
-                                    <i class="fas fa-plus mr-2"></i> Añadir
+                                <button type="button" @click="$store.categoriaModal.open = true" class="flex items-center justify-center p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300" id="btnAddCategoria">
+                                    <i class="fas fa-plus mr-2"></i> Añadir Gastos
                                 </button>
                             </div>
                             <div class="space-y-4">
@@ -280,7 +304,7 @@
                                                 <div class="flex items-center">
                                                     <span class="text-gray-600 mr-4">${{ number_format($categoria->presupuesto, 2) }}</span>
                                                     <div class="flex space-x-2">
-                                                        <button class="text-blue-500 hover:text-blue-700" @click="$store.modal.open = true; $store.modal.type = 'categoria'; $store.modal.item = {id: {{ $categoria->id }}, nombre: '{{ $categoria->nombre }}', icono: '{{ str_replace('fa-', '', $categoria->icono) }}', color: '{{ $categoria->color }}', presupuesto: {{ $categoria->presupuesto }} }">
+                                                        <button class="text-blue-500 hover:text-blue-700" @click="$store.categoriaModal.open = true; $store.categoriaModal.item = {id: {{ $categoria->id }}, nombre: '{{ $categoria->nombre }}', icono: '{{ str_replace('fa-', '', $categoria->icono) }}', color: '{{ $categoria->color }}', presupuesto: {{ $categoria->presupuesto }} }">
                                                             <i class="fas fa-edit"></i>
                                                         </button>
                                                         <form action="{{ route('categorias.destroy', $categoria) }}" method="POST" class="inline">
@@ -311,7 +335,7 @@
                                         <div class="flex items-center">
                                             <span class="text-gray-600 mr-4">$12,000</span>
                                             <div class="flex space-x-2">
-                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.modal.open = true; $store.modal.type = 'categoria'; $store.modal.item = {id: 1, nombre: 'Vivienda', icono: 'home', color: 'blue', presupuesto: 12000}">
+                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.categoriaModal.open = true; $store.categoriaModal.item = {id: 1, nombre: 'Vivienda', icono: 'home', color: 'blue', presupuesto: 12000}">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
                                                 <button type="button" class="text-red-500 hover:text-red-700" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')">
@@ -332,7 +356,7 @@
                                         <div class="flex items-center">
                                             <span class="text-gray-600 mr-4">$8,000</span>
                                             <div class="flex space-x-2">
-                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.modal.open = true; $store.modal.type = 'categoria'; $store.modal.item = {id: 2, nombre: 'Alimentación', icono: 'utensils', color: 'green', presupuesto: 8000}">
+                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.categoriaModal.open = true; $store.categoriaModal.item = {id: 2, nombre: 'Alimentación', icono: 'utensils', color: 'green', presupuesto: 8000}">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
                                                 <button type="button" class="text-red-500 hover:text-red-700" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')">
@@ -353,7 +377,7 @@
                                         <div class="flex items-center">
                                             <span class="text-gray-600 mr-4">$5,000</span>
                                             <div class="flex space-x-2">
-                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.modal.open = true; $store.modal.type = 'categoria'; $store.modal.item = {id: 3, nombre: 'Transporte', icono: 'car', color: 'purple', presupuesto: 5000}">
+                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.categoriaModal.open = true; $store.categoriaModal.item = {id: 3, nombre: 'Transporte', icono: 'car', color: 'purple', presupuesto: 5000}">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
                                                 <button type="button" class="text-red-500 hover:text-red-700" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')">
@@ -371,8 +395,8 @@
                         <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
                             <div class="flex items-center justify-between mb-6">
                                 <h2 class="text-xl font-semibold">Transacciones Recientes</h2>
-                                <button type="button" @click="$store.modal.open = true; $store.modal.type = 'transaccion'" class="flex items-center justify-center p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300">
-                                    <i class="fas fa-plus mr-2"></i> Añadir
+                                <button type="button" @click="$store.transaccionModal.open = true" class="flex items-center justify-center p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300" id="btnAddTransaccion">
+                                    <i class="fas fa-plus mr-2"></i> Añadir Transaccion
                                 </button>
                             </div>
                             <div class="space-y-4">
@@ -393,7 +417,7 @@
                                                 <div class="flex items-center">
                                                     <span class="text-{{ $transaccion->tipo == 'ingreso' ? 'green' : 'red' }}-600 mr-4">{{ $transaccion->tipo == 'ingreso' ? '+' : '-' }}${{ number_format($transaccion->monto, 2) }}</span>
                                                     <div class="flex space-x-2">
-                                                        <button class="text-blue-500 hover:text-blue-700" @click="$store.modal.open = true; $store.modal.type = 'transaccion'; $store.modal.item = {id: {{ $transaccion->id }}, descripcion: '{{ $transaccion->descripcion }}', monto: {{ $transaccion->monto }}, tipo: '{{ $transaccion->tipo }}', fecha: '{{ $transaccion->fecha->format('Y-m-d') }}', categoria_id: {{ $transaccion->categoria_id ?? 'null' }} }">
+                                                        <button class="text-blue-500 hover:text-blue-700" @click="$store.transaccionModal.open = true; $store.transaccionModal.item = {id: {{ $transaccion->id }}, descripcion: '{{ $transaccion->descripcion }}', monto: {{ $transaccion->monto }}, tipo: '{{ $transaccion->tipo }}', fecha: '{{ $transaccion->fecha->format('Y-m-d') }}', categoria_id: {{ $transaccion->categoria_id ?? 'null' }} }">
                                                             <i class="fas fa-edit"></i>
                                                         </button>
                                                         <form action="{{ route('transacciones.destroy', $transaccion) }}" method="POST" class="inline">
@@ -427,7 +451,7 @@
                                         <div class="flex items-center">
                                             <span class="text-red-600 mr-4">-$150.00</span>
                                             <div class="flex space-x-2">
-                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.modal.open = true; $store.modal.type = 'transaccion'; $store.modal.item = {id: 1, descripcion: 'Supermercado', monto: 150, tipo: 'gasto', fecha: '2023-10-23', categoria_id: 2}">
+                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.transaccionModal.open = true; $store.transaccionModal.item = {id: 1, descripcion: 'Supermercado', monto: 150, tipo: 'gasto', fecha: '2023-10-23', categoria_id: 2}">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
                                                 <button type="button" class="text-red-500 hover:text-red-700" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')">
@@ -448,7 +472,7 @@
                                         <div class="flex items-center">
                                             <span class="text-gray-600 mr-4">$8,000</span>
                                             <div class="flex space-x-2">
-                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.modal.open = true; $store.modal.type = 'categoria'; $store.modal.item = {id: 2, nombre: 'Alimentación', icono: 'utensils', color: 'green', presupuesto: 8000}">
+                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.categoriaModal.open = true; $store.categoriaModal.item = {id: 2, nombre: 'Alimentación', icono: 'utensils', color: 'green', presupuesto: 8000}">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
                                                 <button type="button" class="text-red-500 hover:text-red-700" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')">
@@ -469,7 +493,7 @@
                                         <div class="flex items-center">
                                             <span class="text-gray-600 mr-4">$5,000</span>
                                             <div class="flex space-x-2">
-                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.modal.open = true; $store.modal.type = 'categoria'; $store.modal.item = {id: 3, nombre: 'Transporte', icono: 'car', color: 'purple', presupuesto: 5000}">
+                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.categoriaModal.open = true; $store.categoriaModal.item = {id: 3, nombre: 'Transporte', icono: 'car', color: 'purple', presupuesto: 5000}">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
                                                 <button type="button" class="text-red-500 hover:text-red-700" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')">
@@ -494,7 +518,7 @@
                                         <div class="flex items-center">
                                             <span class="text-green-600 mr-4">+$3,000.00</span>
                                             <div class="flex space-x-2">
-                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.modal.open = true; $store.modal.type = 'transaccion'; $store.modal.item = {id: 2, descripcion: 'Ingreso Salario', monto: 3000, tipo: 'ingreso', fecha: '2023-10-20', categoria_id: null}">
+                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.transaccionModal.open = true; $store.transaccionModal.item = {id: 2, descripcion: 'Ingreso Salario', monto: 3000, tipo: 'ingreso', fecha: '2023-10-20', categoria_id: null}">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
                                                 <button type="button" class="text-red-500 hover:text-red-700" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')">
@@ -515,7 +539,7 @@
                                         <div class="flex items-center">
                                             <span class="text-gray-600 mr-4">$8,000</span>
                                             <div class="flex space-x-2">
-                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.modal.open = true; $store.modal.type = 'categoria'; $store.modal.item = {id: 2, nombre: 'Alimentación', icono: 'utensils', color: 'green', presupuesto: 8000}">
+                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.categoriaModal.open = true; $store.categoriaModal.item = {id: 2, nombre: 'Alimentación', icono: 'utensils', color: 'green', presupuesto: 8000}">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
                                                 <button type="button" class="text-red-500 hover:text-red-700" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')">
@@ -536,7 +560,7 @@
                                         <div class="flex items-center">
                                             <span class="text-gray-600 mr-4">$5,000</span>
                                             <div class="flex space-x-2">
-                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.modal.open = true; $store.modal.type = 'categoria'; $store.modal.item = {id: 3, nombre: 'Transporte', icono: 'car', color: 'purple', presupuesto: 5000}">
+                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.categoriaModal.open = true; $store.categoriaModal.item = {id: 3, nombre: 'Transporte', icono: 'car', color: 'purple', presupuesto: 5000}">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
                                                 <button type="button" class="text-red-500 hover:text-red-700" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')">
@@ -554,138 +578,68 @@
         </div>
     </div>
     <!-- Modals -->
-    <div x-cloak x-show="$store.modal.open" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- Categoria Modal -->
+    <div x-cloak x-show="$store.categoriaModal.open" x-data="{}" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="categoria-modal-title" role="dialog" aria-modal="true">
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <!-- Background overlay -->
-            <div x-show="$store.modal.open" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <div x-show="$store.categoriaModal.open" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
 
             <!-- Modal panel -->
-            <div x-show="$store.modal.open" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div x-show="$store.categoriaModal.open" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                 
-                <!-- Category Modal -->
-                <div x-show="$store.modal.type === 'categoria'">
-                    <form x-bind:action="$store.modal.item ? '{{ url("/categorias") }}/' + $store.modal.item.id : '{{ route("categorias.store") }}'" method="POST">
-                        @csrf
-                        <input type="hidden" name="_method" value="PUT" x-if="$store.modal.item">
-                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                            <div class="sm:flex sm:items-start">
-                                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                                    <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                                        <span x-text="$store.modal.item ? 'Editar Categoría' : 'Añadir Categoría'"></span>
-                                    </h3>
-                                    <div class="mt-4 space-y-4">
-                                        <!-- Nombre -->
-                                        <div>
-                                            <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre</label>
-                                            <input type="text" name="nombre" id="nombre" x-bind:value="$store.modal.item?.nombre || ''" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
+                <!-- Category Modal Content -->
+                <form x-bind:action="$store.categoriaModal.item ? '{{ url("/categorias") }}/' + $store.categoriaModal.item.id : '{{ route("categorias.store") }}'" method="POST">
+                    @csrf
+                    <template x-if="$store.categoriaModal.item">
+                        <input type="hidden" name="_method" value="PUT">
+                    </template>
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="categoria-modal-title">
+                                    <span x-text="$store.categoriaModal.item ? 'Editar Categoría' : 'Añadir Categoría'"></span>
+                                </h3>
+                                <div class="mt-4 space-y-4">
+                                    <!-- Nombre -->
+                                    <div>
+                                        <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre</label>
+                                        <input type="text" name="nombre" id="nombre" x-bind:value="$store.categoriaModal.item?.nombre || ''" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
+                                    </div>
+                                    
+                                    <!-- Icono -->
+                                    <div>
+                                        <label for="icono" class="block text-sm font-medium text-gray-700">Icono</label>
+                                        <div class="mt-1 flex rounded-md shadow-sm">
+                                            <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
+                                                <i class="fas" :class="$store.categoriaModal.item?.icono ? 'fa-' + $store.categoriaModal.item.icono.replace('fa-', '') : 'fa-tag'"></i>
+                                            </span>
+                                            <input type="text" name="icono" id="icono" x-bind:value="$store.categoriaModal.item?.icono?.replace('fa-', '') || 'tag'" placeholder="tag, home, car, etc." class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300">
                                         </div>
-                                        
-                                        <!-- Icono -->
-                                        <div>
-                                            <label for="icono" class="block text-sm font-medium text-gray-700">Icono</label>
-                                            <div class="mt-1 flex rounded-md shadow-sm">
-                                                <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
-                                                    <i class="fas" :class="$store.modal.item?.icono ? 'fa-' + $store.modal.item.icono.replace('fa-', '') : 'fa-tag'"></i>
-                                                </span>
-                                                <input type="text" name="icono" id="icono" x-bind:value="$store.modal.item?.icono?.replace('fa-', '') || 'tag'" placeholder="tag, home, car, etc." class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300">
-                                            </div>
-                                            <p class="mt-1 text-xs text-gray-500">Usa nombres de iconos de Font Awesome (sin el prefijo fa-)</p>
-                                        </div>
+                                        <p class="mt-1 text-xs text-gray-500">Usa nombres de iconos de Font Awesome (sin el prefijo fa-)</p>
+                                    </div>
                                         
                                         <!-- Color -->
                                         <div>
                                             <label for="color" class="block text-sm font-medium text-gray-700">Color</label>
-                                            <select id="color" name="color" x-bind:value="$store.modal.item?.color || 'blue'" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                            <select id="color" name="color" x-bind:value="$store.categoriaModal.item?.color || 'blue'" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                                                 <option value="blue">Azul</option>
                                                 <option value="red">Rojo</option>
-                                            <option value="green">Verde</option>
-                                            <option value="yellow">Amarillo</option>
-                                            <option value="purple">Morado</option>
-                                            <option value="pink">Rosa</option>
-                                            <option value="indigo">Índigo</option>
-                                            <option value="gray">Gris</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <!-- Presupuesto -->
-                                    <div>
-                                        <label for="presupuesto" class="block text-sm font-medium text-gray-700">Presupuesto</label>
-                                        <div class="mt-1 flex rounded-md shadow-sm">
-                                            <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">$</span>
-                                            <input type="number" name="presupuesto" id="presupuesto" x-bind:value="$store.modal.item?.presupuesto || 0" min="0" step="0.01" class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
-                            <span x-text="$store.modal.item ? 'Actualizar' : 'Guardar'"></span>
-                        </button>
-                        <button @click="$store.modal.open = false; $store.modal.item = null" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                            Cancelar
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Transaction Modal -->
-                <div x-show="$store.modal.type === 'transaccion'">
-                    <form x-bind:action="$store.modal.item ? '{{ url("/transacciones") }}/' + $store.modal.item.id : '{{ route("transacciones.store") }}'" method="POST">
-                        @csrf
-                        <input type="hidden" name="_method" value="PUT" x-if="$store.modal.item">
-                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                            <div class="sm:flex sm:items-start">
-                                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                                    <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                                        <span x-text="$store.modal.item ? 'Editar Transacción' : 'Añadir Transacción'"></span>
-                                    </h3>
-                                    <div class="mt-4 space-y-4">
-                                        <!-- Descripción -->
-                                        <div>
-                                            <label for="descripcion" class="block text-sm font-medium text-gray-700">Descripción</label>
-                                            <input type="text" name="descripcion" id="descripcion" x-bind:value="$store.modal.item?.descripcion || ''" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
+                                                <option value="green">Verde</option>
+                                                <option value="yellow">Amarillo</option>
+                                                <option value="purple">Morado</option>
+                                                <option value="pink">Rosa</option>
+                                                <option value="indigo">Índigo</option>
+                                                <option value="gray">Gris</option>
+                                            </select>
                                         </div>
                                         
-                                        <!-- Monto -->
+                                        <!-- Presupuesto -->
                                         <div>
-                                            <label for="monto" class="block text-sm font-medium text-gray-700">Monto</label>
+                                            <label for="presupuesto" class="block text-sm font-medium text-gray-700">Presupuesto</label>
                                             <div class="mt-1 flex rounded-md shadow-sm">
                                                 <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">$</span>
-                                                <input type="number" name="monto" id="monto" x-bind:value="$store.modal.item?.monto || 0" min="0" step="0.01" class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300" required>
+                                                <input type="number" name="presupuesto" id="presupuesto" x-bind:value="$store.categoriaModal.item?.presupuesto || 0" min="0" step="0.01" class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300">
                                             </div>
-                                        </div>
-                                        
-                                        <!-- Tipo -->
-                                        <div>
-                                            <label for="tipo" class="block text-sm font-medium text-gray-700">Tipo</label>
-                                            <select id="tipo" name="tipo" x-bind:value="$store.modal.item?.tipo || 'gasto'" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
-                                                <option value="gasto">Gasto</option>
-                                                <option value="ingreso">Ingreso</option>
-                                            </select>
-                                        </div>
-                                        
-                                        <!-- Fecha -->
-                                        <div>
-                                            <label for="fecha" class="block text-sm font-medium text-gray-700">Fecha</label>
-                                            <input type="date" name="fecha" id="fecha" x-bind:value="$store.modal.item?.fecha || new Date().toISOString().split('T')[0]" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
-                                        </div>
-                                        
-                                        <!-- Categoría -->
-                                        <div>
-                                            <label for="categoria_id" class="block text-sm font-medium text-gray-700">Categoría</label>
-                                            <select id="categoria_id" name="categoria_id" x-bind:value="$store.modal.item?.categoria_id || ''" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                                <option value="">Sin categoría</option>
-                                                @auth
-                                                    @foreach($categorias as $categoria)
-                                                        <option value="{{ $categoria->id }}">{{ $categoria->nombre }}</option>
-                                                    @endforeach
-                                                @else
-                                                    <option value="1">Vivienda</option>
-                                                    <option value="2">Alimentación</option>
-                                                    <option value="3">Transporte</option>
-                                                @endauth
-                                            </select>
                                         </div>
                                     </div>
                                 </div>
@@ -693,9 +647,9 @@
                         </div>
                         <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                             <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
-                                <span x-text="$store.modal.item ? 'Actualizar' : 'Guardar'"></span>
+                                <span x-text="$store.categoriaModal.item ? 'Actualizar' : 'Guardar'"></span>
                             </button>
-                            <button @click="$store.modal.open = false; $store.modal.item = null" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            <button @click="$store.categoriaModal.open = false; $store.categoriaModal.item = null" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                                 Cancelar
                             </button>
                         </div>
@@ -704,5 +658,152 @@
             </div>
         </div>
     </div>
+
+    <!-- Transaccion Modal -->
+    <div x-cloak x-show="$store.transaccionModal.open" x-data="{}" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="transaccion-modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div x-show="$store.transaccionModal.open" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+            <!-- Modal panel -->
+            <div x-show="$store.transaccionModal.open" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                
+                <!-- Transaction Modal Content -->
+                <form x-bind:action="$store.transaccionModal.item ? '{{ url("/transacciones") }}/' + $store.transaccionModal.item.id : '{{ route("transacciones.store") }}'" method="POST">
+                    @csrf
+                    <template x-if="$store.transaccionModal.item">
+                        <input type="hidden" name="_method" value="PUT">
+                    </template>
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="transaccion-modal-title">
+                                    <span x-text="$store.transaccionModal.item ? 'Editar Transacción' : 'Añadir Transacción'"></span>
+                                </h3>
+                                <div class="mt-4 space-y-4">
+                                    <!-- Descripción -->
+                                    <div>
+                                        <label for="descripcion" class="block text-sm font-medium text-gray-700">Descripción</label>
+                                        <input type="text" name="descripcion" id="descripcion" x-bind:value="$store.transaccionModal.item?.descripcion || ''" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
+                                    </div>
+                                    
+                                    <!-- Monto -->
+                                    <div>
+                                        <label for="monto" class="block text-sm font-medium text-gray-700">Monto</label>
+                                        <div class="mt-1 flex rounded-md shadow-sm">
+                                            <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">$</span>
+                                            <input type="number" name="monto" id="monto" x-bind:value="$store.transaccionModal.item?.monto || 0" min="0" step="0.01" class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Tipo -->
+                                    <div>
+                                        <label for="tipo" class="block text-sm font-medium text-gray-700">Tipo</label>
+                                        <select id="tipo" name="tipo" x-bind:value="$store.transaccionModal.item?.tipo || 'gasto'" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
+                                            <option value="ingreso">Ingreso</option>
+                                            <option value="gasto">Gasto</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- Fecha -->
+                                    <div>
+                                        <label for="fecha" class="block text-sm font-medium text-gray-700">Fecha</label>
+                                        <input type="date" name="fecha" id="fecha" x-bind:value="$store.transaccionModal.item?.fecha || new Date().toISOString().substr(0, 10)" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
+                                    </div>
+                                    
+                                    <!-- Categoría -->
+                                    <div>
+                                        <label for="categoria_id" class="block text-sm font-medium text-gray-700">Categoría</label>
+                                        <select id="categoria_id" name="categoria_id" x-bind:value="$store.transaccionModal.item?.categoria_id || ''" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                            <option value="">Sin categoría</option>
+                                            @auth
+                                                @foreach(Auth::user()->categoriasPresupuesto as $categoria)
+                                                    <option value="{{ $categoria->id }}">{{ $categoria->nombre }}</option>
+                                                @endforeach
+                                            @endauth
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            <span x-text="$store.transaccionModal.item ? 'Actualizar' : 'Guardar'"></span>
+                        </button>
+                        <button @click="$store.transaccionModal.open = false; $store.transaccionModal.item = null" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
 </body>
 </html>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Verificar que Alpine.js esté correctamente inicializado
+    console.log('Alpine disponible en DOMContentLoaded:', window.Alpine);
+    
+    // Añadir listeners a los botones para asegurar que abran los modales
+    document.getElementById('btnAddCategoria')?.addEventListener('click', function() {
+        console.log('Botón Añadir Categoría clickeado');
+        if (window.Alpine) {
+            window.Alpine.store('categoriaModal').open = true;
+            console.log('Estado del modal después del clic:', window.Alpine.store('categoriaModal'));
+        }
+    });
+    
+    document.getElementById('btnAddTransaccion')?.addEventListener('click', function() {
+        console.log('Botón Añadir Transacción clickeado');
+        if (window.Alpine) {
+            window.Alpine.store('transaccionModal').open = true;
+            console.log('Estado del modal después del clic:', window.Alpine.store('transaccionModal'));
+        }
+    });
+});
+
+document.addEventListener('alpine:init', () => {
+    console.log('Alpine inicializado en alpine:init');
+    // Reinicializar los stores para asegurar que estén correctamente configurados
+    if (window.Alpine) {
+        window.Alpine.store('categoriaModal', {
+            open: false,
+            item: null
+        });
+        
+        window.Alpine.store('transaccionModal', {
+            open: false,
+            item: null
+        });
+    }
+});
+
+document.addEventListener('alpine:load', () => {
+    // Verificar que Alpine.js esté correctamente inicializado
+    console.log('Alpine cargado completamente:', window.Alpine);
+    console.log('Estado actual de los modales:', {
+        categoriaModal: Alpine.store('categoriaModal'),
+        transaccionModal: Alpine.store('transaccionModal')
+    });
+});
+
+// Asegurarse de que los modales estén correctamente inicializados
+setTimeout(() => {
+    console.log('Verificando estado de modales después de 500ms:', {
+        categoriaModal: Alpine.store('categoriaModal'),
+        transaccionModal: Alpine.store('transaccionModal')
+    });
+    
+    // Verificar si los botones tienen los eventos correctos
+    const btnAddCategoria = document.getElementById('btnAddCategoria');
+    const btnAddTransaccion = document.getElementById('btnAddTransaccion');
+    
+    console.log('Botones encontrados:', {
+        btnAddCategoria: !!btnAddCategoria,
+        btnAddTransaccion: !!btnAddTransaccion
+    });
+}, 500);
+</script>
