@@ -691,13 +691,21 @@
     </div>
 
     <!-- Transaccion Modal -->
-    <div x-cloak x-show="$store.transaccionModal.open" x-data="{}" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="transaccion-modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+    <div x-cloak x-show="$store.transaccionModal.open" x-data="{selectedTipo: 'gasto'}" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="transaccion-modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen p-4 text-center">
             <!-- Background overlay -->
-            <div x-show="$store.transaccionModal.open" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <div x-show="$store.transaccionModal.open" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-900 bg-opacity-75 backdrop-blur-sm transition-opacity" aria-hidden="true"></div>
 
             <!-- Modal panel -->
-            <div x-show="$store.transaccionModal.open" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div x-show="$store.transaccionModal.open" 
+                x-transition:enter="ease-out duration-300" 
+                x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                x-transition:leave="ease-in duration-200" 
+                x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
+                x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
+                class="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle bg-white rounded-2xl shadow-xl transform transition-all"
+                x-init="selectedTipo = $store.transaccionModal.item?.tipo || 'gasto'">
                 
                 <!-- Transaction Modal Content -->
                 <form x-bind:action="$store.transaccionModal.item ? '{{ url("/transacciones") }}/' + $store.transaccionModal.item.id : '{{ route("transacciones.store") }}'" method="POST">
@@ -705,71 +713,103 @@
                     <template x-if="$store.transaccionModal.item">
                         <input type="hidden" name="_method" value="PUT">
                     </template>
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <div class="sm:flex sm:items-start">
-                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="transaccion-modal-title">
-                                    <span x-text="$store.transaccionModal.item ? 'Editar Transacción' : 'Añadir Transacción'"></span>
-                                </h3>
-                                <div class="mt-4 space-y-4">
-                                    <!-- Descripción -->
-                                    <div>
-                                        <label for="descripcion" class="block text-sm font-medium text-gray-700">Descripción</label>
-                                        <input type="text" name="descripcion" id="descripcion" x-bind:value="$store.transaccionModal.item?.descripcion || ''" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
-                                    </div>
-                                    
-                                    <!-- Monto -->
-                                    <div>
-                                        <label for="monto" class="block text-sm font-medium text-gray-700">Monto</label>
-                                        <div class="mt-1 flex rounded-md shadow-sm">
-                                            <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">$</span>
-                                            <input type="number" name="monto" id="monto" x-bind:value="$store.transaccionModal.item?.monto || 0" min="0" step="0.01" class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300" required>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Tipo -->
-                                    <div>
-                                        <label for="tipo" class="block text-sm font-medium text-gray-700">Tipo</label>
-                                        <select id="tipo" name="tipo" x-bind:value="$store.transaccionModal.item?.tipo || 'gasto'" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
-                                            <option value="ingreso">Ingreso</option>
-                                            <option value="gasto">Gasto</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <!-- Fecha -->
-                                    <div>
-                                        <label for="fecha" class="block text-sm font-medium text-gray-700">Fecha</label>
-                                        <input type="date" name="fecha" id="fecha" x-bind:value="$store.transaccionModal.item?.fecha || new Date().toISOString().substr(0, 10)" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
-                                    </div>
-                                    
-                                    <!-- Categoría -->
-                                    <div>
-                                        <label for="categoria_id" class="block text-sm font-medium text-gray-700">Categoría</label>
-                                        <select id="categoria_id" name="categoria_id" x-bind:value="$store.transaccionModal.item?.categoria_id || ''" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                            <option value="">Sin categoría</option>
-                                            @auth
-                                                @foreach(Auth::user()->categoriasPresupuesto as $categoria)
-                                                    <option value="{{ $categoria->id }}">{{ $categoria->nombre }}</option>
-                                                @endforeach
-                                            @endauth
-                                        </select>
-                                    </div>
+                    
+                    <!-- Header with icon -->
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center">
+                            <div class="p-3 mr-3 rounded-full" :class="selectedTipo === 'ingreso' ? 'bg-green-100' : 'bg-red-100'">
+                                <i class="fas" :class="selectedTipo === 'ingreso' ? 'fa-dollar-sign text-green-600' : 'fa-shopping-cart text-red-600'"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900" id="transaccion-modal-title">
+                                <span x-text="$store.transaccionModal.item ? 'Editar Transacción' : 'Añadir Transacción'"></span>
+                            </h3>
+                        </div>
+                        <button @click="$store.transaccionModal.open = false; $store.transaccionModal.item = null" type="button" class="text-gray-400 hover:text-gray-500">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-5">
+                        <!-- Tipo (Visual Selector) -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Transacción</label>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div @click="selectedTipo = 'ingreso'" 
+                                    class="cursor-pointer p-3 rounded-lg border-2 flex items-center justify-center transition-all duration-200" 
+                                    :class="selectedTipo === 'ingreso' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-green-300'">
+                                    <i class="fas fa-dollar-sign text-green-600 mr-2"></i>
+                                    <span class="font-medium">Ingreso</span>
+                                    <input type="radio" name="tipo" value="ingreso" x-bind:checked="selectedTipo === 'ingreso'" class="hidden">
+                                </div>
+                                <div @click="selectedTipo = 'gasto'" 
+                                    class="cursor-pointer p-3 rounded-lg border-2 flex items-center justify-center transition-all duration-200" 
+                                    :class="selectedTipo === 'gasto' ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-red-300'">
+                                    <i class="fas fa-shopping-cart text-red-600 mr-2"></i>
+                                    <span class="font-medium">Gasto</span>
+                                    <input type="radio" name="tipo" value="gasto" x-bind:checked="selectedTipo === 'gasto'" class="hidden">
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Descripción -->
+                        <div>
+                            <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                            <div class="relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-tag text-gray-400"></i>
+                                </div>
+                                <input type="text" name="descripcion" id="descripcion" x-bind:value="$store.transaccionModal.item?.descripcion || ''" class="pl-10 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" placeholder="Ej: Compra supermercado, Pago salario, etc." required>
+                            </div>
+                        </div>
+                        
+                        <!-- Monto -->
+                        <div>
+                            <label for="monto" class="block text-sm font-medium text-gray-700 mb-1">Monto</label>
+                            <div class="relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-dollar-sign text-gray-400"></i>
+                                </div>
+                                <input type="number" name="monto" id="monto" x-bind:value="$store.transaccionModal.item?.monto || ''" min="0.01" step="0.01" class="pl-10 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" placeholder="0.00" required>
+                            </div>
+                        </div>
+                        
+                        <!-- Fecha -->
+                        <div>
+                            <label for="fecha" class="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+                            <div class="relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-calendar text-gray-400"></i>
+                                </div>
+                                <input type="date" name="fecha" id="fecha" x-bind:value="$store.transaccionModal.item?.fecha || new Date().toISOString().split('T')[0]" class="pl-10 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
+                            </div>
+                        </div>
+                        
+                        <!-- Categoría (solo para gastos) -->
+                        <div x-show="selectedTipo === 'gasto'">
+                            <label for="categoria_id" class="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+                            <div class="relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-folder text-gray-400"></i>
+                                </div>
+                                <select name="categoria_id" id="categoria_id" x-bind:value="$store.transaccionModal.item?.categoria_id || ''" class="pl-10 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" :required="selectedTipo === 'gasto'">
+                                    <option value="">Selecciona una categoría</option>
+                                    @foreach($categorias as $categoria)
+                                        <option value="{{ $categoria->id }}" x-bind:selected="$store.transaccionModal.item && $store.transaccionModal.item.categoria_id == {{ $categoria->id }}">{{ $categoria->nombre }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
-                            <span x-text="$store.transaccionModal.item ? 'Actualizar' : 'Guardar'"></span>
-                        </button>
-                        <button @click="$store.transaccionModal.open = false; $store.transaccionModal.item = null" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    
+                    <!-- Footer -->
+                    <div class="mt-6 flex justify-end space-x-3">
+                        <button @click="$store.transaccionModal.open = false; $store.transaccionModal.item = null" type="button" class="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             Cancelar
                         </button>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <span x-text="$store.transaccionModal.item ? 'Actualizar' : 'Guardar'"></span>
+                        </button>
                     </div>
-                </form>
-            </div>
-        </div>
-    </div>
     
 </body>
 </html>
