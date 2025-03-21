@@ -63,11 +63,11 @@
                     <!-- Budget Overview Cards -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                         <!-- Total Budget Card -->
-                        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
+                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border-l-4 border-blue-500">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-gray-500 text-sm">Presupuesto Total</p>
-                                    <h3 class="text-2xl font-bold">
+                                    <p class="text-blue-700 text-sm font-medium">Presupuesto Total</p>
+                                    <h3 class="text-2xl font-bold text-blue-900">
                                         @auth
                                             ${{ number_format($presupuestoTotal ?? 0, 2) }}
                                         @else
@@ -75,56 +75,77 @@
                                         @endauth
                                     </h3>
                                 </div>
-                                <div class="p-3 bg-blue-100 rounded-full">
-                                    <i class="fas fa-wallet text-blue-600 text-xl"></i>
+                                <div class="p-4 bg-blue-200 rounded-full shadow-inner">
+                                    <i class="fas fa-wallet text-blue-600 text-2xl"></i>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Spent Amount Card -->
-                        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
+                        <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border-l-4 border-red-500">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-gray-500 text-sm">Gastado</p>
-                                    <h3 class="text-2xl font-bold">
+                                    <p class="text-red-700 text-sm font-medium">Gastado</p>
+                                    <h3 class="text-2xl font-bold text-red-900">
                                         @auth
                                             ${{ number_format($gastos ?? 0, 2) }}
                                         @else
                                             $32,450
                                         @endauth
                                     </h3>
+                                    @auth
+                                        @if($presupuestoTotal > 0)
+                                            <p class="text-xs font-medium mt-1 text-red-600">
+                                                {{ round(($gastos / $presupuestoTotal) * 100) }}% del presupuesto
+                                            </p>
+                                        @endif
+                                    @else
+                                        <p class="text-xs font-medium mt-1 text-red-600">65% del presupuesto</p>
+                                    @endauth
                                 </div>
-                                <div class="p-3 bg-red-100 rounded-full">
-                                    <i class="fas fa-chart-line text-red-600 text-xl"></i>
+                                <div class="p-4 bg-red-200 rounded-full shadow-inner">
+                                    <i class="fas fa-chart-line text-red-600 text-2xl"></i>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Remaining Amount Card -->
-                        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
+                        <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border-l-4 border-green-500">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-gray-500 text-sm">Restante</p>
-                                    <h3 class="text-2xl font-bold">
+                                    <p class="text-green-700 text-sm font-medium">Restante</p>
+                                    <h3 class="text-2xl font-bold"
+                                        @auth
+                                            @php
+                                                $colorRestante = $restante >= 0 ? 'text-green-900' : 'text-red-600';
+                                            @endphp
+                                            class="{{ $colorRestante }}"
+                                        @else
+                                            class="text-green-900"
+                                        @endauth
+                                    >
                                         @auth
                                             ${{ number_format($restante ?? 0, 2) }}
+                                            @if($restante < 0)
+                                                <i class="fas fa-exclamation-circle ml-1 text-sm"></i>
+                                            @endif
                                         @else
                                             $17,550
                                         @endauth
                                     </h3>
                                 </div>
-                                <div class="p-3 bg-green-100 rounded-full">
-                                    <i class="fas fa-piggy-bank text-green-600 text-xl"></i>
+                                <div class="p-4 bg-green-200 rounded-full shadow-inner">
+                                    <i class="fas fa-piggy-bank text-green-600 text-2xl"></i>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Savings Card -->
-                        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
+                        <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border-l-4 border-purple-500">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-gray-500 text-sm">Ahorros</p>
-                                    <h3 class="text-2xl font-bold">
+                                    <p class="text-purple-700 text-sm font-medium">Ahorros</p>
+                                    <h3 class="text-2xl font-bold text-purple-900">
                                         @auth
                                             ${{ number_format($ahorros ?? 0, 2) }}
                                         @else
@@ -132,8 +153,8 @@
                                         @endauth
                                     </h3>
                                 </div>
-                                <div class="p-3 bg-purple-100 rounded-full">
-                                    <i class="fas fa-save text-purple-600 text-xl"></i>
+                                <div class="p-4 bg-purple-200 rounded-full shadow-inner">
+                                    <i class="fas fa-save text-purple-600 text-2xl"></i>
                                 </div>
                             </div>
                         </div>
@@ -148,23 +169,46 @@
                             <div class="mb-6">
                                 <div class="flex justify-between items-center mb-2">
                                     <span class="text-sm font-medium text-gray-700">Progreso del Presupuesto</span>
-                                    <span class="text-sm font-medium text-gray-700">
+                                    <span class="text-sm font-medium"
                                         @auth
                                             @php
                                                 $porcentaje = $presupuestoTotal > 0 ? round(($gastos / $presupuestoTotal) * 100) : 0;
+                                                $colorTexto = $porcentaje < 70 ? 'text-green-600' : ($porcentaje < 100 ? 'text-yellow-600' : 'text-red-600');
                                             @endphp
+                                            class="{{ $colorTexto }} font-bold"
+                                        @else
+                                            class="text-yellow-600 font-bold"
+                                        @endauth
+                                    >
+                                        @auth
                                             {{ $porcentaje }}%
+                                            @if($porcentaje > 100)
+                                                <i class="fas fa-exclamation-triangle ml-1"></i>
+                                            @endif
                                         @else
                                             65%
                                         @endauth
                                     </span>
                                 </div>
-                                <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                    <div class="bg-blue-600 h-2.5 rounded-full" style="width: @auth {{ $porcentaje }}% @else 65% @endauth"></div>
+                                <div class="w-full bg-gray-200 rounded-full h-3 relative overflow-hidden">
+                                    @auth
+                                        @php
+                                            $barColor = $porcentaje < 70 ? 'bg-green-500' : ($porcentaje < 100 ? 'bg-yellow-500' : 'bg-red-500');
+                                            $barWidth = $porcentaje > 100 ? '100%' : $porcentaje . '%';
+                                        @endphp
+                                        <div class="{{ $barColor }} h-3 rounded-full transition-all duration-500 ease-in-out" style="width: {{ $barWidth }}"></div>
+                                        @if($porcentaje > 100)
+                                            <div class="absolute top-0 right-0 h-3 bg-red-300 border-l-2 border-red-700 overflow-hidden" style="width: {{ min($porcentaje - 100, 50) }}%">
+                                                <div class="w-full h-full bg-red-500 opacity-60 animate-pulse"></div>
+                                            </div>
+                                        @endif
+                                    @else
+                                        <div class="bg-yellow-500 h-3 rounded-full" style="width: 65%"></div>
+                                    @endauth
                                 </div>
-                                <div class="flex justify-between text-xs text-gray-500 mt-1">
-                                    <span>$0</span>
-                                    <span>
+                                <div class="flex justify-between text-xs font-medium mt-1">
+                                    <span class="text-gray-600">$0</span>
+                                    <span class="text-gray-600">
                                         @auth
                                             ${{ number_format($presupuestoTotal ?? 0, 2) }}
                                         @else
@@ -191,8 +235,19 @@
                                                             <span class="text-sm font-medium">{{ $categoria->nombre }}</span>
                                                             <span class="text-sm font-medium">${{ number_format($categoria->presupuesto, 2) }} ({{ $porcentaje }}%)</span>
                                                         </div>
-                                                        <div class="w-full bg-gray-200 rounded-full h-2">
-                                                            <div class="bg-{{ $categoria->color }}-600 h-2 rounded-full" style="width: {{ $porcentaje }}%"></div>
+                                                        @php
+                                                            $gastoCategoria = $categoria->transacciones->where('tipo', 'gasto')->sum('monto');
+                                                            $porcentajeGasto = $categoria->presupuesto > 0 ? round(($gastoCategoria / $categoria->presupuesto) * 100) : 0;
+                                                            $barColorCat = $porcentajeGasto < 70 ? 'bg-' . $categoria->color . '-500' : ($porcentajeGasto < 100 ? 'bg-yellow-500' : 'bg-red-500');
+                                                            $barWidthCat = $porcentajeGasto > 100 ? '100%' : $porcentajeGasto . '%';
+                                                        @endphp
+                                                        <div class="w-full bg-gray-200 rounded-full h-3 relative overflow-hidden">
+                                                            <div class="{{ $barColorCat }} h-3 rounded-full transition-all duration-500 ease-in-out" style="width: {{ $barWidthCat }}"></div>
+                                                            @if($porcentajeGasto > 100)
+                                                                <div class="absolute top-0 right-0 h-3 bg-red-300 border-l-2 border-red-700 overflow-hidden" style="width: {{ min($porcentajeGasto - 100, 30) }}%">
+                                                                    <div class="w-full h-full bg-red-500 opacity-60 animate-pulse"></div>
+                                                                </div>
+                                                            @endif
                                                         </div>
                                                     </div>
                                                 @endforeach
@@ -294,23 +349,39 @@
                                     @if(count($categorias) > 0)
                                         @foreach($categorias as $categoria)
                                             <!-- Category Item -->
-                                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-300">
+                                            @php
+                                                $gastoCategoria = $categoria->transacciones->where('tipo', 'gasto')->sum('monto');
+                                                $porcentajeGasto = $categoria->presupuesto > 0 ? round(($gastoCategoria / $categoria->presupuesto) * 100) : 0;
+                                                $statusColor = $porcentajeGasto < 70 ? 'bg-' . $categoria->color . '-50 border-' . $categoria->color . '-500' : 
+                                                              ($porcentajeGasto < 100 ? 'bg-yellow-50 border-yellow-500' : 'bg-red-50 border-red-500');
+                                                $textColor = $porcentajeGasto < 70 ? 'text-' . $categoria->color . '-700' : 
+                                                            ($porcentajeGasto < 100 ? 'text-yellow-700' : 'text-red-700');
+                                            @endphp
+                                            <div class="flex items-center justify-between p-4 {{ $statusColor }} rounded-lg hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 border-l-4 mb-2">
                                                 <div class="flex items-center space-x-3">
-                                                    <div class="p-2 bg-{{ $categoria->color }}-100 rounded-lg">
-                                                        <i class="fas {{ $categoria->icono }} text-{{ $categoria->color }}-600"></i>
+                                                    <div class="p-3 bg-{{ $categoria->color }}-200 rounded-full shadow-inner">
+                                                        <i class="fas {{ $categoria->icono }} text-{{ $categoria->color }}-600 text-lg"></i>
                                                     </div>
-                                                    <span class="font-medium">{{ $categoria->nombre }}</span>
+                                                    <div>
+                                                        <span class="font-medium text-gray-800">{{ $categoria->nombre }}</span>
+                                                        <div class="mt-1 w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                                                            <div class="{{ $porcentajeGasto < 70 ? 'bg-' . $categoria->color . '-500' : ($porcentajeGasto < 100 ? 'bg-yellow-500' : 'bg-red-500') }} h-1.5 rounded-full" style="width: {{ min($porcentajeGasto, 100) }}%"></div>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div class="flex items-center">
-                                                    <span class="text-gray-600 mr-4">${{ number_format($categoria->presupuesto, 2) }}</span>
+                                                <div class="flex flex-col items-end">
+                                                    <div class="flex items-center mb-1">
+                                                        <span class="{{ $textColor }} font-bold mr-1">${{ number_format($gastoCategoria, 2) }}</span>
+                                                        <span class="text-gray-500 text-sm">/ ${{ number_format($categoria->presupuesto, 2) }}</span>
+                                                    </div>
                                                     <div class="flex space-x-2">
-                                                        <button class="text-blue-500 hover:text-blue-700" @click="$store.categoriaModal.open = true; $store.categoriaModal.item = {id: {{ $categoria->id }}, nombre: '{{ $categoria->nombre }}', icono: '{{ str_replace('fa-', '', $categoria->icono) }}', color: '{{ $categoria->color }}', presupuesto: {{ $categoria->presupuesto }} }">
+                                                        <button class="p-2 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition-colors duration-200" @click="$store.categoriaModal.open = true; $store.categoriaModal.item = {id: {{ $categoria->id }}, nombre: '{{ $categoria->nombre }}', icono: '{{ str_replace('fa-', '', $categoria->icono) }}', color: '{{ $categoria->color }}', presupuesto: {{ $categoria->presupuesto }} }">
                                                             <i class="fas fa-edit"></i>
                                                         </button>
                                                         <form action="{{ route('categorias.destroy', $categoria) }}" method="POST" class="inline">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button type="submit" class="text-red-500 hover:text-red-700" onclick="return confirm('¿Estás seguro de eliminar esta categoría?')">
+                                                            <button type="submit" class="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors duration-200" onclick="return confirm('¿Estás seguro de eliminar esta categoría?')">
                                                                 <i class="fas fa-trash"></i>
                                                             </button>
                                                         </form>
@@ -404,26 +475,36 @@
                                     @if(count($transacciones) > 0)
                                         @foreach($transacciones as $transaccion)
                                             <!-- Transaction Item -->
-                                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-300">
+                                            <div class="flex items-center justify-between p-4 {{ $transaccion->tipo == 'ingreso' ? 'bg-green-50 hover:bg-green-100' : 'bg-red-50 hover:bg-red-100' }} rounded-lg transition-all duration-300 transform hover:-translate-y-1 border-l-4 {{ $transaccion->tipo == 'ingreso' ? 'border-green-500' : 'border-red-500' }} shadow-sm hover:shadow-md mb-2">
                                                 <div class="flex items-center space-x-3">
-                                                    <div class="p-2 bg-{{ $transaccion->tipo == 'ingreso' ? 'green' : 'red' }}-100 rounded-lg">
-                                                        <i class="fas {{ $transaccion->tipo == 'ingreso' ? 'fa-dollar-sign' : 'fa-shopping-cart' }} text-{{ $transaccion->tipo == 'ingreso' ? 'green' : 'red' }}-600"></i>
+                                                    <div class="p-3 {{ $transaccion->tipo == 'ingreso' ? 'bg-green-200' : 'bg-red-200' }} rounded-full shadow-inner">
+                                                        <i class="fas {{ $transaccion->tipo == 'ingreso' ? 'fa-dollar-sign' : 'fa-shopping-cart' }} {{ $transaccion->tipo == 'ingreso' ? 'text-green-600' : 'text-red-600' }} text-lg"></i>
                                                     </div>
                                                     <div>
-                                                        <p class="font-medium">{{ $transaccion->descripcion }}</p>
-                                                        <p class="text-sm text-gray-500">{{ $transaccion->fecha->format('d M Y') }}</p>
+                                                        <p class="font-medium text-gray-800">{{ $transaccion->descripcion }}</p>
+                                                        <div class="flex items-center text-sm text-gray-500">
+                                                            <i class="fas fa-calendar-alt mr-1 text-xs"></i>
+                                                            <p>{{ $transaccion->fecha->format('d M Y') }}</p>
+                                                            @if($transaccion->categoria)
+                                                                <span class="mx-2">•</span>
+                                                                <span class="px-2 py-1 rounded-full text-xs {{ $transaccion->tipo == 'ingreso' ? 'bg-green-100 text-green-800' : 'bg-' . $transaccion->categoria->color . '-100 text-' . $transaccion->categoria->color . '-800' }}">
+                                                                    <i class="fas {{ $transaccion->categoria->icono ?? 'fa-tag' }} mr-1 text-xs"></i>
+                                                                    {{ $transaccion->categoria->nombre ?? 'Sin categoría' }}
+                                                                </span>
+                                                            @endif
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div class="flex items-center">
-                                                    <span class="text-{{ $transaccion->tipo == 'ingreso' ? 'green' : 'red' }}-600 mr-4">{{ $transaccion->tipo == 'ingreso' ? '+' : '-' }}${{ number_format($transaccion->monto, 2) }}</span>
+                                                    <span class="text-lg font-bold {{ $transaccion->tipo == 'ingreso' ? 'text-green-600' : 'text-red-600' }} mr-4">{{ $transaccion->tipo == 'ingreso' ? '+' : '-' }}${{ number_format($transaccion->monto, 2) }}</span>
                                                     <div class="flex space-x-2">
-                                                        <button class="text-blue-500 hover:text-blue-700" @click="$store.transaccionModal.open = true; $store.transaccionModal.item = {id: {{ $transaccion->id }}, descripcion: '{{ $transaccion->descripcion }}', monto: {{ $transaccion->monto }}, tipo: '{{ $transaccion->tipo }}', fecha: '{{ $transaccion->fecha->format('Y-m-d') }}', categoria_id: {{ $transaccion->categoria_id ?? 'null' }} }">
+                                                        <button class="p-2 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition-colors duration-200" @click="$store.transaccionModal.open = true; $store.transaccionModal.item = {id: {{ $transaccion->id }}, descripcion: '{{ $transaccion->descripcion }}', monto: {{ $transaccion->monto }}, tipo: '{{ $transaccion->tipo }}', fecha: '{{ $transaccion->fecha->format('Y-m-d') }}', categoria_id: {{ $transaccion->categoria_id ?? 'null' }} }">
                                                             <i class="fas fa-edit"></i>
                                                         </button>
                                                         <form action="{{ route('transacciones.destroy', $transaccion) }}" method="POST" class="inline">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button type="submit" class="text-red-500 hover:text-red-700" onclick="return confirm('¿Estás seguro de eliminar esta transacción?')">
+                                                            <button type="submit" class="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors duration-200" onclick="return confirm('¿Estás seguro de eliminar esta transacción?')">
                                                                 <i class="fas fa-trash"></i>
                                                             </button>
                                                         </form>
