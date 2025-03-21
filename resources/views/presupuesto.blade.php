@@ -294,42 +294,70 @@
                                 <div>
                                     <h3 class="text-lg font-medium mb-4">Ingresos vs Gastos</h3>
                                     <div class="flex items-center justify-center h-48">
-                                        <div class="flex items-end h-40 space-x-6">
-                                            <!-- Income Bar -->
-                                            <div class="flex flex-col items-center">
-                                                @auth
-                                                    @php
-                                                        $maxValue = max($ingresos, $gastos);
-                                                        $ingresoHeight = $maxValue > 0 ? ($ingresos / $maxValue) * 100 : 0;
-                                                    @endphp
-                                                    <div class="w-16 bg-gradient-to-t from-green-500 to-green-300 rounded-t-lg" style="height: {{ $ingresoHeight }}%"></div>
-                                                    <div class="mt-2 text-sm font-medium">Ingresos</div>
-                                                    <div class="text-xs text-gray-500">${{ number_format($ingresos, 2) }}</div>
-                                                @else
-                                                    <div class="w-16 bg-gradient-to-t from-green-500 to-green-300 rounded-t-lg" style="height: 80%"></div>
-                                                    <div class="mt-2 text-sm font-medium">Ingresos</div>
-                                                    <div class="text-xs text-gray-500">$40,000</div>
-                                                @endauth
-                                            </div>
-                                            
-                                            <!-- Expense Bar -->
-                                            <div class="flex flex-col items-center">
-                                                @auth
-                                                    @php
-                                                        $gastoHeight = $maxValue > 0 ? ($gastos / $maxValue) * 100 : 0;
-                                                    @endphp
-                                                    <div class="w-16 bg-gradient-to-t from-red-500 to-red-300 rounded-t-lg" style="height: {{ $gastoHeight }}%"></div>
-                                                    <div class="mt-2 text-sm font-medium">Gastos</div>
-                                                    <div class="text-xs text-gray-500">${{ number_format($gastos, 2) }}</div>
-                                                @else
-                                                    <div class="w-16 bg-gradient-to-t from-red-500 to-red-300 rounded-t-lg" style="height: 65%"></div>
-                                                    <div class="mt-2 text-sm font-medium">Gastos</div>
-                                                    <div class="text-xs text-gray-500">$32,450</div>
-                                                @endauth
-                                            </div>
-                                        </div>
+                                        <!-- Chart.js Canvas -->
+                                        <canvas id="ingresosGastosChart" width="300" height="200"></canvas>
                                     </div>
                                 </div>
+                                
+                                <!-- Chart.js Script -->
+                                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        const ctx = document.getElementById('ingresosGastosChart').getContext('2d');
+                                        
+                                        @auth
+                                            const ingresos = {{ $ingresos }};
+                                            const gastos = {{ $gastos }};
+                                            const ingresosLabel = 'Ingresos: ${{ number_format($ingresos, 2) }}';
+                                            const gastosLabel = 'Gastos: ${{ number_format($gastos, 2) }}';
+                                        @else
+                                            const ingresos = 40000;
+                                            const gastos = 32450;
+                                            const ingresosLabel = 'Ingresos: $40,000';
+                                            const gastosLabel = 'Gastos: $32,450';
+                                        @endauth
+                                        
+                                        const chart = new Chart(ctx, {
+                                            type: 'doughnut',
+                                            data: {
+                                                labels: [ingresosLabel, gastosLabel],
+                                                datasets: [{
+                                                    data: [ingresos, gastos],
+                                                    backgroundColor: [
+                                                        'rgba(75, 192, 120, 0.8)',
+                                                        'rgba(255, 99, 132, 0.8)'
+                                                    ],
+                                                    borderColor: [
+                                                        'rgba(75, 192, 120, 1)',
+                                                        'rgba(255, 99, 132, 1)'
+                                                    ],
+                                                    borderWidth: 1
+                                                }]
+                                            },
+                                            options: {
+                                                responsive: true,
+                                                maintainAspectRatio: false,
+                                                plugins: {
+                                                    legend: {
+                                                        position: 'bottom',
+                                                        labels: {
+                                                            font: {
+                                                                size: 12
+                                                            }
+                                                        }
+                                                    },
+                                                    tooltip: {
+                                                        callbacks: {
+                                                            label: function(context) {
+                                                                return context.label;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        });
+                                    });
+                                </script>
                             </div>
                         </div>
                     </div>
