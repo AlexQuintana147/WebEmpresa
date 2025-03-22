@@ -42,7 +42,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body class="bg-gray-100">
-    <div class="min-h-screen flex" x-data="{}"
+    <div class="min-h-screen flex" x-data="{}">
         <!-- Sidebar -->
         <x-sidebar />
 
@@ -362,7 +362,7 @@
                         </div>
                     </div>
                     
-                    <!-- Budget Categories Section -->
+                    <!-- Budget Categories and Transactions Section -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                         <!-- Expense Categories -->
                         <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
@@ -429,68 +429,45 @@
                                         </div>
                                     @endif
                                 @else
-                                    <!-- Category Item (Demo) -->
-                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-300">
-                                        <div class="flex items-center space-x-3">
-                                            <div class="p-2 bg-blue-100 rounded-lg">
-                                                <i class="fas fa-home text-blue-600"></i>
+                                    @foreach([['id' => 1, 'nombre' => 'Vivienda', 'icono' => 'fa-home', 'color' => 'blue', 'presupuesto' => 12000, 'gastoCategoria' => 10000], 
+                                             ['id' => 2, 'nombre' => 'Alimentación', 'icono' => 'fa-utensils', 'color' => 'green', 'presupuesto' => 8000, 'gastoCategoria' => 6500], 
+                                             ['id' => 3, 'nombre' => 'Transporte', 'icono' => 'fa-car', 'color' => 'purple', 'presupuesto' => 5000, 'gastoCategoria' => 4200]] as $categoria)
+                                        @php
+                                            $porcentajeGasto = $categoria['presupuesto'] > 0 ? round(($categoria['gastoCategoria'] / $categoria['presupuesto']) * 100) : 0;
+                                            $statusColor = $porcentajeGasto < 70 ? 'bg-' . $categoria['color'] . '-50 border-' . $categoria['color'] . '-500' : 
+                                                        ($porcentajeGasto < 100 ? 'bg-yellow-50 border-yellow-500' : 'bg-red-50 border-red-500');
+                                            $textColor = $porcentajeGasto < 70 ? 'text-' . $categoria['color'] . '-700' : 
+                                                        ($porcentajeGasto < 100 ? 'text-yellow-700' : 'text-red-700');
+                                        @endphp
+                                        <!-- Category Item (Demo) -->
+                                        <div class="flex items-center justify-between p-4 {{ $statusColor }} rounded-lg hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 border-l-4 mb-2">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="p-3 bg-{{ $categoria['color'] }}-200 rounded-full shadow-inner">
+                                                    <i class="fas {{ $categoria['icono'] }} text-{{ $categoria['color'] }}-600 text-lg"></i>
+                                                </div>
+                                                <div>
+                                                    <span class="font-medium text-gray-800">{{ $categoria['nombre'] }}</span>
+                                                    <div class="mt-1 w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                                                        <div class="{{ $porcentajeGasto < 70 ? 'bg-' . $categoria['color'] . '-500' : ($porcentajeGasto < 100 ? 'bg-yellow-500' : 'bg-red-500') }} h-1.5 rounded-full" style="width: {{ min($porcentajeGasto, 100) }}%"></div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <span class="font-medium">Vivienda</span>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <span class="text-gray-600 mr-4">$12,000</span>
-                                            <div class="flex space-x-2">
-                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.categoriaModal.open = true; $store.categoriaModal.item = {id: 1, nombre: 'Vivienda', icono: 'home', color: 'blue', presupuesto: 12000}">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button type="button" class="text-red-500 hover:text-red-700" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Category Item (Demo) -->
-                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-300">
-                                        <div class="flex items-center space-x-3">
-                                            <div class="p-2 bg-green-100 rounded-lg">
-                                                <i class="fas fa-utensils text-green-600"></i>
-                                            </div>
-                                            <span class="font-medium">Alimentación</span>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <span class="text-gray-600 mr-4">$8,000</span>
-                                            <div class="flex space-x-2">
-                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.categoriaModal.open = true; $store.categoriaModal.item = {id: 2, nombre: 'Alimentación', icono: 'utensils', color: 'green', presupuesto: 8000}">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button type="button" class="text-red-500 hover:text-red-700" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
+                                            <div class="flex flex-col items-end">
+                                                <div class="flex items-center mb-1">
+                                                    <span class="{{ $textColor }} font-bold mr-1">${{ number_format($categoria['gastoCategoria'], 2) }}</span>
+                                                    <span class="text-gray-500 text-sm">/ ${{ number_format($categoria['presupuesto'], 2) }}</span>
+                                                </div>
+                                                <div class="flex space-x-2">
+                                                    <button class="p-2 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition-colors duration-200" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button type="button" class="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors duration-200" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-
-                                    <!-- Category Item (Demo) -->
-                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-300">
-                                        <div class="flex items-center space-x-3">
-                                            <div class="p-2 bg-purple-100 rounded-lg">
-                                                <i class="fas fa-car text-purple-600"></i>
-                                            </div>
-                                            <span class="font-medium">Transporte</span>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <span class="text-gray-600 mr-4">$5,000</span>
-                                            <div class="flex space-x-2">
-                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.categoriaModal.open = true; $store.categoriaModal.item = {id: 3, nombre: 'Transporte', icono: 'car', color: 'purple', presupuesto: 5000}">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button type="button" class="text-red-500 hover:text-red-700" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    @endforeach
                                     </div>
                                 @endauth
                             </div>
@@ -558,142 +535,49 @@
                                         </div>
                                     @endif
                                 @else
-                                    <!-- Transaction Item (Demo) -->
-                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-300">
-                                        <div class="flex items-center space-x-3">
-                                            <div class="p-2 bg-red-100 rounded-lg">
-                                                <i class="fas fa-shopping-cart text-red-600"></i>
+                                    @foreach([
+                                        ['id' => 1, 'descripcion' => 'Supermercado', 'monto' => 150, 'tipo' => 'gasto', 'fecha' => now()->subDays(3), 'categoria_id' => 2, 'categoria' => ['nombre' => 'Alimentación', 'icono' => 'fa-utensils', 'color' => 'green']],
+                                        ['id' => 2, 'descripcion' => 'Ingreso Salario', 'monto' => 3000, 'tipo' => 'ingreso', 'fecha' => now()->subDays(5), 'categoria_id' => null, 'categoria' => null],
+                                        ['id' => 3, 'descripcion' => 'Gasolina', 'monto' => 80, 'tipo' => 'gasto', 'fecha' => now()->subDays(2), 'categoria_id' => 3, 'categoria' => ['nombre' => 'Transporte', 'icono' => 'fa-car', 'color' => 'purple']]
+                                    ] as $transaccion)
+                                        <!-- Transaction Item (Demo) -->
+                                        <div class="flex items-center justify-between p-4 {{ $transaccion['tipo'] == 'ingreso' ? 'bg-green-50 hover:bg-green-100' : 'bg-red-50 hover:bg-red-100' }} rounded-lg transition-all duration-300 transform hover:-translate-y-1 border-l-4 {{ $transaccion['tipo'] == 'ingreso' ? 'border-green-500' : 'border-red-500' }} shadow-sm hover:shadow-md mb-2">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="p-3 {{ $transaccion['tipo'] == 'ingreso' ? 'bg-green-200' : 'bg-red-200' }} rounded-full shadow-inner">
+                                                    <i class="fas {{ $transaccion['tipo'] == 'ingreso' ? 'fa-dollar-sign' : 'fa-shopping-cart' }} {{ $transaccion['tipo'] == 'ingreso' ? 'text-green-600' : 'text-red-600' }} text-lg"></i>
+                                                </div>
+                                                <div>
+                                                    <p class="font-medium text-gray-800">{{ $transaccion['descripcion'] }}</p>
+                                                    <div class="flex items-center text-sm text-gray-500">
+                                                        <i class="fas fa-calendar-alt mr-1 text-xs"></i>
+                                                        <p>{{ $transaccion['fecha']->format('d M Y') }}</p>
+                                                        @if(isset($transaccion['categoria']) && $transaccion['categoria'])
+                                                            <span class="mx-2">•</span>
+                                                            <span class="px-2 py-1 rounded-full text-xs {{ $transaccion['tipo'] == 'ingreso' ? 'bg-green-100 text-green-800' : 'bg-' . $transaccion['categoria']['color'] . '-100 text-' . $transaccion['categoria']['color'] . '-800' }}">
+                                                                <i class="fas {{ $transaccion['categoria']['icono'] ?? 'fa-tag' }} mr-1 text-xs"></i>
+                                                                {{ $transaccion['categoria']['nombre'] ?? 'Sin categoría' }}
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p class="font-medium">Supermercado</p>
-                                                <p class="text-sm text-gray-500">23 Oct 2023</p>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <span class="text-red-600 mr-4">-$150.00</span>
-                                            <div class="flex space-x-2">
-                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.transaccionModal.open = true; $store.transaccionModal.item = {id: 1, descripcion: 'Supermercado', monto: 150, tipo: 'gasto', fecha: '2023-10-23', categoria_id: 2}">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button type="button" class="text-red-500 hover:text-red-700" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Category Item (Demo) -->
-                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-300">
-                                        <div class="flex items-center space-x-3">
-                                            <div class="p-2 bg-green-100 rounded-lg">
-                                                <i class="fas fa-utensils text-green-600"></i>
-                                            </div>
-                                            <span class="font-medium">Alimentación</span>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <span class="text-gray-600 mr-4">$8,000</span>
-                                            <div class="flex space-x-2">
-                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.categoriaModal.open = true; $store.categoriaModal.item = {id: 2, nombre: 'Alimentación', icono: 'utensils', color: 'green', presupuesto: 8000}">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button type="button" class="text-red-500 hover:text-red-700" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
+                                            <div class="flex items-center">
+                                                <span class="text-lg font-bold {{ $transaccion['tipo'] == 'ingreso' ? 'text-green-600' : 'text-red-600' }} mr-4">{{ $transaccion['tipo'] == 'ingreso' ? '+' : '-' }}${{ number_format($transaccion['monto'], 2) }}</span>
+                                                <div class="flex space-x-2">
+                                                    <button class="p-2 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition-colors duration-200" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button type="button" class="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors duration-200" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-
-                                    <!-- Category Item (Demo) -->
-                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-300">
-                                        <div class="flex items-center space-x-3">
-                                            <div class="p-2 bg-purple-100 rounded-lg">
-                                                <i class="fas fa-car text-purple-600"></i>
-                                            </div>
-                                            <span class="font-medium">Transporte</span>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <span class="text-gray-600 mr-4">$5,000</span>
-                                            <div class="flex space-x-2">
-                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.categoriaModal.open = true; $store.categoriaModal.item = {id: 3, nombre: 'Transporte', icono: 'car', color: 'purple', presupuesto: 5000}">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button type="button" class="text-red-500 hover:text-red-700" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    </div>
-
-                                    <!-- Transaction Item (Demo) -->
-                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-300">
-                                        <div class="flex items-center space-x-3">
-                                            <div class="p-2 bg-green-100 rounded-lg">
-                                                <i class="fas fa-dollar-sign text-green-600"></i>
-                                            </div>
-                                            <div>
-                                                <p class="font-medium">Ingreso Salario</p>
-                                                <p class="text-sm text-gray-500">20 Oct 2023</p>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <span class="text-green-600 mr-4">+$3,000.00</span>
-                                            <div class="flex space-x-2">
-                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.transaccionModal.open = true; $store.transaccionModal.item = {id: 2, descripcion: 'Ingreso Salario', monto: 3000, tipo: 'ingreso', fecha: '2023-10-20', categoria_id: null}">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button type="button" class="text-red-500 hover:text-red-700" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Category Item (Demo) -->
-                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-300">
-                                        <div class="flex items-center space-x-3">
-                                            <div class="p-2 bg-green-100 rounded-lg">
-                                                <i class="fas fa-utensils text-green-600"></i>
-                                            </div>
-                                            <span class="font-medium">Alimentación</span>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <span class="text-gray-600 mr-4">$8,000</span>
-                                            <div class="flex space-x-2">
-                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.categoriaModal.open = true; $store.categoriaModal.item = {id: 2, nombre: 'Alimentación', icono: 'utensils', color: 'green', presupuesto: 8000}">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button type="button" class="text-red-500 hover:text-red-700" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Category Item (Demo) -->
-                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-300">
-                                        <div class="flex items-center space-x-3">
-                                            <div class="p-2 bg-purple-100 rounded-lg">
-                                                <i class="fas fa-car text-purple-600"></i>
-                                            </div>
-                                            <span class="font-medium">Transporte</span>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <span class="text-gray-600 mr-4">$5,000</span>
-                                            <div class="flex space-x-2">
-                                                <button class="text-blue-500 hover:text-blue-700" @click="$store.categoriaModal.open = true; $store.categoriaModal.item = {id: 3, nombre: 'Transporte', icono: 'car', color: 'purple', presupuesto: 5000}">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button type="button" class="text-red-500 hover:text-red-700" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    </div>
+                                    @endforeach
                                 @endauth
                             </div>
                         </div>
+                    </div>
                 </div>
             </main>
         </div>
