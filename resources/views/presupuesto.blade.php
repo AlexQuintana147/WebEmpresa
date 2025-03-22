@@ -368,9 +368,15 @@
                         <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
                             <div class="flex items-center justify-between mb-6">
                                 <h2 class="text-xl font-semibold">Categorías de Gastos</h2>
-                                <button type="button" @click="$store.categoriaModal.open = true" class="flex items-center justify-center p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300" id="btnAddCategoria">
-                                    <i class="fas fa-plus mr-2"></i> Añadir Gastos
-                                </button>
+                                @auth
+                                    <button type="button" @click="$store.categoriaModal.open = true" class="flex items-center justify-center p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300" id="btnAddCategoria">
+                                        <i class="fas fa-plus mr-2"></i> Añadir Gastos
+                                    </button>
+                                @else
+                                    <button type="button" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')" class="flex items-center justify-center p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300" id="btnAddCategoria">
+                                        <i class="fas fa-plus mr-2"></i> Añadir Gastos
+                                    </button>
+                                @endauth
                             </div>
                             <div class="space-y-4">
                                 @auth
@@ -494,9 +500,15 @@
                         <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
                             <div class="flex items-center justify-between mb-6">
                                 <h2 class="text-xl font-semibold">Transacciones Recientes</h2>
-                                <button type="button" @click="$store.transaccionModal.open = true" class="flex items-center justify-center p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300" id="btnAddTransaccion">
-                                    <i class="fas fa-plus mr-2"></i> Añadir Transaccion
-                                </button>
+                                @auth
+                                    <button type="button" @click="$store.transaccionModal.open = true" class="flex items-center justify-center p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300" id="btnAddTransaccion">
+                                        <i class="fas fa-plus mr-2"></i> Añadir Transaccion
+                                    </button>
+                                @else
+                                    <button type="button" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')" class="flex items-center justify-center p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300" id="btnAddTransaccion">
+                                        <i class="fas fa-plus mr-2"></i> Añadir Transaccion
+                                    </button>
+                                @endauth
                             </div>
                             <div class="space-y-4">
                                 @auth

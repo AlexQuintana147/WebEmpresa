@@ -21,15 +21,15 @@ Route::get('/instrucciones', function () {
 
 Route::get('/presupuesto', [App\Http\Controllers\PresupuestoController::class, 'index'])->name('presupuesto.index');
 
-// Rutas para categorías de presupuesto
-Route::post('/categorias', [App\Http\Controllers\PresupuestoController::class, 'storeCategoria'])->name('categorias.store');
-Route::put('/categorias/{categoria}', [App\Http\Controllers\PresupuestoController::class, 'updateCategoria'])->name('categorias.update');
-Route::delete('/categorias/{categoria}', [App\Http\Controllers\PresupuestoController::class, 'destroyCategoria'])->name('categorias.destroy');
+// Rutas para categorías de presupuesto (protegidas con autenticación)
+Route::post('/categorias', [App\Http\Controllers\PresupuestoController::class, 'storeCategoria'])->name('categorias.store')->middleware('auth');
+Route::put('/categorias/{categoria}', [App\Http\Controllers\PresupuestoController::class, 'updateCategoria'])->name('categorias.update')->middleware('auth');
+Route::delete('/categorias/{categoria}', [App\Http\Controllers\PresupuestoController::class, 'destroyCategoria'])->name('categorias.destroy')->middleware('auth');
 
-// Rutas para transacciones
-Route::post('/transacciones', [App\Http\Controllers\PresupuestoController::class, 'storeTransaccion'])->name('transacciones.store');
-Route::put('/transacciones/{transaccion}', [App\Http\Controllers\PresupuestoController::class, 'updateTransaccion'])->name('transacciones.update');
-Route::delete('/transacciones/{transaccion}', [App\Http\Controllers\PresupuestoController::class, 'destroyTransaccion'])->name('transacciones.destroy');
+// Rutas para transacciones (protegidas con autenticación)
+Route::post('/transacciones', [App\Http\Controllers\PresupuestoController::class, 'storeTransaccion'])->name('transacciones.store')->middleware('auth');
+Route::put('/transacciones/{transaccion}', [App\Http\Controllers\PresupuestoController::class, 'updateTransaccion'])->name('transacciones.update')->middleware('auth');
+Route::delete('/transacciones/{transaccion}', [App\Http\Controllers\PresupuestoController::class, 'destroyTransaccion'])->name('transacciones.destroy')->middleware('auth');
 
 Route::get('/lista-de-actividades', [TareaController::class, 'index'])->name('actividades.index');
 

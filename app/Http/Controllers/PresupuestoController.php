@@ -49,8 +49,81 @@ class PresupuestoController extends Controller
                 'ahorros'
             ));
         } else {
-            // For guest users, show demo data
-            return view('presupuesto');
+            // Para usuarios no autenticados, mostrar datos de ejemplo
+            $presupuestoTotal = 50000;
+            $gastos = 32450;
+            $ingresos = 40000;
+            $restante = $presupuestoTotal - $gastos;
+            $ahorros = 5000;
+            
+            // Crear categorías de ejemplo
+            $categorias = collect([
+                (object)[
+                    'id' => 1,
+                    'nombre' => 'Vivienda',
+                    'icono' => 'fa-home',
+                    'color' => 'blue',
+                    'presupuesto' => 12000,
+                    'transacciones' => collect([(object)['tipo' => 'gasto', 'monto' => 10000]])
+                ],
+                (object)[
+                    'id' => 2,
+                    'nombre' => 'Alimentación',
+                    'icono' => 'fa-utensils',
+                    'color' => 'green',
+                    'presupuesto' => 8000,
+                    'transacciones' => collect([(object)['tipo' => 'gasto', 'monto' => 6500]])
+                ],
+                (object)[
+                    'id' => 3,
+                    'nombre' => 'Transporte',
+                    'icono' => 'fa-car',
+                    'color' => 'purple',
+                    'presupuesto' => 5000,
+                    'transacciones' => collect([(object)['tipo' => 'gasto', 'monto' => 4200]])
+                ]
+            ]);
+            
+            // Crear transacciones de ejemplo
+            $transacciones = collect([
+                (object)[
+                    'id' => 1,
+                    'descripcion' => 'Supermercado',
+                    'monto' => 150,
+                    'tipo' => 'gasto',
+                    'fecha' => now()->subDays(3),
+                    'categoria_id' => 2,
+                    'categoria' => (object)['nombre' => 'Alimentación', 'icono' => 'fa-utensils', 'color' => 'green']
+                ],
+                (object)[
+                    'id' => 2,
+                    'descripcion' => 'Ingreso Salario',
+                    'monto' => 3000,
+                    'tipo' => 'ingreso',
+                    'fecha' => now()->subDays(5),
+                    'categoria_id' => null,
+                    'categoria' => null
+                ],
+                (object)[
+                    'id' => 3,
+                    'descripcion' => 'Gasolina',
+                    'monto' => 80,
+                    'tipo' => 'gasto',
+                    'fecha' => now()->subDays(2),
+                    'categoria_id' => 3,
+                    'categoria' => (object)['nombre' => 'Transporte', 'icono' => 'fa-car', 'color' => 'purple']
+                ]
+            ]);
+            
+            return view('presupuesto', compact(
+                'categorias', 
+                'transacciones', 
+                'presupuestoTotal', 
+                'gastos', 
+                'ingresos', 
+                'restante', 
+                'ahorros'
+            ));
         }
     }
     
