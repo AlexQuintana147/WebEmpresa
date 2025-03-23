@@ -468,11 +468,10 @@
                                             </div>
                                         </div>
                                     @endforeach
-                                    </div>
                                 @endauth
                             </div>
                         </div>
-
+                        
                         <!-- Recent Transactions -->
                         <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
                             <div class="flex items-center justify-between mb-6">
