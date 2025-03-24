@@ -841,59 +841,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Upcoming Events -->
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <!-- Today's Events -->
-                        <div class="bg-white rounded-lg shadow-md p-6">
-                            <h2 class="text-xl font-semibold mb-4">Eventos de Hoy</h2>
-                            <div class="space-y-4">
-                                <div class="flex items-center space-x-4">
-                                    <div class="p-2 bg-blue-100 rounded-lg">
-                                        <i class="fas fa-calendar-day text-blue-600"></i>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-medium">Reunión de Equipo</h3>
-                                        <p class="text-sm text-gray-500">10:00 AM - 11:30 AM</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-4">
-                                    <div class="p-2 bg-purple-100 rounded-lg">
-                                        <i class="fas fa-video text-purple-600"></i>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-medium">Videoconferencia con Cliente</h3>
-                                        <p class="text-sm text-gray-500">2:00 PM - 3:00 PM</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Upcoming Events -->
-                        <div class="bg-white rounded-lg shadow-md p-6">
-                            <h2 class="text-xl font-semibold mb-4">Próximos Eventos</h2>
-                            <div class="space-y-4">
-                                <div class="flex items-center space-x-4">
-                                    <div class="p-2 bg-green-100 rounded-lg">
-                                        <i class="fas fa-calendar-alt text-green-600"></i>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-medium">Presentación de Proyecto</h3>
-                                        <p class="text-sm text-gray-500">Mañana, 9:00 AM</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-4">
-                                    <div class="p-2 bg-yellow-100 rounded-lg">
-                                        <i class="fas fa-users text-yellow-600"></i>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-medium">Reunión de Planificación</h3>
-                                        <p class="text-sm text-gray-500">25 Oct, 2:00 PM</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </main>
            
