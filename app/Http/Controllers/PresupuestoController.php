@@ -17,20 +17,33 @@ class PresupuestoController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function index()
+    public function index(Request $request)
     {
         // Check if user is authenticated
         if (Auth::check()) {
             $user = Auth::user();
             
-            // Get user's budget categories
-            $categorias = $user->categoriasPresupuesto;
+            // Pagination parameters
+            $paginaCategorias = $request->input('pagina_categorias', 1);
+            $paginaTransacciones = $request->input('pagina_transacciones', 1);
+            $porPagina = 5;
             
-            // Get user's transactions
+            // Get user's budget categories with pagination
+            $totalCategorias = $user->categoriasPresupuesto()->count();
+            $categorias = $user->categoriasPresupuesto()
+                ->skip(($paginaCategorias - 1) * $porPagina)
+                ->take($porPagina)
+                ->get();
+            $totalPaginasCategorias = ceil($totalCategorias / $porPagina);
+            
+            // Get user's transactions with pagination
+            $totalTransacciones = Transaccion::where('user_id', $user->id)->count();
             $transacciones = Transaccion::where('user_id', $user->id)
                 ->orderBy('fecha', 'desc')
-                ->take(5)
+                ->skip(($paginaTransacciones - 1) * $porPagina)
+                ->take($porPagina)
                 ->get();
+            $totalPaginasTransacciones = ceil($totalTransacciones / $porPagina);
             
             // Calculate budget summary
             $presupuestoTotal = $categorias->sum('presupuesto');
@@ -46,7 +59,12 @@ class PresupuestoController extends Controller
                 'gastos', 
                 'ingresos', 
                 'restante', 
-                'ahorros'
+                'ahorros',
+                'paginaCategorias',
+                'paginaTransacciones',
+                'totalPaginasCategorias',
+                'totalPaginasTransacciones',
+                'porPagina'
             ));
         } else {
             // Para usuarios no autenticados, mostrar datos de ejemplo
@@ -122,7 +140,12 @@ class PresupuestoController extends Controller
                 'gastos', 
                 'ingresos', 
                 'restante', 
-                'ahorros'
+                'ahorros',
+                'paginaCategorias',
+                'paginaTransacciones',
+                'totalPaginasCategorias',
+                'totalPaginasTransacciones',
+                'porPagina'
             ));
         }
     }

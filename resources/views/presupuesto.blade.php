@@ -528,6 +528,31 @@
                                                 </div>
                                             </div>
                                         @endforeach
+                                        
+                                        <!-- Paginación de Transacciones -->
+                                        @if(isset($totalPaginasTransacciones) && $totalPaginasTransacciones > 1)
+                                            <div class="flex justify-center items-center space-x-2 mt-4 pt-2 border-t border-gray-200">
+                                                <!-- Botón Anterior -->
+                                                <a href="{{ route('presupuesto.index', ['pagina_transacciones' => max(1, $paginaTransacciones - 1), 'pagina_categorias' => $paginaCategorias]) }}" 
+                                                   class="px-3 py-1 rounded-md {{ $paginaTransacciones <= 1 ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-blue-100 text-blue-700 hover:bg-blue-200' }}">
+                                                    <i class="fas fa-chevron-left text-xs"></i>
+                                                </a>
+                                                
+                                                <!-- Números de Página -->
+                                                @for($i = 1; $i <= $totalPaginasTransacciones; $i++)
+                                                    <a href="{{ route('presupuesto.index', ['pagina_transacciones' => $i, 'pagina_categorias' => $paginaCategorias]) }}" 
+                                                       class="px-3 py-1 rounded-md {{ $i == $paginaTransacciones ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200' }}">
+                                                        {{ $i }}
+                                                    </a>
+                                                @endfor
+                                                
+                                                <!-- Botón Siguiente -->
+                                                <a href="{{ route('presupuesto.index', ['pagina_transacciones' => min($totalPaginasTransacciones, $paginaTransacciones + 1), 'pagina_categorias' => $paginaCategorias]) }}" 
+                                                   class="px-3 py-1 rounded-md {{ $paginaTransacciones >= $totalPaginasTransacciones ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-blue-100 text-blue-700 hover:bg-blue-200' }}">
+                                                    <i class="fas fa-chevron-right text-xs"></i>
+                                                </a>
+                                            </div>
+                                        @endif
                                     @else
                                         <div class="text-center py-4">
                                             <p class="text-gray-500">No hay transacciones registradas. Añade una para comenzar.</p>
