@@ -423,6 +423,31 @@
                                                 </div>
                                             </div>
                                         @endforeach
+                                        
+                                        <!-- Paginación de Categorías -->
+                                        @if(isset($totalPaginasCategorias) && $totalPaginasCategorias > 1)
+                                            <div class="flex justify-center items-center space-x-2 mt-4 pt-2 border-t border-gray-200">
+                                                <!-- Botón Anterior -->
+                                                <a href="{{ route('presupuesto.index', ['pagina_categorias' => max(1, $paginaCategorias - 1), 'pagina_transacciones' => $paginaTransacciones]) }}" 
+                                                   class="px-3 py-1 rounded-md {{ $paginaCategorias <= 1 ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-blue-100 text-blue-700 hover:bg-blue-200' }}">
+                                                    <i class="fas fa-chevron-left text-xs"></i>
+                                                </a>
+                                                
+                                                <!-- Números de Página -->
+                                                @for($i = 1; $i <= $totalPaginasCategorias; $i++)
+                                                    <a href="{{ route('presupuesto.index', ['pagina_categorias' => $i, 'pagina_transacciones' => $paginaTransacciones]) }}" 
+                                                       class="px-3 py-1 rounded-md {{ $i == $paginaCategorias ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200' }}">
+                                                        {{ $i }}
+                                                    </a>
+                                                @endfor
+                                                
+                                                <!-- Botón Siguiente -->
+                                                <a href="{{ route('presupuesto.index', ['pagina_categorias' => min($totalPaginasCategorias, $paginaCategorias + 1), 'pagina_transacciones' => $paginaTransacciones]) }}" 
+                                                   class="px-3 py-1 rounded-md {{ $paginaCategorias >= $totalPaginasCategorias ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-blue-100 text-blue-700 hover:bg-blue-200' }}">
+                                                    <i class="fas fa-chevron-right text-xs"></i>
+                                                </a>
+                                            </div>
+                                        @endif
                                     @else
                                         <div class="text-center py-4">
                                             <p class="text-gray-500">No hay categorías de presupuesto. Añade una para comenzar.</p>
