@@ -29,8 +29,8 @@ class PresupuestoController extends Controller
             $porPagina = 5;
             
             // Get user's budget categories with pagination
-            $totalCategorias = $user->categoriasPresupuesto()->count();
-            $categorias = $user->categoriasPresupuesto()
+            $totalCategorias = CategoriaPresupuesto::where('user_id', $user->id)->count();
+            $categorias = CategoriaPresupuesto::where('user_id', $user->id)
                 ->skip(($paginaCategorias - 1) * $porPagina)
                 ->take($porPagina)
                 ->get();
