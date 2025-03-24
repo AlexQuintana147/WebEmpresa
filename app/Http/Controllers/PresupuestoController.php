@@ -74,6 +74,13 @@ class PresupuestoController extends Controller
             $restante = $presupuestoTotal - $gastos;
             $ahorros = 5000;
             
+            // Definir variables de paginación para usuarios no autenticados
+            $paginaCategorias = 1;
+            $paginaTransacciones = 1;
+            $totalPaginasCategorias = 1;
+            $totalPaginasTransacciones = 1;
+            $porPagina = 5;
+            
             // Crear categorías de ejemplo
             $categorias = collect([
                 (object)[
