@@ -31,7 +31,11 @@ Route::post('/transacciones', [App\Http\Controllers\PresupuestoController::class
 Route::put('/transacciones/{transaccion}', [App\Http\Controllers\PresupuestoController::class, 'updateTransaccion'])->name('transacciones.update')->middleware('auth');
 Route::delete('/transacciones/{transaccion}', [App\Http\Controllers\PresupuestoController::class, 'destroyTransaccion'])->name('transacciones.destroy')->middleware('auth');
 
-Route::get('/lista-de-actividades', [TareaController::class, 'index'])->name('actividades.index');
+Route::get('/lista-de-actividades', [App\Http\Controllers\ActividadController::class, 'index'])->name('actividades.index');
+Route::post('/actividades', [App\Http\Controllers\ActividadController::class, 'store'])->name('actividades.store');
+Route::put('/actividades/{actividad}', [App\Http\Controllers\ActividadController::class, 'update'])->name('actividades.update');
+Route::delete('/actividades/{actividad}', [App\Http\Controllers\ActividadController::class, 'destroy'])->name('actividades.destroy');
+Route::put('/actividades/{actividad}/cambiar-estado', [App\Http\Controllers\ActividadController::class, 'cambiarEstado'])->name('actividades.cambiar-estado');
 
 Route::get('/calendario', [TareaController::class, 'create'])->name('calendario');
 

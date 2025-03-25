@@ -76,4 +76,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(Tarea::class, 'usuario_id');
     }
+    
+    /**
+     * Get the activities for the user.
+     */
+    public function actividades()
+    {
+        return $this->hasMany(Actividad::class, 'usuario_id');
+    }
 }
