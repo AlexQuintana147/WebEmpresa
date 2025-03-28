@@ -179,7 +179,7 @@
                             <p class="text-xl text-gray-600">Gestiona y organiza tus tareas de manera eficiente</p>
                         </div>
                         @auth
-                        <button @click="modalOpen = true" class="flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-md hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
+                        <button @click="abrirModalCrear(); modalOpen = true; $store.modal.type = 'create';" class="flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-md hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
                             <i class="fas fa-plus-circle mr-2"></i>
                             <span>Nueva Actividad</span>
                         </button>
