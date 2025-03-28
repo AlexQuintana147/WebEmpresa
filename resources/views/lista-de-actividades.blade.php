@@ -85,6 +85,7 @@
                     Alpine.store('modal').type = 'edit';
                     Alpine.store('modal').item = actividad;
                     Alpine.store('modal').open = true;
+                    this.modalOpen = true; // Añadir esta línea para abrir el modal
                     console.log('Modal editar abierto:', Alpine.store('modal'));
                 },
                 
