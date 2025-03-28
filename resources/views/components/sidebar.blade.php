@@ -48,6 +48,13 @@
             </div>
             <span class="font-medium tracking-wide group-hover:text-teal-300 transition-colors duration-300">Notas</span>
         </a>
+        <div class="mt-8">
+            <div class="flex items-center px-5 mb-4">
+                <i class="fas fa-user-cog text-purple-400 mr-3"></i>
+                <h2 class="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-purple-100 to-purple-50">Opciones de Cliente</h2>
+            </div>
+            <div class="h-0.5 bg-gradient-to-r from-transparent via-purple-400/30 to-transparent opacity-30 mx-5 mb-6"></div>
+        </div>
     </nav>
     <div class="mt-auto pt-6 border-t border-gray-700/30">
         <div class="flex items-center px-5 py-3 space-x-3 text-sm">

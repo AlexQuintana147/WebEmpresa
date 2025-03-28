@@ -160,7 +160,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body class="bg-gray-100">
-    <div class="min-h-screen flex">
+    <div class="min-h-screen flex" x-data="{ modalOpen: false }">
         <!-- Sidebar -->
         <x-sidebar />
 
@@ -179,7 +179,7 @@
                             <p class="text-xl text-gray-600">Gestiona y organiza tus tareas de manera eficiente</p>
                         </div>
                         @auth
-                        <button @click="abrirModalCrear()" class="flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-md hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
+                        <button @click="modalOpen = true" class="flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-md hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
                             <i class="fas fa-plus-circle mr-2"></i>
                             <span>Nueva Actividad</span>
                         </button>
@@ -352,10 +352,9 @@
                 </div>
                 
                 <!-- Create/Edit Modal -->
-                <div x-show="$store.modal.open && ($store.modal.type === 'create' || $store.modal.type === 'edit')" 
+                <div x-show="modalOpen" x-cloak @click.away="modalOpen = false" 
                      class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm transition-all duration-300">
                     <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl transform transition-all duration-300" 
-                         @click.away="$store.modal.open = false"
                          x-transition:enter="ease-out duration-300" 
                          x-transition:enter-start="opacity-0 scale-95" 
                          x-transition:enter-end="opacity-100 scale-100">
@@ -365,7 +364,7 @@
                                 <span class="bg-gradient-to-r from-blue-500 to-purple-600 h-8 w-1 rounded-full mr-3"></span>
                                 <span x-text="$store.modal.type === 'create' ? 'Nueva Actividad' : 'Editar Actividad'"></span>
                             </h3>
-                            <button @click="$store.modal.open = false" class="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors duration-200">
+                            <button @click="modalOpen = false" class="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors duration-200">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
@@ -542,7 +541,7 @@
                             
                             <!-- Submit buttons -->
                             <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-100">
-                                <button type="button" @click="$store.modal.open = false" 
+                                <button type="button" @click="modalOpen = false" 
                                         class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200">
                                     Cancelar
                                 </button>
@@ -569,7 +568,7 @@
                                 <span class="bg-gradient-to-r from-red-500 to-pink-600 h-8 w-1 rounded-full mr-3"></span>
                                 <span>Eliminar Actividad</span>
                             </h3>
-                            <button @click="$store.modal.open = false" class="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors duration-200">
+                            <button @click="modalOpen = false" class="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors duration-200">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
