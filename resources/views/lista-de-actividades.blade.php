@@ -81,12 +81,38 @@
                 },
                 
                 abrirModalEditar(actividad) {
-                    this.actividadSeleccionada = {...actividad};
+                    // Resetear el estado del modal y establecer el tipo como 'edit'
+                    Alpine.store('modal').open = false; // Cerrar el modal primero para asegurar un estado limpio
                     Alpine.store('modal').type = 'edit';
-                    Alpine.store('modal').item = actividad;
-                    Alpine.store('modal').open = true;
-                    this.modalOpen = true; // Añadir esta línea para abrir el modal
-                    console.log('Modal editar abierto:', Alpine.store('modal'));
+                    
+                    // Crear una copia profunda de la actividad
+                    this.actividadSeleccionada = {...actividad};
+                    Alpine.store('modal').item = JSON.parse(JSON.stringify(actividad));
+                    
+                    console.log('Actividad seleccionada:', this.actividadSeleccionada);
+                    console.log('Modal item:', Alpine.store('modal').item);
+                    
+                    // Abrir el modal después de configurar todo
+                    setTimeout(() => {
+                        // Asegurarse de que los campos del formulario se actualicen con los valores correctos
+                        document.querySelector('input[name=titulo]').value = actividad.titulo || '';
+                        document.querySelector('textarea[name=descripcion]').value = actividad.descripcion || '';
+                        document.querySelector('select[name=nivel]').value = actividad.nivel || 'principal';
+                        document.querySelector('select[name=estado]').value = actividad.estado || 'pendiente';
+                        document.querySelector('input[name=fecha_limite]').value = actividad.fecha_limite || '';
+                        document.querySelector('input[name=hora_limite]').value = actividad.hora_limite || '';
+                        document.querySelector('select[name=prioridad]').value = actividad.prioridad || '1';
+                        document.querySelector('input[name=color]').value = actividad.color || '#4A90E2';
+                        document.querySelector('input[name=icono]').value = actividad.icono || 'fa-tasks';
+                        
+                        Alpine.store('modal').open = true;
+                        this.modalOpen = true;
+                        
+                        console.log('Tipo de modal después de abrir:', Alpine.store('modal').type);
+                        console.log('Campos del formulario actualizados con los valores de la actividad');
+                    }, 100);
+                    
+                    console.log('Modal editar configurado:', Alpine.store('modal'));
                 },
                 
                 abrirModalEliminar(actividad) {
@@ -230,7 +256,7 @@
                                                 <button @click="cambiarEstado(actividad, 'en_progreso')" class="p-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition-colors" title="Mover a En Progreso">
                                                     <i class="fas fa-spinner"></i>
                                                 </button>
-                                                <button @click="abrirModalEditar(actividad)" class="p-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors" title="Editar">
+                                                <button @click="abrirModalEditar(actividad); modalOpen = true; $store.modal.type = 'edit';" class="p-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors" title="Editar">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
                                                 <button @click="abrirModalEliminar(actividad)" class="p-1 bg-red-100 text-red-600 rounded hover:bg-red-200 transition-colors" title="Eliminar">
@@ -287,7 +313,7 @@
                                                 <button @click="cambiarEstado(actividad, 'pendiente')" class="p-1 bg-yellow-100 text-yellow-600 rounded hover:bg-yellow-200 transition-colors" title="Mover a Pendientes">
                                                     <i class="fas fa-clock"></i>
                                                 </button>
-                                                <button @click="abrirModalEditar(actividad)" class="p-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors" title="Editar">
+                                                <button @click="abrirModalEditar(actividad); modalOpen = true; $store.modal.type = 'edit';" class="p-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors" title="Editar">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
                                                 <button @click="abrirModalEliminar(actividad)" class="p-1 bg-red-100 text-red-600 rounded hover:bg-red-200 transition-colors" title="Eliminar">
@@ -337,7 +363,7 @@
                                                 <button @click="cambiarEstado(actividad, 'pendiente')" class="p-1 bg-yellow-100 text-yellow-600 rounded hover:bg-yellow-200 transition-colors" title="Mover a Pendientes">
                                                     <i class="fas fa-undo"></i>
                                                 </button>
-                                                <button @click="abrirModalEditar(actividad)" class="p-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors" title="Editar">
+                                                <button @click="abrirModalEditar(actividad); modalOpen = true; $store.modal.type = 'edit';" class="p-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors" title="Editar">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
                                                 <button @click="abrirModalEliminar(actividad)" class="p-1 bg-red-100 text-red-600 rounded hover:bg-red-200 transition-colors" title="Eliminar">
@@ -370,7 +396,7 @@
                             </button>
                         </div>
                         
-                        <form x-bind:action="$store.modal.type === 'create' ? '{{ route("actividades.store") }}' : '/actividades/' + $store.modal.item?.id" method="POST" class="space-y-5">
+                        <form x-bind:action="$store.modal.type === 'create' ? '{{ route("actividades.store") }}' : '{{ url("/actividades") }}/' + $store.modal.item.id" method="POST" class="space-y-5">
                             @csrf
                             <template x-if="$store.modal.type === 'edit'">
                                 @method('PUT')
@@ -501,7 +527,7 @@
                                 <div class="grid grid-cols-7 gap-2">
                                     <template x-for="color in colores" :key="color.valor">
                                         <button type="button" 
-                                                @click="$store.modal.type === 'create' ? nuevaActividad.color = color.valor : $store.modal.item.color = color.valor"
+                                                @click="$store.modal.type === 'create' ? nuevaActividad.color = color.valor : $store.modal.item.color = color.valor; document.querySelector('input[name=color]').value = color.valor"
                                                 :class="{
                                                     'ring-2 ring-offset-2 ring-gray-800': 
                                                         ($store.modal.type === 'create' && nuevaActividad.color === color.valor) || 
@@ -513,7 +539,7 @@
                                     </template>
                                 </div>
                                 <input type="hidden" name="color" 
-                                       x-bind:value="$store.modal.type === 'create' ? nuevaActividad.color : $store.modal.item?.color">
+                                       x-bind:value="$store.modal.type === 'create' ? nuevaActividad.color : $store.modal.item.color">
                             </div>
                             
                             <!-- Icono field with visual icon indicators -->
@@ -525,7 +551,7 @@
                                 <div class="grid grid-cols-5 gap-2">
                                     <template x-for="icono in iconos" :key="icono">
                                         <button type="button" 
-                                                @click="$store.modal.type === 'create' ? nuevaActividad.icono = icono : $store.modal.item.icono = icono"
+                                                @click="$store.modal.type === 'create' ? nuevaActividad.icono = icono : $store.modal.item.icono = icono; document.querySelector('input[name=icono]').value = icono"
                                                 :class="{
                                                     'bg-blue-100 ring-2 ring-blue-500': 
                                                         ($store.modal.type === 'create' && nuevaActividad.icono === icono) || 
@@ -537,7 +563,7 @@
                                     </template>
                                 </div>
                                 <input type="hidden" name="icono" 
-                                       x-bind:value="$store.modal.type === 'create' ? nuevaActividad.icono : $store.modal.item?.icono">
+                                       x-bind:value="$store.modal.type === 'create' ? nuevaActividad.icono : $store.modal.item.icono">
                             </div>
                             
                             <!-- Submit buttons -->
