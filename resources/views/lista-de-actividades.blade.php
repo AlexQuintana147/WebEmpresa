@@ -102,8 +102,43 @@
                         document.querySelector('input[name=fecha_limite]').value = actividad.fecha_limite || '';
                         document.querySelector('input[name=hora_limite]').value = actividad.hora_limite || '';
                         document.querySelector('select[name=prioridad]').value = actividad.prioridad || '1';
-                        document.querySelector('input[name=color]').value = actividad.color || '#4A90E2';
-                        document.querySelector('input[name=icono]').value = actividad.icono || 'fa-tasks';
+                        
+                        // Actualizar los campos ocultos de color e icono
+                        const selectedColorInput = document.querySelector('#selectedColor');
+                        const selectedIconInput = document.querySelector('#selectedIcon');
+                        
+                        selectedColorInput.value = actividad.color || '#4A90E2';
+                        selectedIconInput.value = actividad.icono || 'fa-tasks';
+                        
+                        // Asegurarse de que los elementos visuales reflejen la selección
+                        const colorButtons = document.querySelectorAll('.grid-cols-7 button');
+                        const iconButtons = document.querySelectorAll('.grid-cols-5 button');
+                        
+                        // Marcar el color seleccionado
+                        colorButtons.forEach(button => {
+                            const bgColor = button.style.backgroundColor;
+                            const colorHex = this.colores.find(c => {
+                                const tempDiv = document.createElement('div');
+                                tempDiv.style.backgroundColor = c.valor;
+                                return tempDiv.style.backgroundColor === bgColor;
+                            })?.valor;
+                            
+                            if (colorHex === actividad.color) {
+                                button.classList.add('ring-2', 'ring-offset-2', 'ring-gray-800');
+                            } else {
+                                button.classList.remove('ring-2', 'ring-offset-2', 'ring-gray-800');
+                            }
+                        });
+                        
+                        // Marcar el icono seleccionado
+                        iconButtons.forEach(button => {
+                            const iconElement = button.querySelector('i');
+                            if (iconElement && iconElement.classList.contains(actividad.icono)) {
+                                button.classList.add('bg-blue-100', 'ring-2', 'ring-blue-500');
+                            } else {
+                                button.classList.remove('bg-blue-100', 'ring-2', 'ring-blue-500');
+                            }
+                        });
                         
                         Alpine.store('modal').open = true;
                         this.modalOpen = true;
@@ -396,11 +431,11 @@
                             </button>
                         </div>
                         
-                        <form x-bind:action="$store.modal.type === 'create' ? '{{ route("actividades.store") }}' : '{{ url("/actividades") }}/' + $store.modal.item.id" method="POST" class="space-y-5">
+                        <form :action="$store.modal.type === 'create' ? '{{ route("actividades.store") }}' : '/actividades/' + $store.modal.item.id" method="POST" class="space-y-5">
                             @csrf
-                            <template x-if="$store.modal.type === 'edit'">
-                                @method('PUT')
-                            </template>
+                            <input type="hidden" name="_method" x-bind:value="$store.modal.type === 'create' ? 'POST' : 'PUT'">
+                            <input type="hidden" x-if="$store.modal.type === 'edit'" name="id" :value="$store.modal.item.id">
+
                             
                             <!-- Título field with icon -->
                             <div class="group">
@@ -538,7 +573,7 @@
                                         </button>
                                     </template>
                                 </div>
-                                <input type="hidden" name="color" 
+                                <input type="hidden" name="color" id="selectedColor"
                                        x-bind:value="$store.modal.type === 'create' ? nuevaActividad.color : $store.modal.item.color">
                             </div>
                             
@@ -562,7 +597,7 @@
                                         </button>
                                     </template>
                                 </div>
-                                <input type="hidden" name="icono" 
+                                <input type="hidden" name="icono" id="selectedIcon"
                                        x-bind:value="$store.modal.type === 'create' ? nuevaActividad.icono : $store.modal.item.icono">
                             </div>
                             
