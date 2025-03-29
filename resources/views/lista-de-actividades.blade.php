@@ -506,6 +506,28 @@
                                 return;
                             }
                             
+                            // Verificar que se haya ingresado fecha y hora límite
+                            if (!formData.get('fecha_limite')) {
+                                $store.notification.showNotification('La fecha límite es obligatoria', 'error');
+                                return;
+                            }
+                            
+                            if (!formData.get('hora_limite')) {
+                                $store.notification.showNotification('La hora límite es obligatoria', 'error');
+                                return;
+                            }
+                            
+                            // Verificar que se haya ingresado fecha y hora límite
+                            if (!formData.get('fecha_limite')) {
+                                $store.notification.showNotification('La fecha límite es obligatoria', 'error');
+                                return;
+                            }
+                            
+                            if (!formData.get('hora_limite')) {
+                                $store.notification.showNotification('La hora límite es obligatoria', 'error');
+                                return;
+                            }
+                            
                             // Enviar el formulario
                             fetch(form.action, {
                                 method: form.method === 'POST' && formData.get('_method') === 'PUT' ? 'POST' : form.method,
@@ -619,7 +641,7 @@
                                     <div class="relative">
                                         <input type="date" name="fecha_limite" 
                                                x-bind:value="$store.modal.type === 'create' ? nuevaActividad.fecha_limite : $store.modal.item?.fecha_limite"
-                                               class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 outline-none">
+                                               class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 outline-none" required>
                                     </div>
                                 </div>
                                 
@@ -631,7 +653,7 @@
                                     <div class="relative">
                                         <input type="time" name="hora_limite" 
                                                x-bind:value="$store.modal.type === 'create' ? nuevaActividad.hora_limite : $store.modal.item?.hora_limite"
-                                               class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 outline-none">
+                                               class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 outline-none" required>
                                     </div>
                                 </div>
                             </div>
