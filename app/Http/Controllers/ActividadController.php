@@ -30,24 +30,40 @@ class ActividadController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'titulo' => 'required|string|max:255',
-            'descripcion' => 'nullable|string',
-            'nivel' => 'required|in:principal,secundaria,terciaria',
-            'estado' => 'required|in:pendiente,en_progreso,completada',
-            'fecha_limite' => 'nullable|date',
-            'hora_limite' => 'nullable',
-            'color' => 'nullable|string',
-            'icono' => 'nullable|string',
-            'prioridad' => 'required|integer|min:1|max:3',
-            'actividad_padre_id' => 'nullable|exists:actividades,id',
-        ]);
+        try {
+            $request->validate([
+                'titulo' => 'required|string|max:255',
+                'descripcion' => 'nullable|string',
+                'nivel' => 'required|in:principal,secundaria,terciaria',
+                'estado' => 'required|in:pendiente,en_progreso,completada',
+                'fecha_limite' => 'nullable|date',
+                'hora_limite' => 'nullable',
+                'color' => 'required|string',
+                'icono' => 'required|string',
+                'prioridad' => 'required|integer|min:1|max:3',
+                'actividad_padre_id' => 'nullable|exists:actividades,id',
+            ]);
 
-        $actividad = new Actividad($request->all());
-        $actividad->usuario_id = Auth::id();
-        $actividad->save();
+            $actividad = new Actividad($request->all());
+            $actividad->usuario_id = Auth::id();
+            $actividad->save();
 
-        return redirect()->route('actividades.index')->with('success', 'Actividad creada correctamente');
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => true, 'message' => 'Actividad creada correctamente']);
+            }
+
+            return redirect()->route('actividades.index')->with('success', 'Actividad creada correctamente');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Error de validación', 'errors' => $e->errors()], 422);
+            }
+            throw $e;
+        } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Error al crear la actividad: ' . $e->getMessage()], 500);
+            }
+            throw $e;
+        }
     }
 
     /**
@@ -70,25 +86,44 @@ class ActividadController extends Controller
     {
         // Verificar que la actividad pertenece al usuario autenticado
         if ($actividad->usuario_id !== Auth::id()) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'No autorizado para editar esta actividad'], 403);
+            }
             abort(403, 'No autorizado');
         }
 
-        $request->validate([
-            'titulo' => 'required|string|max:255',
-            'descripcion' => 'nullable|string',
-            'nivel' => 'required|in:principal,secundaria,terciaria',
-            'estado' => 'required|in:pendiente,en_progreso,completada',
-            'fecha_limite' => 'nullable|date',
-            'hora_limite' => 'nullable',
-            'color' => 'nullable|string',
-            'icono' => 'nullable|string',
-            'prioridad' => 'required|integer|min:1|max:3',
-            'actividad_padre_id' => 'nullable|exists:actividades,id',
-        ]);
+        try {
+            $request->validate([
+                'titulo' => 'required|string|max:255',
+                'descripcion' => 'nullable|string',
+                'nivel' => 'required|in:principal,secundaria,terciaria',
+                'estado' => 'required|in:pendiente,en_progreso,completada',
+                'fecha_limite' => 'nullable|date',
+                'hora_limite' => 'nullable',
+                'color' => 'required|string',
+                'icono' => 'required|string',
+                'prioridad' => 'required|integer|min:1|max:3',
+                'actividad_padre_id' => 'nullable|exists:actividades,id',
+            ]);
 
-        $actividad->update($request->all());
+            $actividad->update($request->all());
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => true, 'message' => 'Actividad actualizada correctamente']);
+            }
 
-        return redirect()->route('actividades.index')->with('success', 'Actividad actualizada correctamente');
+            return redirect()->route('actividades.index')->with('success', 'Actividad actualizada correctamente');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Error de validación', 'errors' => $e->errors()], 422);
+            }
+            throw $e;
+        } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Error al actualizar la actividad: ' . $e->getMessage()], 500);
+            }
+            throw $e;
+        }
     }
 
     /**

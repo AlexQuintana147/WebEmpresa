@@ -18,6 +18,29 @@
                 item: null
             });
             
+            // Inicializar el store de notificaciones
+            Alpine.store('notification', {
+                show: false,
+                message: '',
+                type: 'success',
+                timeout: null,
+                showNotification(message, type = 'success') {
+                    this.message = message;
+                    this.type = type;
+                    this.show = true;
+                    
+                    // Limpiar cualquier timeout existente
+                    if (this.timeout) {
+                        clearTimeout(this.timeout);
+                    }
+                    
+                    // Auto-ocultar después de 3 segundos
+                    this.timeout = setTimeout(() => {
+                        this.show = false;
+                    }, 3000);
+                }
+            });
+            
             console.log('Modal store inicializado:', Alpine.store('modal'));
         });
         
@@ -222,6 +245,37 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body class="bg-gray-100">
+    <!-- Componente de Notificación -->
+    <div x-data x-show="$store.notification.show" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-90" x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-90" x-cloak class="fixed top-4 right-4 z-50 max-w-sm">
+        <div :class="{
+            'bg-green-100 border-green-500 text-green-700': $store.notification.type === 'success',
+            'bg-red-100 border-red-500 text-red-700': $store.notification.type === 'error',
+            'bg-yellow-100 border-yellow-500 text-yellow-700': $store.notification.type === 'warning',
+            'bg-blue-100 border-blue-500 text-blue-700': $store.notification.type === 'info'
+        }" class="rounded-lg border-l-4 p-4 shadow-md">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i :class="{
+                        'fa-check-circle text-green-600': $store.notification.type === 'success',
+                        'fa-exclamation-circle text-red-600': $store.notification.type === 'error',
+                        'fa-exclamation-triangle text-yellow-600': $store.notification.type === 'warning',
+                        'fa-info-circle text-blue-600': $store.notification.type === 'info'
+                    }" class="fas text-lg"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium" x-text="$store.notification.message"></p>
+                </div>
+                <div class="ml-auto pl-3">
+                    <div class="-mx-1.5 -my-1.5">
+                        <button @click="$store.notification.show = false" class="inline-flex rounded-md p-1.5 hover:bg-gray-200 focus:outline-none">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <div class="min-h-screen flex" x-data="{ modalOpen: false }">
         <!-- Sidebar -->
         <x-sidebar />
@@ -431,7 +485,56 @@
                             </button>
                         </div>
                         
-                        <form :action="$store.modal.type === 'create' ? '{{ route("actividades.store") }}' : '/actividades/' + $store.modal.item.id" method="POST" class="space-y-5">
+                        <form :action="$store.modal.type === 'create' ? '{{ route("actividades.store") }}' : '{{ route("actividades.update", '') }}/' + $store.modal.item.id" method="POST" class="space-y-5" @submit.prevent="
+                            const form = $event.target;
+                            const formData = new FormData(form);
+                            
+                            // Verificar que los campos requeridos estén completos
+                            if (!formData.get('titulo')) {
+                                $store.notification.showNotification('El título es obligatorio', 'error');
+                                return;
+                            }
+                            
+                            // Verificar que se haya seleccionado un color e icono
+                            if (!formData.get('color')) {
+                                $store.notification.showNotification('Debe seleccionar un color', 'error');
+                                return;
+                            }
+                            
+                            if (!formData.get('icono')) {
+                                $store.notification.showNotification('Debe seleccionar un icono', 'error');
+                                return;
+                            }
+                            
+                            // Enviar el formulario
+                            fetch(form.action, {
+                                method: form.method === 'POST' && formData.get('_method') === 'PUT' ? 'POST' : form.method,
+                                body: formData,
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                }
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    return response.json().then(data => {
+                                        throw new Error(data.message || 'Error al procesar la solicitud');
+                                    });
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                $store.notification.showNotification($store.modal.type === 'create' ? 'Actividad creada correctamente' : 'Actividad actualizada correctamente', 'success');
+                                modalOpen = false;
+                                // Recargar la página para mostrar los cambios
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 1000);
+                            })
+                            .catch(error => {
+                                $store.notification.showNotification(error.message || 'Error al procesar la solicitud', 'error');
+                                console.error('Error:', error);
+                            });
+                        ">
                             @csrf
                             <input type="hidden" name="_method" x-bind:value="$store.modal.type === 'create' ? 'POST' : 'PUT'">
                             <input type="hidden" x-if="$store.modal.type === 'edit'" name="id" :value="$store.modal.item.id">
@@ -562,11 +665,24 @@
                                 <div class="grid grid-cols-7 gap-2">
                                     <template x-for="color in colores" :key="color.valor">
                                         <button type="button" 
-                                                @click="$store.modal.type === 'create' ? nuevaActividad.color = color.valor : $store.modal.item.color = color.valor; document.querySelector('input[name=color]').value = color.valor"
+                                                @click="
+                                                    if ($store.modal.type === 'create') {
+                                                        nuevaActividad.color = color.valor;
+                                                    } else if ($store.modal.item) {
+                                                        $store.modal.item.color = color.valor;
+                                                    }
+                                                    document.querySelector('#selectedColor').value = color.valor;
+                                                    
+                                                    // Actualizar la apariencia visual de los botones
+                                                    document.querySelectorAll('.grid-cols-7 button').forEach(btn => {
+                                                        btn.classList.remove('ring-2', 'ring-offset-2', 'ring-gray-800');
+                                                    });
+                                                    $event.target.classList.add('ring-2', 'ring-offset-2', 'ring-gray-800');
+                                                "
                                                 :class="{
                                                     'ring-2 ring-offset-2 ring-gray-800': 
                                                         ($store.modal.type === 'create' && nuevaActividad.color === color.valor) || 
-                                                        ($store.modal.type === 'edit' && $store.modal.item?.color === color.valor)
+                                                        ($store.modal.type === 'edit' && $store.modal.item && $store.modal.item.color === color.valor)
                                                 }"
                                                 class="w-full h-10 rounded-full focus:outline-none transition-all duration-200"
                                                 :style="`background-color: ${color.valor}`">
@@ -574,7 +690,7 @@
                                     </template>
                                 </div>
                                 <input type="hidden" name="color" id="selectedColor"
-                                       x-bind:value="$store.modal.type === 'create' ? nuevaActividad.color : $store.modal.item.color">
+                                       x-bind:value="$store.modal.type === 'create' ? nuevaActividad.color : ($store.modal.item ? $store.modal.item.color : '#4A90E2')">
                             </div>
                             
                             <!-- Icono field with visual icon indicators -->
@@ -586,11 +702,24 @@
                                 <div class="grid grid-cols-5 gap-2">
                                     <template x-for="icono in iconos" :key="icono">
                                         <button type="button" 
-                                                @click="$store.modal.type === 'create' ? nuevaActividad.icono = icono : $store.modal.item.icono = icono; document.querySelector('input[name=icono]').value = icono"
+                                                @click="
+                                                    if ($store.modal.type === 'create') {
+                                                        nuevaActividad.icono = icono;
+                                                    } else if ($store.modal.item) {
+                                                        $store.modal.item.icono = icono;
+                                                    }
+                                                    document.querySelector('#selectedIcon').value = icono;
+                                                    
+                                                    // Actualizar la apariencia visual de los botones
+                                                    document.querySelectorAll('.grid-cols-5 button').forEach(btn => {
+                                                        btn.classList.remove('bg-blue-100', 'ring-2', 'ring-blue-500');
+                                                    });
+                                                    $event.target.classList.add('bg-blue-100', 'ring-2', 'ring-blue-500');
+                                                "
                                                 :class="{
                                                     'bg-blue-100 ring-2 ring-blue-500': 
                                                         ($store.modal.type === 'create' && nuevaActividad.icono === icono) || 
-                                                        ($store.modal.type === 'edit' && $store.modal.item?.icono === icono)
+                                                        ($store.modal.type === 'edit' && $store.modal.item && $store.modal.item.icono === icono)
                                                 }"
                                                 class="p-3 rounded-lg focus:outline-none transition-all duration-200 bg-gray-100 hover:bg-gray-200">
                                             <i class="fas text-lg" :class="icono"></i>
@@ -598,7 +727,7 @@
                                     </template>
                                 </div>
                                 <input type="hidden" name="icono" id="selectedIcon"
-                                       x-bind:value="$store.modal.type === 'create' ? nuevaActividad.icono : $store.modal.item.icono">
+                                       x-bind:value="$store.modal.type === 'create' ? nuevaActividad.icono : ($store.modal.item ? $store.modal.item.icono : 'fa-tasks')">
                             </div>
                             
                             <!-- Submit buttons -->
