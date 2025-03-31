@@ -30,7 +30,7 @@
             </div>
             <span class="font-medium tracking-wide group-hover:text-emerald-300 transition-colors duration-300">Presupuesto Mensual</span>
         </a>
-        <a href="/lista-de-actividades" class="group flex items-center py-3.5 px-5 rounded-xl transition-all duration-300 hover:bg-white/10 hover:translate-x-1 {{ request()->is('lista-de-actividades') ? 'bg-gradient-to-r from-amber-500/20 to-amber-500/10 border-r-4 border-amber-400' : '' }}">
+        <a href="/actividades" class="group flex items-center py-3.5 px-5 rounded-xl transition-all duration-300 hover:bg-white/10 hover:translate-x-1 {{ request()->is('actividades') ? 'bg-gradient-to-r from-amber-500/20 to-amber-500/10 border-r-4 border-amber-400' : '' }}">
             <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400/20 to-amber-500/20 group-hover:from-amber-400/30 group-hover:to-amber-500/30 transition-all duration-300 mr-3">
                 <i class="fas fa-tasks text-amber-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
             </div>

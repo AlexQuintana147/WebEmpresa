@@ -17,12 +17,20 @@ class ActividadController extends Controller
     {
         // Si el usuario está autenticado, obtener sus actividades
         if (Auth::check()) {
-            $actividades = Actividad::where('usuario_id', Auth::id())->where('nivel', 'principal')->get();
-            return view('lista-de-actividades', compact('actividades'));
+            $actividades = Actividad::where('usuario_id', Auth::id())
+                ->where('nivel', 'principal')
+                ->with(['actividadesHijas' => function($query) {
+                    $query->orderBy('prioridad', 'desc')
+                          ->orderBy('fecha_limite', 'asc');
+                }])
+                ->orderBy('prioridad', 'desc')
+                ->orderBy('fecha_limite', 'asc')
+                ->get();
+            return view('actividades', compact('actividades'));
         }
         
         // Si no está autenticado, mostrar la vista con datos de ejemplo
-        return view('lista-de-actividades');
+        return view('actividades');
     }
 
     /**

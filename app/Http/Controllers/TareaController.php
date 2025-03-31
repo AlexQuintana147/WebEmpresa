@@ -15,7 +15,7 @@ class TareaController extends Controller
     public function index()
     {
         $tareas = Auth::user()->tareas;
-        return view('lista-de-actividades', compact('tareas'));
+        return view('actividades', compact('tareas'));
     }
 
     /**
