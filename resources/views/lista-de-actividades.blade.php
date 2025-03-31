@@ -104,11 +104,8 @@
                 },
                 
                 abrirModalEditar(actividad) {
-                    // Resetear el estado del modal y establecer el tipo como 'edit'
-                    Alpine.store('modal').open = false; // Cerrar el modal primero para asegurar un estado limpio
+                    // Establecer el tipo como 'edit' y guardar la actividad en el store
                     Alpine.store('modal').type = 'edit';
-                    
-                    // Crear una copia profunda de la actividad
                     this.actividadSeleccionada = {...actividad};
                     Alpine.store('modal').item = JSON.parse(JSON.stringify(actividad));
                     
@@ -117,25 +114,32 @@
                     
                     // Abrir el modal después de configurar todo
                     setTimeout(() => {
-                        // Asegurarse de que los campos del formulario se actualicen con los valores correctos
-                        document.querySelector('input[name=titulo]').value = actividad.titulo || '';
-                        document.querySelector('textarea[name=descripcion]').value = actividad.descripcion || '';
-                        document.querySelector('select[name=nivel]').value = actividad.nivel || 'principal';
-                        document.querySelector('select[name=estado]').value = actividad.estado || 'pendiente';
-                        document.querySelector('input[name=fecha_limite]').value = actividad.fecha_limite || '';
-                        document.querySelector('input[name=hora_limite]').value = actividad.hora_limite || '';
-                        document.querySelector('select[name=prioridad]').value = actividad.prioridad || '1';
+                        // Seleccionar los campos del formulario en el modal de edición
+                        const editModal = document.querySelector('[x-show="$store.modal.open && $store.modal.type === \'edit\'"]');
+                        if (!editModal) {
+                            console.error('No se encontró el modal de edición');
+                            return;
+                        }
+                        
+                        // Actualizar los campos del formulario con los valores de la actividad
+                        editModal.querySelector('input[name=titulo]').value = actividad.titulo || '';
+                        editModal.querySelector('textarea[name=descripcion]').value = actividad.descripcion || '';
+                        editModal.querySelector('select[name=nivel]').value = actividad.nivel || 'principal';
+                        editModal.querySelector('select[name=estado]').value = actividad.estado || 'pendiente';
+                        editModal.querySelector('input[name=fecha_limite]').value = actividad.fecha_limite || '';
+                        editModal.querySelector('input[name=hora_limite]').value = actividad.hora_limite || '';
+                        editModal.querySelector('select[name=prioridad]').value = actividad.prioridad || '1';
                         
                         // Actualizar los campos ocultos de color e icono
-                        const selectedColorInput = document.querySelector('#selectedColor');
-                        const selectedIconInput = document.querySelector('#selectedIcon');
+                        const selectedColorInput = editModal.querySelector('input[name=color]');
+                        const selectedIconInput = editModal.querySelector('input[name=icono]');
                         
                         selectedColorInput.value = actividad.color || '#4A90E2';
                         selectedIconInput.value = actividad.icono || 'fa-tasks';
                         
                         // Asegurarse de que los elementos visuales reflejen la selección
-                        const colorButtons = document.querySelectorAll('.grid-cols-7 button');
-                        const iconButtons = document.querySelectorAll('.grid-cols-5 button');
+                        const colorButtons = editModal.querySelectorAll('.grid-cols-7 button');
+                        const iconButtons = editModal.querySelectorAll('.grid-cols-5 button');
                         
                         // Marcar el color seleccionado
                         colorButtons.forEach(button => {
@@ -163,14 +167,11 @@
                             }
                         });
                         
+                        // Abrir el modal
                         Alpine.store('modal').open = true;
-                        this.modalOpen = true;
                         
-                        console.log('Tipo de modal después de abrir:', Alpine.store('modal').type);
-                        console.log('Campos del formulario actualizados con los valores de la actividad');
+                        console.log('Modal editar abierto:', Alpine.store('modal'));
                     }, 100);
-                    
-                    console.log('Modal editar configurado:', Alpine.store('modal'));
                 },
                 
                 abrirModalEliminar(actividad) {
@@ -276,7 +277,7 @@
         </div>
     </div>
     
-    <div class="min-h-screen flex" x-data="{ modalOpen: false }">
+    <div class="min-h-screen flex">
         <!-- Sidebar -->
         <x-sidebar />
 
@@ -295,7 +296,7 @@
                             <p class="text-xl text-gray-600">Gestiona y organiza tus tareas de manera eficiente</p>
                         </div>
                         @auth
-                        <button @click="abrirModalCrear(); modalOpen = true; $store.modal.type = 'create';" class="flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-md hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
+                        <button @click="abrirModalCrear();" class="flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-md hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
                             <i class="fas fa-plus-circle mr-2"></i>
                             <span>Nueva Actividad</span>
                         </button>
@@ -345,7 +346,7 @@
                                                 <button @click="cambiarEstado(actividad, 'en_progreso')" class="p-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition-colors" title="Mover a En Progreso">
                                                     <i class="fas fa-spinner"></i>
                                                 </button>
-                                                <button @click="abrirModalEditar(actividad); modalOpen = true; $store.modal.type = 'edit';" class="p-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors" title="Editar">
+                                                <button @click="abrirModalEditar(actividad);" class="p-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors" title="Editar">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
                                                 <button @click="abrirModalEliminar(actividad)" class="p-1 bg-red-100 text-red-600 rounded hover:bg-red-200 transition-colors" title="Eliminar">
@@ -402,7 +403,7 @@
                                                 <button @click="cambiarEstado(actividad, 'pendiente')" class="p-1 bg-yellow-100 text-yellow-600 rounded hover:bg-yellow-200 transition-colors" title="Mover a Pendientes">
                                                     <i class="fas fa-clock"></i>
                                                 </button>
-                                                <button @click="abrirModalEditar(actividad); modalOpen = true; $store.modal.type = 'edit';" class="p-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors" title="Editar">
+                                                <button @click="abrirModalEditar(actividad);" class="p-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors" title="Editar">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
                                                 <button @click="abrirModalEliminar(actividad)" class="p-1 bg-red-100 text-red-600 rounded hover:bg-red-200 transition-colors" title="Eliminar">
@@ -452,7 +453,7 @@
                                                 <button @click="cambiarEstado(actividad, 'pendiente')" class="p-1 bg-yellow-100 text-yellow-600 rounded hover:bg-yellow-200 transition-colors" title="Mover a Pendientes">
                                                     <i class="fas fa-undo"></i>
                                                 </button>
-                                                <button @click="abrirModalEditar(actividad); modalOpen = true; $store.modal.type = 'edit';" class="p-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors" title="Editar">
+                                                <button @click="abrirModalEditar(actividad);" class="p-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors" title="Editar">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
                                                 <button @click="abrirModalEliminar(actividad)" class="p-1 bg-red-100 text-red-600 rounded hover:bg-red-200 transition-colors" title="Eliminar">
@@ -467,100 +468,27 @@
                     </div>
                 </div>
                 
-                <!-- Create/Edit Modal -->
-                <div x-show="modalOpen" x-cloak @click.away="modalOpen = false" 
+                <!-- Modal para Crear Actividad -->
+                <div x-show="$store.modal.open && $store.modal.type === 'create'" x-cloak 
                      class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm transition-all duration-300">
                     <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl transform transition-all duration-300" 
+                         @click.away="$store.modal.open = false"
                          x-transition:enter="ease-out duration-300" 
                          x-transition:enter-start="opacity-0 scale-95" 
                          x-transition:enter-end="opacity-100 scale-100">
-                        <!-- Header with gradient background -->
+                        <!-- Header con fondo degradado -->
                         <div class="flex justify-between items-center mb-6 pb-3 border-b border-gray-100">
                             <h3 class="text-xl font-bold text-gray-800 flex items-center">
                                 <span class="bg-gradient-to-r from-blue-500 to-purple-600 h-8 w-1 rounded-full mr-3"></span>
-                                <span x-text="$store.modal.type === 'create' ? 'Nueva Actividad' : 'Editar Actividad'"></span>
+                                <span>Nueva Actividad</span>
                             </h3>
-                            <button @click="modalOpen = false" class="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors duration-200">
+                            <button @click="$store.modal.open = false" class="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors duration-200">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
                         
-                        <form :action="$store.modal.type === 'create' ? '{{ route("actividades.store") }}' : '{{ route("actividades.update", '') }}/' + $store.modal.item.id" method="POST" class="space-y-5" @submit.prevent="
-                            const form = $event.target;
-                            const formData = new FormData(form);
-                            
-                            // Verificar que los campos requeridos estén completos
-                            if (!formData.get('titulo')) {
-                                $store.notification.showNotification('El título es obligatorio', 'error');
-                                return;
-                            }
-                            
-                            // Verificar que se haya seleccionado un color e icono
-                            if (!formData.get('color')) {
-                                $store.notification.showNotification('Debe seleccionar un color', 'error');
-                                return;
-                            }
-                            
-                            if (!formData.get('icono')) {
-                                $store.notification.showNotification('Debe seleccionar un icono', 'error');
-                                return;
-                            }
-                            
-                            // Verificar que se haya ingresado fecha y hora límite
-                            if (!formData.get('fecha_limite')) {
-                                $store.notification.showNotification('La fecha límite es obligatoria', 'error');
-                                return;
-                            }
-                            
-                            if (!formData.get('hora_limite')) {
-                                $store.notification.showNotification('La hora límite es obligatoria', 'error');
-                                return;
-                            }
-                            
-                            // Verificar que se haya ingresado fecha y hora límite
-                            if (!formData.get('fecha_limite')) {
-                                $store.notification.showNotification('La fecha límite es obligatoria', 'error');
-                                return;
-                            }
-                            
-                            if (!formData.get('hora_limite')) {
-                                $store.notification.showNotification('La hora límite es obligatoria', 'error');
-                                return;
-                            }
-                            
-                            // Enviar el formulario
-                            fetch(form.action, {
-                                method: form.method === 'POST' && formData.get('_method') === 'PUT' ? 'POST' : form.method,
-                                body: formData,
-                                headers: {
-                                    'X-Requested-With': 'XMLHttpRequest'
-                                }
-                            })
-                            .then(response => {
-                                if (!response.ok) {
-                                    return response.json().then(data => {
-                                        throw new Error(data.message || 'Error al procesar la solicitud');
-                                    });
-                                }
-                                return response.json();
-                            })
-                            .then(data => {
-                                $store.notification.showNotification($store.modal.type === 'create' ? 'Actividad creada correctamente' : 'Actividad actualizada correctamente', 'success');
-                                modalOpen = false;
-                                // Recargar la página para mostrar los cambios
-                                setTimeout(() => {
-                                    window.location.reload();
-                                }, 1000);
-                            })
-                            .catch(error => {
-                                $store.notification.showNotification(error.message || 'Error al procesar la solicitud', 'error');
-                                console.error('Error:', error);
-                            });
-                        ">
+                        <form action="{{ route('actividades.store') }}" method="POST">
                             @csrf
-                            <input type="hidden" name="_method" x-bind:value="$store.modal.type === 'create' ? 'POST' : 'PUT'">
-                            <input type="hidden" x-if="$store.modal.type === 'edit'" name="id" :value="$store.modal.item.id">
-
                             
                             <!-- Título field with icon -->
                             <div class="group">
@@ -570,7 +498,7 @@
                                 </label>
                                 <div class="relative">
                                     <input type="text" name="titulo" 
-                                           x-bind:value="$store.modal.type === 'create' ? nuevaActividad.titulo : $store.modal.item?.titulo"
+                                           x-bind:value="nuevaActividad.titulo"
                                            class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 outline-none" 
                                            placeholder="Título de la actividad" required>
                                 </div>
@@ -584,7 +512,7 @@
                                 </label>
                                 <div class="relative">
                                     <textarea name="descripcion" 
-                                              x-bind:value="$store.modal.type === 'create' ? nuevaActividad.descripcion : $store.modal.item?.descripcion"
+                                              x-bind:value="nuevaActividad.descripcion"
                                               class="w-full border border-gray-300 rounded-lg px-4 py-3 h-24 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 outline-none" 
                                               placeholder="Descripción de la actividad"></textarea>
                                 </div>
@@ -599,7 +527,7 @@
                                     </label>
                                     <div class="relative">
                                         <select name="nivel" 
-                                                x-bind:value="$store.modal.type === 'create' ? nuevaActividad.nivel : $store.modal.item?.nivel"
+                                                x-bind:value="nuevaActividad.nivel"
                                                 class="w-full border border-gray-300 rounded-lg px-4 py-3 appearance-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 outline-none bg-white">
                                             <option value="principal">Principal</option>
                                             <option value="secundaria">Secundaria</option>
@@ -618,7 +546,7 @@
                                     </label>
                                     <div class="relative">
                                         <select name="estado" 
-                                                x-bind:value="$store.modal.type === 'create' ? nuevaActividad.estado : $store.modal.item?.estado"
+                                                x-bind:value="nuevaActividad.estado"
                                                 class="w-full border border-gray-300 rounded-lg px-4 py-3 appearance-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 outline-none bg-white">
                                             <option value="pendiente">Pendiente</option>
                                             <option value="en_progreso">En Progreso</option>
@@ -640,7 +568,7 @@
                                     </label>
                                     <div class="relative">
                                         <input type="date" name="fecha_limite" 
-                                               x-bind:value="$store.modal.type === 'create' ? nuevaActividad.fecha_limite : $store.modal.item?.fecha_limite"
+                                               x-bind:value="nuevaActividad.fecha_limite"
                                                class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 outline-none" required>
                                     </div>
                                 </div>
@@ -652,7 +580,7 @@
                                     </label>
                                     <div class="relative">
                                         <input type="time" name="hora_limite" 
-                                               x-bind:value="$store.modal.type === 'create' ? nuevaActividad.hora_limite : $store.modal.item?.hora_limite"
+                                               x-bind:value="nuevaActividad.hora_limite"
                                                class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 outline-none" required>
                                     </div>
                                 </div>
@@ -666,101 +594,241 @@
                                 </label>
                                 <div class="relative">
                                     <select name="prioridad" 
-                                            x-bind:value="$store.modal.type === 'create' ? nuevaActividad.prioridad : $store.modal.item?.prioridad"
+                                            x-bind:value="nuevaActividad.prioridad"
+                                            class="w-full border border-gray-300 rounded-lg px-4 py-3 appearance-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200 outline-none bg-white">
+                                <option value="1">Baja</option>
+                                <option value="2">Media</option>
+                                <option value="3">Alta</option>
+                            </select>
+                        </div>
+                    </div>
+                            
+                    <!-- Color selection -->
+                    <div class="group">
+                        <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                            <i class="fas fa-palette text-teal-500 mr-2"></i>
+                            Color
+                        </label>
+                        <input type="hidden" id="selectedColor" name="color" x-bind:value="nuevaActividad.color">
+                        <div class="grid grid-cols-7 gap-2 mb-4">
+                            <template x-for="color in colores" :key="color.valor">
+                                <button type="button" 
+                                        @click="nuevaActividad.color = color.valor; document.getElementById('selectedColor').value = color.valor"
+                                        :style="`background-color: ${color.valor}`"
+                                        :class="{'ring-2 ring-offset-2 ring-gray-800': nuevaActividad.color === color.valor}"
+                                        class="w-8 h-8 rounded-full focus:outline-none transition-all duration-200"
+                                        :title="color.nombre">
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                    
+                    <!-- Icon selection -->
+                    <div class="group">
+                        <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                            <i class="fas fa-icons text-yellow-500 mr-2"></i>
+                            Icono
+                        </label>
+                        <input type="hidden" id="selectedIcon" name="icono" x-bind:value="nuevaActividad.icono">
+                        <div class="grid grid-cols-5 gap-2">
+                            <template x-for="icono in iconos" :key="icono">
+                                <button type="button" 
+                                        @click="nuevaActividad.icono = icono; document.getElementById('selectedIcon').value = icono"
+                                        :class="{'bg-blue-100 ring-2 ring-blue-500': nuevaActividad.icono === icono}"
+                                        class="p-3 rounded-lg border border-gray-200 hover:bg-gray-50 focus:outline-none transition-all duration-200">
+                                    <i class="fas" :class="icono"></i>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button type="button" @click="$store.modal.open = false"
+                                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200">
+                            Cancelar
+                        </button>
+                        <button type="submit"
+                                class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-colors duration-200">
+                            Crear
+                        </button>
+                    </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Modal para Editar Actividad -->
+                <div x-show="$store.modal.open && $store.modal.type === 'edit'" x-cloak
+                     class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm transition-all duration-300">
+                    <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl transform transition-all duration-300"
+                         @click.away="$store.modal.open = false"
+                         x-transition:enter="ease-out duration-300"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100">
+                        <!-- Header con fondo degradado -->
+                        <div class="flex justify-between items-center mb-6 pb-3 border-b border-gray-100">
+                            <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                                <span class="bg-gradient-to-r from-blue-500 to-purple-600 h-8 w-1 rounded-full mr-3"></span>
+                                <span>Editar Actividad</span>
+                            </h3>
+                            <button @click="$store.modal.open = false" class="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors duration-200">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        
+                        <form x-bind:action="'/actividades/' + Alpine.store('modal').item?.id" method="POST">
+                            @csrf
+                            @method('PUT')
+                            
+                            <!-- Título field with icon -->
+                            <div class="group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                    <i class="fas fa-heading text-blue-500 mr-2"></i>
+                                    Título
+                                </label>
+                                <div class="relative">
+                                    <input type="text" name="titulo" 
+                                           class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 outline-none" 
+                                           placeholder="Título de la actividad" required>
+                                </div>
+                            </div>
+                            
+                            <!-- Descripción field with icon -->
+                            <div class="group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                    <i class="fas fa-align-left text-purple-500 mr-2"></i>
+                                    Descripción
+                                </label>
+                                <div class="relative">
+                                    <textarea name="descripcion" 
+                                              class="w-full border border-gray-300 rounded-lg px-4 py-3 h-24 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 outline-none" 
+                                              placeholder="Descripción de la actividad"></textarea>
+                                </div>
+                            </div>
+                            
+                            <!-- Nivel y Estado fields -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="group">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-layer-group text-green-500 mr-2"></i>
+                                        Nivel
+                                    </label>
+                                    <div class="relative">
+                                        <select name="nivel" 
+                                                class="w-full border border-gray-300 rounded-lg px-4 py-3 appearance-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 outline-none bg-white">
+                                            <option value="principal">Principal</option>
+                                            <option value="secundaria">Secundaria</option>
+                                            <option value="terciaria">Terciaria</option>
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                                            <i class="fas fa-chevron-down text-gray-400"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="group">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-tasks-alt text-orange-500 mr-2"></i>
+                                        Estado
+                                    </label>
+                                    <div class="relative">
+                                        <select name="estado" 
+                                                class="w-full border border-gray-300 rounded-lg px-4 py-3 appearance-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 outline-none bg-white">
+                                            <option value="pendiente">Pendiente</option>
+                                            <option value="en_progreso">En Progreso</option>
+                                            <option value="completada">Completada</option>
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                                            <i class="fas fa-chevron-down text-gray-400"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Fecha y Hora fields -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="group">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-calendar-day text-red-500 mr-2"></i>
+                                        Fecha Límite
+                                    </label>
+                                    <div class="relative">
+                                        <input type="date" name="fecha_limite" 
+                                               class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 outline-none">
+                                    </div>
+                                </div>
+                                
+                                <div class="group">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-clock text-indigo-500 mr-2"></i>
+                                        Hora Límite
+                                    </label>
+                                    <div class="relative">
+                                        <input type="time" name="hora_limite" 
+                                               class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 outline-none">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Prioridad field -->
+                            <div class="group">
+                                <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                    <i class="fas fa-flag text-pink-500 mr-2"></i>
+                                    Prioridad
+                                </label>
+                                <div class="relative">
+                                    <select name="prioridad" 
                                             class="w-full border border-gray-300 rounded-lg px-4 py-3 appearance-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200 outline-none bg-white">
                                         <option value="1">Baja</option>
                                         <option value="2">Media</option>
                                         <option value="3">Alta</option>
                                     </select>
-                                    <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
-                                        <i class="fas fa-chevron-down text-gray-400"></i>
-                                    </div>
                                 </div>
                             </div>
-                            
-                            <!-- Color field with visual color indicators -->
+                                
+                            <!-- Color selection -->
                             <div class="group">
                                 <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                                    <i class="fas fa-palette text-yellow-500 mr-2"></i>
+                                    <i class="fas fa-palette text-teal-500 mr-2"></i>
                                     Color
                                 </label>
-                                <div class="grid grid-cols-7 gap-2">
+                                <input type="hidden" id="selectedColor" name="color">
+                                <div class="grid grid-cols-7 gap-2 mb-4">
                                     <template x-for="color in colores" :key="color.valor">
                                         <button type="button" 
-                                                @click="
-                                                    if ($store.modal.type === 'create') {
-                                                        nuevaActividad.color = color.valor;
-                                                    } else if ($store.modal.item) {
-                                                        $store.modal.item.color = color.valor;
-                                                    }
-                                                    document.querySelector('#selectedColor').value = color.valor;
-                                                    
-                                                    // Actualizar la apariencia visual de los botones
-                                                    document.querySelectorAll('.grid-cols-7 button').forEach(btn => {
-                                                        btn.classList.remove('ring-2', 'ring-offset-2', 'ring-gray-800');
-                                                    });
-                                                    $event.target.classList.add('ring-2', 'ring-offset-2', 'ring-gray-800');
-                                                "
-                                                :class="{
-                                                    'ring-2 ring-offset-2 ring-gray-800': 
-                                                        ($store.modal.type === 'create' && nuevaActividad.color === color.valor) || 
-                                                        ($store.modal.type === 'edit' && $store.modal.item && $store.modal.item.color === color.valor)
-                                                }"
-                                                class="w-full h-10 rounded-full focus:outline-none transition-all duration-200"
-                                                :style="`background-color: ${color.valor}`">
+                                                @click="document.getElementById('selectedColor').value = color.valor"
+                                                :style="`background-color: ${color.valor}`"
+                                                class="w-8 h-8 rounded-full focus:outline-none transition-all duration-200">
                                         </button>
                                     </template>
                                 </div>
-                                <input type="hidden" name="color" id="selectedColor"
-                                       x-bind:value="$store.modal.type === 'create' ? nuevaActividad.color : ($store.modal.item ? $store.modal.item.color : '#4A90E2')">
                             </div>
                             
-                            <!-- Icono field with visual icon indicators -->
+                            <!-- Icon selection -->
                             <div class="group">
                                 <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                                    <i class="fas fa-icons text-blue-500 mr-2"></i>
+                                    <i class="fas fa-icons text-yellow-500 mr-2"></i>
                                     Icono
                                 </label>
+                                <input type="hidden" id="selectedIcon" name="icono">
                                 <div class="grid grid-cols-5 gap-2">
                                     <template x-for="icono in iconos" :key="icono">
                                         <button type="button" 
-                                                @click="
-                                                    if ($store.modal.type === 'create') {
-                                                        nuevaActividad.icono = icono;
-                                                    } else if ($store.modal.item) {
-                                                        $store.modal.item.icono = icono;
-                                                    }
-                                                    document.querySelector('#selectedIcon').value = icono;
-                                                    
-                                                    // Actualizar la apariencia visual de los botones
-                                                    document.querySelectorAll('.grid-cols-5 button').forEach(btn => {
-                                                        btn.classList.remove('bg-blue-100', 'ring-2', 'ring-blue-500');
-                                                    });
-                                                    $event.target.classList.add('bg-blue-100', 'ring-2', 'ring-blue-500');
-                                                "
-                                                :class="{
-                                                    'bg-blue-100 ring-2 ring-blue-500': 
-                                                        ($store.modal.type === 'create' && nuevaActividad.icono === icono) || 
-                                                        ($store.modal.type === 'edit' && $store.modal.item && $store.modal.item.icono === icono)
-                                                }"
-                                                class="p-3 rounded-lg focus:outline-none transition-all duration-200 bg-gray-100 hover:bg-gray-200">
-                                            <i class="fas text-lg" :class="icono"></i>
+                                                @click="document.getElementById('selectedIcon').value = icono"
+                                                class="p-3 rounded-lg border border-gray-200 hover:bg-gray-50 focus:outline-none transition-all duration-200">
+                                            <i class="fas" :class="icono"></i>
                                         </button>
                                     </template>
                                 </div>
-                                <input type="hidden" name="icono" id="selectedIcon"
-                                       x-bind:value="$store.modal.type === 'create' ? nuevaActividad.icono : ($store.modal.item ? $store.modal.item.icono : 'fa-tasks')">
                             </div>
                             
-                            <!-- Submit buttons -->
-                            <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-100">
-                                <button type="button" @click="modalOpen = false" 
+                            <div class="flex justify-end space-x-3 mt-6">
+                                <button type="button" @click="$store.modal.open = false"
                                         class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200">
                                     Cancelar
                                 </button>
-                                <button type="submit" 
+                                <button type="submit"
                                         class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-colors duration-200">
-                                    <span x-text="$store.modal.type === 'create' ? 'Crear Actividad' : 'Guardar Cambios'"></span>
+                                    Guardar
                                 </button>
                             </div>
                         </form>
