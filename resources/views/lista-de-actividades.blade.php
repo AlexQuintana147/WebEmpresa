@@ -5,12 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Lista de Actividades</title>
-    <style>[x-cloak] { display: none !important; }</style>
+    <style>
+        [x-cloak] { display: none !important; }
+        /* Asegurar que los modales sean visibles cuando se activen */
+        .modal-visible { display: flex !important; }
+    </style>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script>
         // Inicializar los stores directamente para evitar problemas de sincronización
         document.addEventListener('alpine:init', () => {
+            console.log('Alpine initialized');
             // Inicializar el store modal globalmente
             Alpine.store('modal', {
                 open: false,
@@ -42,9 +47,6 @@
             });
             
             console.log('Modal store inicializado:', Alpine.store('modal'));
-        });
-        
-        document.addEventListener('alpine:init', () => {
 
             Alpine.data('actividades', () => ({
                 pendientes: [],
@@ -98,16 +100,32 @@
                 
                 abrirModalCrear() {
                     this.resetearNuevaActividad();
+                    // Primero establecer el tipo
                     Alpine.store('modal').type = 'create';
-                    Alpine.store('modal').open = true;
-                    console.log('Modal crear abierto:', Alpine.store('modal'));
+                    // Luego abrir el modal con un pequeño retraso para asegurar que Alpine procese el cambio
+                    setTimeout(() => {
+                        Alpine.store('modal').open = true;
+                        console.log('Modal crear abierto:', Alpine.store('modal'));
+                        
+                        // Forzar actualización del DOM para asegurar que el modal se muestre
+                        setTimeout(() => {
+                            const createModal = document.querySelector('[x-show="$store.modal.open && $store.modal.type === \'create\'"');
+                            if (createModal) {
+                                // Asegurarse de que el modal sea visible
+                                createModal.style.display = 'flex';
+                                createModal.classList.add('modal-visible');
+                            } else {
+                                console.error('No se encontró el modal de creación');
+                            }
+                        }, 50);
+                    }, 10);
                 },
                 
                 abrirModalEditar(actividad) {
                     // Establecer el tipo como 'edit' y guardar la actividad en el store
-                    Alpine.store('modal').type = 'edit';
                     this.actividadSeleccionada = {...actividad};
                     Alpine.store('modal').item = JSON.parse(JSON.stringify(actividad));
+                    Alpine.store('modal').type = 'edit';
                     
                     console.log('Actividad seleccionada:', this.actividadSeleccionada);
                     console.log('Modal item:', Alpine.store('modal').item);
@@ -176,10 +194,13 @@
                 
                 abrirModalEliminar(actividad) {
                     this.actividadSeleccionada = actividad;
+                    Alpine.store('modal').item = JSON.parse(JSON.stringify(actividad));
                     Alpine.store('modal').type = 'delete';
-                    Alpine.store('modal').item = actividad;
-                    Alpine.store('modal').open = true;
-                    console.log('Modal eliminar abierto:', Alpine.store('modal'));
+                    
+                    setTimeout(() => {
+                        Alpine.store('modal').open = true;
+                        console.log('Modal eliminar abierto:', Alpine.store('modal'));
+                    }, 50);
                 },
                 
                 resetearNuevaActividad() {
@@ -469,7 +490,7 @@
                 </div>
                 
                 <!-- Modal para Crear Actividad -->
-                <div x-show="$store.modal.open && $store.modal.type === 'create'" x-cloak 
+                <div x-show="$store.modal.open && $store.modal.type === 'create'" 
                      class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm transition-all duration-300">
                     <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl transform transition-all duration-300" 
                          @click.away="$store.modal.open = false"
@@ -791,11 +812,11 @@
                                     <i class="fas fa-palette text-teal-500 mr-2"></i>
                                     Color
                                 </label>
-                                <input type="hidden" id="selectedColor" name="color">
+                                <input type="hidden" id="selectedColorEdit" name="color">
                                 <div class="grid grid-cols-7 gap-2 mb-4">
                                     <template x-for="color in colores" :key="color.valor">
                                         <button type="button" 
-                                                @click="document.getElementById('selectedColor').value = color.valor"
+                                                @click="document.getElementById('selectedColorEdit').value = color.valor"
                                                 :style="`background-color: ${color.valor}`"
                                                 class="w-8 h-8 rounded-full focus:outline-none transition-all duration-200">
                                         </button>
@@ -809,11 +830,11 @@
                                     <i class="fas fa-icons text-yellow-500 mr-2"></i>
                                     Icono
                                 </label>
-                                <input type="hidden" id="selectedIcon" name="icono">
+                                <input type="hidden" id="selectedIconEdit" name="icono">
                                 <div class="grid grid-cols-5 gap-2">
                                     <template x-for="icono in iconos" :key="icono">
                                         <button type="button" 
-                                                @click="document.getElementById('selectedIcon').value = icono"
+                                                @click="document.getElementById('selectedIconEdit').value = icono"
                                                 class="p-3 rounded-lg border border-gray-200 hover:bg-gray-50 focus:outline-none transition-all duration-200">
                                             <i class="fas" :class="icono"></i>
                                         </button>
@@ -836,7 +857,7 @@
                 </div>
                 
                 <!-- Delete Confirmation Modal -->
-                <div x-show="$store.modal.open && $store.modal.type === 'delete'" 
+                <div x-show="$store.modal.open && $store.modal.type === 'delete'" x-cloak
                      class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm transition-all duration-300">
                     <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl transform transition-all duration-300" 
                          @click.away="$store.modal.open = false"
@@ -849,7 +870,7 @@
                                 <span class="bg-gradient-to-r from-red-500 to-pink-600 h-8 w-1 rounded-full mr-3"></span>
                                 <span>Eliminar Actividad</span>
                             </h3>
-                            <button @click="modalOpen = false" class="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors duration-200">
+                            <button @click="$store.modal.open = false" class="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors duration-200">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
