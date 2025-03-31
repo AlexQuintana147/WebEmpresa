@@ -11,9 +11,18 @@ document.addEventListener('alpine:init', () => {
         init() {
             // Asegurarse de que el modal esté cerrado al inicializar
             this.modalOpen = false;
+            
+            // Forzar que el modal permanezca cerrado después de la inicialización
+            setTimeout(() => {
+                this.modalOpen = false;
+            }, 100);
         },
         
         openModal(mode, activity = null) {
+            // Limpiar errores previos si existen
+            document.querySelectorAll('.text-red-500').forEach(el => el.remove());
+            document.querySelectorAll('.border-red-500').forEach(el => el.classList.remove('border-red-500'));
+            
             this.modalMode = mode;
             this.modalTitle = mode === 'create' ? 'Nueva Actividad' : 'Editar Actividad';
             this.currentActivity = activity;
@@ -49,14 +58,27 @@ document.addEventListener('alpine:init', () => {
                 document.getElementById('icono').value = activity.icono;
                 document.getElementById('prioridad').value = activity.prioridad;
                 document.getElementById('actividad_padre_id').value = activity.actividad_padre_id || '';
+                
+                // Actualizar visualización del color e icono seleccionados
+                if (document.getElementById('selectedColor')) {
+                    document.getElementById('selectedColor').style.backgroundColor = activity.color;
+                }
+                if (document.getElementById('selectedIcon')) {
+                    document.getElementById('selectedIcon').innerHTML = `<i class="fas ${activity.icono} text-xl"></i>`;
+                }
             }
             
+            // Abrir el modal después de configurarlo
             this.modalOpen = true;
         },
         
         closeModal() {
             this.modalOpen = false;
             this.currentActivity = null;
+            
+            // Limpiar errores al cerrar el modal
+            document.querySelectorAll('.text-red-500').forEach(el => el.remove());
+            document.querySelectorAll('.border-red-500').forEach(el => el.classList.remove('border-red-500'));
         },
         
         toggleSubactivities(parentId) {
@@ -137,11 +159,20 @@ document.addEventListener('alpine:init', () => {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Asegurarse de que el modal esté cerrado al cargar la página
+    if (Alpine.store('actividades')) {
+        Alpine.store('actividades').modalOpen = false;
+    }
+    
     // Manejar envío del formulario de actividad
     const actividadForm = document.getElementById('actividadForm');
     if (actividadForm) {
         actividadForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            // Limpiar errores previos
+            document.querySelectorAll('.text-red-500').forEach(el => el.remove());
+            document.querySelectorAll('.border-red-500').forEach(el => el.classList.remove('border-red-500'));
             
             const formData = new FormData(this);
             const activityId = formData.get('actividad_id');
@@ -153,11 +184,18 @@ document.addEventListener('DOMContentLoaded', function() {
             if (activityId) {
                 url = `/actividades/${activityId}`;
                 method = 'PUT';
+                
+                // Para edición, asegurarse de que el método sea PUT
+                const methodInput = document.createElement('input');
+                methodInput.type = 'hidden';
+                methodInput.name = '_method';
+                methodInput.value = 'PUT';
+                formData.append('_method', 'PUT');
             }
             
             // Enviar solicitud AJAX
             fetch(url, {
-                method: method,
+                method: method === 'PUT' ? 'POST' : method, // Para PUT usamos POST con _method=PUT
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     'Accept': 'application/json',
@@ -175,6 +213,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Mostrar errores
                     console.error('Error:', data.message);
                     if (data.errors) {
+                        // Limpiar errores previos antes de mostrar nuevos
+                        document.querySelectorAll('.text-red-500').forEach(el => el.remove());
+                        document.querySelectorAll('.border-red-500').forEach(el => el.classList.remove('border-red-500'));
+                        
                         Object.keys(data.errors).forEach(key => {
                             const input = document.getElementById(key);
                             if (input) {
