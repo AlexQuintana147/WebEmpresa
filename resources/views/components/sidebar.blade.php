@@ -48,12 +48,65 @@
             </div>
             <span class="font-medium tracking-wide group-hover:text-teal-300 transition-colors duration-300">Notas</span>
         </a>
-        <div class="mt-8">
-            <div class="flex items-center px-5 mb-4">
-                <i class="fas fa-user-cog text-purple-400 mr-3"></i>
-                <h2 class="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-purple-100 to-purple-50">Opciones de Cliente</h2>
+
+        <!-- Sección diferenciada para Pacientes -->
+        <div class="mt-8 relative group/patient">
+            <!-- Efecto de neón flotante -->
+            <div class="absolute -inset-1 bg-gradient-to-r from-teal-400/20 to-purple-500/20 rounded-xl blur-sm opacity-0 group-hover/patient:opacity-40 transition-opacity duration-300"></div>
+            
+            <!-- Contenedor principal del área de pacientes -->
+            <div class="relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-1 shadow-2xl border border-gray-700/50 hover:border-teal-400/30 transition-all duration-300">
+                <!-- Cabecera destacada -->
+                <div class="flex items-center px-5 py-4">
+                    <div class="mr-3 relative">
+                        <i class="fas fa-user-shield text-teal-400 text-xl"></i>
+                        <div class="absolute -right-1 -bottom-1 w-2 h-2 bg-teal-400 rounded-full animate-pulse"></div>
+                    </div>
+                    <h2 class="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-teal-200 to-teal-100">Acceso Pacientes</h2>
+                </div>
+                
+                <!-- Separador dinámico -->
+                <div class="h-px bg-gradient-to-r from-transparent via-teal-400/20 to-transparent mb-4"></div>
+
+                <!-- Elementos de navegación para pacientes -->
+                <div class="space-y-3 px-2 pb-2">
+                    <!-- Historial Médico -->
+                    <a href="/historial" class="group flex items-center p-3 rounded-lg transition-all duration-300 hover:bg-teal-900/20 hover:translate-x-2 hover:shadow-lg hover:shadow-teal-500/10">
+                        <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-teal-400/20 to-teal-500/20 group-hover:from-teal-400/30 group-hover:to-teal-500/30 transition-all duration-300 mr-3">
+                            <i class="fas fa-file-waveform text-teal-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                        </div>
+                        <div class="flex-1">
+                            <span class="font-medium tracking-wide group-hover:text-teal-300 transition-colors duration-300">Historial Médico</span>
+                            <p class="text-xs text-gray-400 mt-1">Registros completos</p>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-400 text-sm ml-2 group-hover:text-teal-300 transition-colors duration-300"></i>
+                    </a>
+
+                    <!-- Atención Médica -->
+                    <a href="/atencionmedica" class="group flex items-center p-3 rounded-lg transition-all duration-300 hover:bg-blue-900/20 hover:translate-x-2 hover:shadow-lg hover:shadow-blue-500/10">
+                        <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-blue-400/20 to-blue-500/20 group-hover:from-blue-400/30 group-hover:to-blue-500/30 transition-all duration-300 mr-3">
+                            <i class="fas fa-hospital-user text-blue-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                        </div>
+                        <div class="flex-1">
+                            <span class="font-medium tracking-wide group-hover:text-blue-300 transition-colors duration-300">Atención Médica</span>
+                            <p class="text-xs text-gray-400 mt-1">Consulta especializada</p>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-400 text-sm ml-2 group-hover:text-blue-300 transition-colors duration-300"></i>
+                    </a>
+
+                    <!-- Atención Directa -->
+                    <a href="/atenciondirecta" class="group flex items-center p-3 rounded-lg transition-all duration-300 hover:bg-purple-900/20 hover:translate-x-2 hover:shadow-lg hover:shadow-purple-500/10">
+                        <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-purple-400/20 to-purple-500/20 group-hover:from-purple-400/30 group-hover:to-purple-500/30 transition-all duration-300 mr-3">
+                            <i class="fas fa-comment-medical text-purple-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                        </div>
+                        <div class="flex-1">
+                            <span class="font-medium tracking-wide group-hover:text-purple-300 transition-colors duration-300">Atención Directa</span>
+                            <p class="text-xs text-gray-400 mt-1">Comunicación inmediata</p>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-400 text-sm ml-2 group-hover:text-purple-300 transition-colors duration-300"></i>
+                    </a>
+                </div>
             </div>
-            <div class="h-0.5 bg-gradient-to-r from-transparent via-purple-400/30 to-transparent opacity-30 mx-5 mb-6"></div>
         </div>
     </nav>
     <div class="mt-auto pt-6 border-t border-gray-700/30">

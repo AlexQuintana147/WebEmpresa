@@ -8,6 +8,11 @@ document.addEventListener('alpine:init', () => {
         showSubactivities: false,
         currentParentId: null,
         
+        init() {
+            // Asegurarse de que el modal esté cerrado al inicializar
+            this.modalOpen = false;
+        },
+        
         openModal(mode, activity = null) {
             this.modalMode = mode;
             this.modalTitle = mode === 'create' ? 'Nueva Actividad' : 'Editar Actividad';
