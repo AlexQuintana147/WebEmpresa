@@ -662,7 +662,7 @@
         </div>
     </div>
     
-    <!-- Modal para Crear/Editar Actividad -->
+    <!-- Modal para Crear/Editar Actividad -->    
     <div 
         x-data
         x-show="$store.actividades.modalOpen"
@@ -673,124 +673,275 @@
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
         @click.self="$store.actividades.closeModal()"
-        class="fixed inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+        class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         
         <div 
-            class="relative p-8 border-0 w-full max-w-2xl shadow-2xl rounded-2xl bg-white"
+            class="relative p-0 border-0 w-full max-w-2xl shadow-2xl rounded-2xl bg-white overflow-hidden"
             x-show="$store.actividades.modalOpen"
             x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 scale-95"
-            x-transition:enter-end="opacity-100 scale-100"
+            x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
             x-transition:leave="transition ease-in duration-200"
             x-transition:leave-start="opacity-100 scale-100"
-            x-transition:leave-end="opacity-0 scale-95">
+            x-transition:leave-end="opacity-0 scale-95 translate-y-4">
             
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-2xl font-bold text-gray-800" x-text="$store.actividades.modalTitle"></h3>
-                <button 
-                    @click="$store.actividades.closeModal()"
-                    class="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-full">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
+            <!-- Modal Header con gradiente -->            
+            <div class="bg-gradient-to-r from-amber-500 to-amber-600 p-6 text-white relative">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-2xl font-bold flex items-center" x-text="$store.actividades.modalTitle"></h3>
+                    <button 
+                        @click="$store.actividades.closeModal()"
+                        class="text-white/80 hover:text-white transition-colors p-1.5 hover:bg-white/20 rounded-full">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Indicador de modo (crear/editar) -->                
+                <div class="mt-2 text-sm text-white/80 flex items-center">
+                    <i class="fas" :class="$store.actividades.modalMode === 'create' ? 'fa-plus-circle' : 'fa-edit'"></i>
+                    <span class="ml-2" x-text="$store.actividades.modalMode === 'create' ? 'Creando nueva actividad' : 'Modificando actividad existente'"></span>
+                </div>
             </div>
             
-            <form id="actividadForm" class="space-y-6">
+            <!-- Contenido del formulario -->            
+            <form id="actividadForm" class="p-6 space-y-6">
                 @csrf
                 <input type="hidden" id="actividad_id" name="actividad_id">
                 <input type="hidden" id="actividad_padre_id" name="actividad_padre_id">
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="col-span-2">
-                        <label for="titulo" class="block text-sm font-medium text-gray-700 mb-1">Título</label>
-                        <input type="text" id="titulo" name="titulo" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500" required>
+                <!-- Vista previa de la actividad -->                
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6 flex items-start space-x-4" x-data="{previewTitle: '', previewDesc: '', previewColor: '#4A90E2', previewIcon: 'fa-tasks'}" x-init="
+                    $watch('$store.actividades.modalOpen', value => {
+                        if (value) {
+                            setTimeout(() => {
+                                previewTitle = document.getElementById('titulo').value || 'Nueva Actividad';
+                                previewDesc = document.getElementById('descripcion').value || '';
+                                previewColor = document.getElementById('color').value || '#4A90E2';
+                                previewIcon = document.getElementById('icono').value || 'fa-tasks';
+                            }, 100);
+                        }
+                    });
+                    $watch('previewTitle', value => { if (!value) previewTitle = 'Nueva Actividad'; });
+                ">
+                    <div class="flex items-center justify-center w-12 h-12 rounded-lg" :style="`background-color: ${previewColor}`">
+                        <i class="fas text-white text-xl" :class="previewIcon"></i>
                     </div>
-                    
-                    <div class="col-span-2">
-                        <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-                        <textarea id="descripcion" name="descripcion" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"></textarea>
-                    </div>
-                    
-                    <div>
-                        <label for="nivel" class="block text-sm font-medium text-gray-700 mb-1">Nivel</label>
-                        <select id="nivel" name="nivel" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
-                            <option value="principal">Principal</option>
-                            <option value="secundaria">Secundaria</option>
-                            <option value="terciaria">Terciaria</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label for="estado" class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-                        <select id="estado" name="estado" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
-                            <option value="pendiente">Pendiente</option>
-                            <option value="en_progreso">En Progreso</option>
-                            <option value="completada">Completada</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label for="fecha_limite" class="block text-sm font-medium text-gray-700 mb-1">Fecha Límite</label>
-                        <input type="date" id="fecha_limite" name="fecha_limite" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500" required>
-                    </div>
-                    
-                    <div>
-                        <label for="hora_limite" class="block text-sm font-medium text-gray-700 mb-1">Hora Límite</label>
-                        <input type="time" id="hora_limite" name="hora_limite" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500" required>
-                    </div>
-                    
-                    <div>
-                        <label for="prioridad" class="block text-sm font-medium text-gray-700 mb-1">Prioridad</label>
-                        <select id="prioridad" name="prioridad" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
-                            <option value="1">Baja</option>
-                            <option value="2">Media</option>
-                            <option value="3">Alta</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
-                        <div class="flex items-center space-x-3">
-                            <div id="selectedColor" class="w-10 h-10 rounded-lg border border-gray-300" style="background-color: #4A90E2"></div>
-                            <input type="text" id="color" name="color" value="#4A90E2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-gray-800" x-text="previewTitle || 'Nueva Actividad'"></h3>
+                        <p class="text-sm text-gray-600 mt-1" x-text="previewDesc" x-show="previewDesc"></p>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <span class="px-2 py-0.5 text-xs font-medium rounded-full" 
+                                  :style="`background-color: ${previewColor}20; color: ${previewColor}`">
+                                <span x-text="document.getElementById('nivel')?.value === 'principal' ? 'Principal' : 
+                                              (document.getElementById('nivel')?.value === 'secundaria' ? 'Secundaria' : 'Terciaria')"></span>
+                            </span>
+                            <span class="px-2 py-0.5 text-xs font-medium rounded-full"
+                                  :class="document.getElementById('estado')?.value === 'pendiente' ? 'bg-yellow-100 text-yellow-800' : 
+                                         (document.getElementById('estado')?.value === 'en_progreso' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800')">
+                                <span x-text="document.getElementById('estado')?.value === 'pendiente' ? 'Pendiente' : 
+                                              (document.getElementById('estado')?.value === 'en_progreso' ? 'En Progreso' : 'Completada')"></span>
+                            </span>
+                            <span class="px-2 py-0.5 text-xs font-medium rounded-full"
+                                  :class="document.getElementById('prioridad')?.value == 1 ? 'bg-gray-100 text-gray-800' : 
+                                         (document.getElementById('prioridad')?.value == 2 ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800')">
+                                <span x-text="'Prioridad: ' + (document.getElementById('prioridad')?.value == 1 ? 'Baja' : 
+                                                            (document.getElementById('prioridad')?.value == 2 ? 'Media' : 'Alta'))"></span>
+                            </span>
                         </div>
-                        <div id="colorPicker" class="mt-2 flex flex-wrap"></div>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Icono</label>
-                        <div class="flex items-center space-x-3">
-                            <div id="selectedIcon" class="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center">
-                                <i class="fas fa-tasks text-xl"></i>
-                            </div>
-                            <input type="text" id="icono" name="icono" value="fa-tasks" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
-                        </div>
-                        <div id="iconSelector" class="mt-2 flex flex-wrap"></div>
                     </div>
                 </div>
                 
-                <div class="flex justify-end space-x-3">
+                <!-- Campos del formulario -->                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Título y Descripción (agrupados) -->                    
+                    <div class="col-span-3 space-y-3">
+                        <div>
+                            <label for="titulo" class="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                            <input 
+                                type="text" 
+                                id="titulo" 
+                                name="titulo" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200" 
+                                required
+                                @input="previewTitle = $event.target.value"
+                                placeholder="Ingrese el título de la actividad">
+                        </div>
+                        
+                        <!-- Descripción (justo debajo del título) -->                    
+                        <div>
+                            <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                            <textarea 
+                                id="descripcion" 
+                                name="descripcion" 
+                                rows="2" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
+                                placeholder="Describa los detalles de la actividad"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Primera columna: Configuración básica -->                    
+                    <div class="space-y-4">
+                        <!-- Nivel -->                    
+                        <div>
+                            <label for="nivel" class="block text-sm font-medium text-gray-700 mb-1">Nivel</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-layer-group text-gray-400"></i>
+                                </div>
+                                <select 
+                                    id="nivel" 
+                                    name="nivel" 
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
+                                    @change="$dispatch('input', $event.target.value)">
+                                    <option value="principal">Principal</option>
+                                    <option value="secundaria">Secundaria</option>
+                                    <option value="terciaria">Terciaria</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Estado -->                    
+                        <div>
+                            <label for="estado" class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-tasks text-gray-400"></i>
+                                </div>
+                                <select 
+                                    id="estado" 
+                                    name="estado" 
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
+                                    @change="$dispatch('input', $event.target.value)">
+                                    <option value="pendiente">Pendiente</option>
+                                    <option value="en_progreso">En Progreso</option>
+                                    <option value="completada">Completada</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Prioridad -->                    
+                        <div>
+                            <label for="prioridad" class="block text-sm font-medium text-gray-700 mb-1">Prioridad</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-flag text-gray-400"></i>
+                                </div>
+                                <select 
+                                    id="prioridad" 
+                                    name="prioridad" 
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
+                                    @change="$dispatch('input', $event.target.value)">
+                                    <option value="1">Baja</option>
+                                    <option value="2">Media</option>
+                                    <option value="3">Alta</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Segunda columna: Fechas y Personalización -->                    
+                    <div class="space-y-4">
+                        <!-- Fecha Límite -->                    
+                        <div>
+                            <label for="fecha_limite" class="block text-sm font-medium text-gray-700 mb-1">Fecha Límite</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-calendar-alt text-gray-400"></i>
+                                </div>
+                                <input 
+                                    type="date" 
+                                    id="fecha_limite" 
+                                    name="fecha_limite" 
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200" 
+                                    required>
+                            </div>
+                        </div>
+                        
+                        <!-- Hora Límite -->                    
+                        <div>
+                            <label for="hora_limite" class="block text-sm font-medium text-gray-700 mb-1">Hora Límite</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-clock text-gray-400"></i>
+                                </div>
+                                <input 
+                                    type="time" 
+                                    id="hora_limite" 
+                                    name="hora_limite" 
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200" 
+                                    required>
+                            </div>
+                        </div>
+                        
+                        <!-- Color -->                    
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                            <div class="flex items-center space-x-2">
+                                <div id="selectedColor" class="w-10 h-10 rounded-lg border border-gray-300 shadow-inner transition-all duration-200" style="background-color: #4A90E2"></div>
+                                <div class="flex-1">
+                                    <input 
+                                        type="text" 
+                                        id="color" 
+                                        name="color" 
+                                        value="#4A90E2" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
+                                        @input="previewColor = $event.target.value">
+                                </div>
+                            </div>
+                            <div id="colorPicker" class="mt-2 p-2 bg-gray-50 rounded-lg border border-gray-200 grid grid-cols-5 gap-1"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tercera columna: Icono y Descripción -->                    
+                    <div class="space-y-4">
+                        <!-- Icono -->                    
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Icono</label>
+                            <div class="flex items-center space-x-2">
+                                <div id="selectedIcon" class="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center shadow-inner transition-all duration-200" style="background-color: #f8f9fa">
+                                    <i class="fas fa-tasks text-xl"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <input 
+                                        type="text" 
+                                        id="icono" 
+                                        name="icono" 
+                                        value="fa-tasks" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
+                                        @input="previewIcon = $event.target.value">
+                                </div>
+                            </div>
+                            <div id="iconSelector" class="mt-2 p-2 bg-gray-50 rounded-lg border border-gray-200 grid grid-cols-5 gap-1 max-h-28 overflow-y-auto"></div>
+                        </div>
+                    </div>
+                    
+
+                </div>
+                
+                <!-- Botones de acción -->                
+                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200 mt-6">
                     <button 
                         type="button"
                         @click="$store.actividades.closeModal()"
-                        class="px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-lg 
-                               hover:bg-gray-300
+                        class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg 
+                               hover:bg-gray-50
                                focus:ring-4 focus:ring-gray-300/50
                                transition-all duration-300 ease-out
-                               active:scale-95">
-                        Cancelar
+                               active:scale-95 flex items-center">
+                        <i class="fas fa-times mr-2"></i> Cancelar
                     </button>
                     <button 
                         type="submit"
-                        class="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-sm font-medium rounded-lg 
+                        class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-sm font-medium rounded-lg 
                                hover:from-amber-600 hover:to-amber-700
                                focus:ring-4 focus:ring-amber-300/50
                                shadow-md hover:shadow-xl
                                transform hover:-translate-y-0.5
                                transition-all duration-300 ease-out
-                               active:scale-95">
-                        Guardar
+                               active:scale-95 flex items-center">
+                        <i class="fas fa-save mr-2"></i> Guardar
                     </button>
                 </div>
             </form>

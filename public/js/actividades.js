@@ -58,18 +58,71 @@ document.addEventListener('alpine:init', () => {
                 document.getElementById('icono').value = activity.icono;
                 document.getElementById('prioridad').value = activity.prioridad;
                 document.getElementById('actividad_padre_id').value = activity.actividad_padre_id || '';
-                
-                // Actualizar visualización del color e icono seleccionados
-                if (document.getElementById('selectedColor')) {
-                    document.getElementById('selectedColor').style.backgroundColor = activity.color;
-                }
-                if (document.getElementById('selectedIcon')) {
-                    document.getElementById('selectedIcon').innerHTML = `<i class="fas ${activity.icono} text-xl"></i>`;
-                }
             }
             
             // Abrir el modal después de configurarlo
             this.modalOpen = true;
+            
+            // Usar setTimeout para asegurar que el DOM se ha actualizado
+            setTimeout(() => {
+                // Actualizar visualización del color e icono seleccionados
+                const selectedColor = document.getElementById('selectedColor');
+                const selectedIcon = document.getElementById('selectedIcon');
+                const colorInput = document.getElementById('color');
+                const iconInput = document.getElementById('icono');
+                
+                if (selectedColor && colorInput) {
+                    selectedColor.style.backgroundColor = colorInput.value;
+                    
+                    // Disparar evento input para actualizar la vista previa
+                    const colorEvent = new Event('input');
+                    colorInput.dispatchEvent(colorEvent);
+                }
+                
+                if (selectedIcon && iconInput) {
+                    selectedIcon.innerHTML = `<i class="fas ${iconInput.value} text-xl"></i>`;
+                    
+                    // Disparar evento input para actualizar la vista previa
+                    const iconEvent = new Event('input');
+                    iconInput.dispatchEvent(iconEvent);
+                }
+                
+                // Inicializar selectores de iconos y colores
+                initializeIconSelector();
+                initializeColorPicker();
+                
+                // Disparar evento input en el título y descripción para actualizar la vista previa
+                const tituloInput = document.getElementById('titulo');
+                const descripcionInput = document.getElementById('descripcion');
+                
+                if (tituloInput) {
+                    const tituloEvent = new Event('input');
+                    tituloInput.dispatchEvent(tituloEvent);
+                }
+                
+                if (descripcionInput) {
+                    descripcionInput.addEventListener('input', function(e) {
+                        // Actualizar la vista previa de la descripción
+                        const previewDescElement = document.querySelector('[x-text="previewDesc"]');
+                        if (previewDescElement && window.Alpine) {
+                            window.Alpine.evaluate(previewDescElement, 'previewDesc = "' + e.target.value.replace(/"/g, '\\"') + '"');
+                        }
+                    });
+                    
+                    // Disparar evento inicial
+                    const descripcionEvent = new Event('input');
+                    descripcionInput.dispatchEvent(descripcionEvent);
+                }
+                
+                // Disparar eventos change en los selectores para actualizar la vista previa
+                ['nivel', 'estado', 'prioridad'].forEach(id => {
+                    const select = document.getElementById(id);
+                    if (select) {
+                        const event = new Event('change');
+                        select.dispatchEvent(event);
+                    }
+                });
+            }, 100);
         },
         
         closeModal() {
@@ -245,27 +298,68 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeIconSelector() {
     const iconSelector = document.getElementById('iconSelector');
     const iconInput = document.getElementById('icono');
+    const selectedIcon = document.getElementById('selectedIcon');
+    const iconInputContainer = iconInput ? iconInput.parentElement : null;
     
     if (iconSelector && iconInput) {
-        // Lista de iconos disponibles
+        // Ocultar el campo de entrada de texto
+        if (iconInputContainer) {
+            iconInput.style.display = 'none';
+        }
+        
+        // Lista de iconos disponibles (ampliada)
         const icons = [
             'fa-tasks', 'fa-calendar', 'fa-clock', 'fa-star', 'fa-check-circle',
             'fa-list', 'fa-clipboard', 'fa-file', 'fa-folder', 'fa-bookmark',
             'fa-bell', 'fa-flag', 'fa-tag', 'fa-home', 'fa-building',
-            'fa-user', 'fa-users', 'fa-briefcase', 'fa-chart-line', 'fa-cog'
+            'fa-user', 'fa-users', 'fa-briefcase', 'fa-chart-line', 'fa-cog',
+            'fa-calendar-check', 'fa-calendar-alt', 'fa-check', 'fa-check-square',
+            'fa-clipboard-check', 'fa-clipboard-list', 'fa-edit', 'fa-exclamation-circle',
+            'fa-exclamation-triangle', 'fa-lightbulb', 'fa-link', 'fa-map-marker-alt',
+            'fa-paperclip', 'fa-pencil-alt', 'fa-project-diagram', 'fa-sticky-note',
+            'fa-thumbtack', 'fa-trophy', 'fa-wrench', 'fa-bullseye'
         ];
+        
+        // Limpiar el selector antes de añadir nuevos iconos
+        iconSelector.innerHTML = '';
         
         // Generar botones de iconos
         icons.forEach(icon => {
             const button = document.createElement('button');
             button.type = 'button';
-            button.className = 'p-2 rounded-lg hover:bg-gray-100 transition-colors';
-            button.innerHTML = `<i class="fas ${icon} text-xl"></i>`;
+            button.className = 'p-1.5 rounded hover:bg-amber-100 transition-colors flex items-center justify-center';
+            button.innerHTML = `<i class="fas ${icon} text-lg"></i>`;
+            button.title = icon.replace('fa-', '');
+            
+            // Añadir clase activa si es el icono seleccionado
+            if (iconInput.value === icon) {
+                button.classList.add('bg-amber-100', 'ring-1', 'ring-amber-500');
+            }
+            
             button.addEventListener('click', function() {
+                // Quitar clase activa de todos los botones
+                iconSelector.querySelectorAll('button').forEach(btn => {
+                    btn.classList.remove('bg-amber-100', 'ring-1', 'ring-amber-500');
+                });
+                
+                // Añadir clase activa al botón seleccionado
+                this.classList.add('bg-amber-100', 'ring-1', 'ring-amber-500');
+                
+                // Actualizar valor del input
                 iconInput.value = icon;
+                
                 // Actualizar icono seleccionado
-                document.getElementById('selectedIcon').innerHTML = `<i class="fas ${icon} text-xl"></i>`;
+                selectedIcon.innerHTML = `<i class="fas ${icon} text-xl"></i>`;
+                selectedIcon.classList.add('scale-110', 'ring-1', 'ring-amber-500');
+                setTimeout(() => {
+                    selectedIcon.classList.remove('scale-110');
+                }, 300);
+                
+                // Actualizar vista previa
+                const event = new Event('input');
+                iconInput.dispatchEvent(event);
             });
+            
             iconSelector.appendChild(button);
         });
     }
@@ -275,27 +369,86 @@ function initializeIconSelector() {
 function initializeColorPicker() {
     const colorPicker = document.getElementById('colorPicker');
     const colorInput = document.getElementById('color');
+    const selectedColor = document.getElementById('selectedColor');
+    const colorInputContainer = colorInput ? colorInput.parentElement : null;
     
     if (colorPicker && colorInput) {
-        // Lista de colores predefinidos
+        // Ocultar el campo de entrada de texto
+        if (colorInputContainer) {
+            colorInput.style.display = 'none';
+        }
+        
+        // Lista de colores predefinidos (con nombres)
         const colors = [
-            '#4A90E2', '#50E3C2', '#B8E986', '#F8E71C', '#F5A623',
-            '#E74C3C', '#8E44AD', '#3498DB', '#1ABC9C', '#2ECC71',
-            '#F1C40F', '#E67E22', '#E74C3C', '#ECF0F1', '#95A5A6',
-            '#34495E', '#2C3E50', '#7F8C8D', '#BDC3C7', '#000000'
+            { hex: '#4A90E2', name: 'Azul' },
+            { hex: '#50E3C2', name: 'Turquesa' },
+            { hex: '#B8E986', name: 'Verde claro' },
+            { hex: '#F8E71C', name: 'Amarillo' },
+            { hex: '#F5A623', name: 'Naranja' },
+            { hex: '#E74C3C', name: 'Rojo' },
+            { hex: '#8E44AD', name: 'Púrpura' },
+            { hex: '#3498DB', name: 'Azul claro' },
+            { hex: '#1ABC9C', name: 'Verde agua' },
+            { hex: '#2ECC71', name: 'Verde' },
+            { hex: '#F1C40F', name: 'Amarillo oro' },
+            { hex: '#E67E22', name: 'Naranja oscuro' },
+            { hex: '#9B59B6', name: 'Violeta' },
+            { hex: '#34495E', name: 'Azul marino' },
+            { hex: '#16A085', name: 'Verde jade' },
+            { hex: '#27AE60', name: 'Verde esmeralda' },
+            { hex: '#D35400', name: 'Naranja quemado' },
+            { hex: '#C0392B', name: 'Rojo oscuro' },
+            { hex: '#7D3C98', name: 'Morado' },
+            { hex: '#2980B9', name: 'Azul acero' }
         ];
+        
+        // Mejorar el aspecto del color seleccionado
+        selectedColor.classList.add('ring-1', 'ring-gray-300');
+        
+        // Limpiar el selector antes de añadir nuevos colores
+        colorPicker.innerHTML = '';
         
         // Generar botones de colores
         colors.forEach(color => {
             const button = document.createElement('button');
             button.type = 'button';
-            button.className = 'w-8 h-8 rounded-full border border-gray-300 m-1';
-            button.style.backgroundColor = color;
+            button.className = 'w-full h-7 rounded transition-all duration-200 flex items-center justify-center';
+            button.style.backgroundColor = color.hex;
+            button.title = `${color.name} (${color.hex})`;
+            
+            // Añadir borde destacado si es el color seleccionado
+            if (colorInput.value.toLowerCase() === color.hex.toLowerCase()) {
+                button.classList.add('ring-1', 'ring-gray-700', 'shadow-sm');
+            } else {
+                button.classList.add('border-gray-200', 'hover:shadow-sm', 'hover:scale-105');
+            }
+            
             button.addEventListener('click', function() {
-                colorInput.value = color;
-                // Actualizar color seleccionado
-                document.getElementById('selectedColor').style.backgroundColor = color;
+                // Quitar clase activa de todos los botones
+                colorPicker.querySelectorAll('button').forEach(btn => {
+                    btn.classList.remove('ring-1', 'ring-gray-700', 'shadow-sm');
+                    btn.classList.add('border-gray-200', 'hover:shadow-sm', 'hover:scale-105');
+                });
+                
+                // Añadir clase activa al botón seleccionado
+                this.classList.remove('border-gray-200', 'hover:shadow-sm', 'hover:scale-105');
+                this.classList.add('ring-1', 'ring-gray-700', 'shadow-sm');
+                
+                // Actualizar valor del input
+                colorInput.value = color.hex;
+                
+                // Actualizar color seleccionado con efecto visual
+                selectedColor.style.backgroundColor = color.hex;
+                selectedColor.classList.add('scale-110', 'ring-1');
+                setTimeout(() => {
+                    selectedColor.classList.remove('scale-110');
+                }, 300);
+                
+                // Actualizar vista previa
+                const event = new Event('input');
+                colorInput.dispatchEvent(event);
             });
+            
             colorPicker.appendChild(button);
         });
     }
