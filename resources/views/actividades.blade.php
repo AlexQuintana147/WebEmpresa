@@ -49,7 +49,7 @@
                         </h2>
                         <div class="space-y-4">
                             @if(Auth::check())
-                                @forelse($actividades->where('estado', 'pendiente') as $actividad)
+                                @forelse($actividadesPendientes as $actividad)
                                     <div class="bg-white rounded-xl shadow-md overflow-hidden border-l-4" style="border-color: {{ $actividad->color }}">
                                 <div class="p-5">
                                     <div class="flex justify-between items-start mb-3">
@@ -226,6 +226,31 @@
                                         </div>
                                     </div>
                                 @endforelse
+                                
+                                <!-- Paginación de Actividades Pendientes -->
+                                @if($actividadesPendientes->hasPages())
+                                    <div class="flex justify-center items-center space-x-2 mt-4 pt-2 border-t border-gray-200">
+                                        <!-- Botón Anterior -->
+                                        <a href="{{ $actividadesPendientes->previousPageUrl() }}" 
+                                           class="px-3 py-1 rounded-md {{ $actividadesPendientes->onFirstPage() ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' }}">
+                                            <i class="fas fa-chevron-left text-xs"></i>
+                                        </a>
+                                        
+                                        <!-- Números de Página -->
+                                        @for($i = 1; $i <= $actividadesPendientes->lastPage(); $i++)
+                                            <a href="{{ $actividadesPendientes->url($i) }}" 
+                                               class="px-3 py-1 rounded-md {{ $i == $actividadesPendientes->currentPage() ? 'bg-yellow-500 text-white' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' }}">
+                                                {{ $i }}
+                                            </a>
+                                        @endfor
+                                        
+                                        <!-- Botón Siguiente -->
+                                        <a href="{{ $actividadesPendientes->nextPageUrl() }}" 
+                                           class="px-3 py-1 rounded-md {{ !$actividadesPendientes->hasMorePages() ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' }}">
+                                            <i class="fas fa-chevron-right text-xs"></i>
+                                        </a>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                         
@@ -235,7 +260,7 @@
                                 <i class="fas fa-spinner mr-2"></i> En Progreso
                             </h2>
                             <div class="space-y-4">
-                                @forelse($actividades->where('estado', 'en_progreso') as $actividad)
+                                @forelse($actividadesEnProgreso as $actividad)
                                     <div class="bg-white rounded-xl shadow-md overflow-hidden border-l-4" style="border-color: {{ $actividad->color }}">
                                         <div class="p-5">
                                             <div class="flex justify-between items-start mb-3">
@@ -402,6 +427,31 @@
                                         </div>
                                     </div>
                                 @endforelse
+                                
+                                <!-- Paginación de Actividades En Progreso -->
+                                @if($actividadesEnProgreso->hasPages())
+                                    <div class="flex justify-center items-center space-x-2 mt-4 pt-2 border-t border-gray-200">
+                                        <!-- Botón Anterior -->
+                                        <a href="{{ $actividadesEnProgreso->previousPageUrl() }}" 
+                                           class="px-3 py-1 rounded-md {{ $actividadesEnProgreso->onFirstPage() ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-blue-100 text-blue-700 hover:bg-blue-200' }}">
+                                            <i class="fas fa-chevron-left text-xs"></i>
+                                        </a>
+                                        
+                                        <!-- Números de Página -->
+                                        @for($i = 1; $i <= $actividadesEnProgreso->lastPage(); $i++)
+                                            <a href="{{ $actividadesEnProgreso->url($i) }}" 
+                                               class="px-3 py-1 rounded-md {{ $i == $actividadesEnProgreso->currentPage() ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200' }}">
+                                                {{ $i }}
+                                            </a>
+                                        @endfor
+                                        
+                                        <!-- Botón Siguiente -->
+                                        <a href="{{ $actividadesEnProgreso->nextPageUrl() }}" 
+                                           class="px-3 py-1 rounded-md {{ !$actividadesEnProgreso->hasMorePages() ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-blue-100 text-blue-700 hover:bg-blue-200' }}">
+                                            <i class="fas fa-chevron-right text-xs"></i>
+                                        </a>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                         
@@ -411,7 +461,7 @@
                                 <i class="fas fa-check-circle mr-2"></i> Completadas
                             </h2>
                             <div class="space-y-4">
-                                @forelse($actividades->where('estado', 'completada') as $actividad)
+                                @forelse($actividadesCompletadas as $actividad)
                                     <div class="bg-white rounded-xl shadow-md overflow-hidden border-l-4" style="border-color: {{ $actividad->color }}">
                                         <div class="p-5">
                                             <div class="flex justify-between items-start mb-3">
@@ -578,11 +628,36 @@
                                         </div>
                                     </div>
                                 @endforelse
+                                
+                                <!-- Paginación de Actividades Completadas -->
+                                @if($actividadesCompletadas->hasPages())
+                                    <div class="flex justify-center items-center space-x-2 mt-4 pt-2 border-t border-gray-200">
+                                        <!-- Botón Anterior -->
+                                        <a href="{{ $actividadesCompletadas->previousPageUrl() }}" 
+                                           class="px-3 py-1 rounded-md {{ $actividadesCompletadas->onFirstPage() ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-green-100 text-green-700 hover:bg-green-200' }}">
+                                            <i class="fas fa-chevron-left text-xs"></i>
+                                        </a>
+                                        
+                                        <!-- Números de Página -->
+                                        @for($i = 1; $i <= $actividadesCompletadas->lastPage(); $i++)
+                                            <a href="{{ $actividadesCompletadas->url($i) }}" 
+                                               class="px-3 py-1 rounded-md {{ $i == $actividadesCompletadas->currentPage() ? 'bg-green-500 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200' }}">
+                                                {{ $i }}
+                                            </a>
+                                        @endfor
+                                        
+                                        <!-- Botón Siguiente -->
+                                        <a href="{{ $actividadesCompletadas->nextPageUrl() }}" 
+                                           class="px-3 py-1 rounded-md {{ !$actividadesCompletadas->hasMorePages() ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-green-100 text-green-700 hover:bg-green-200' }}">
+                                            <i class="fas fa-chevron-right text-xs"></i>
+                                        </a>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                         
                         <!-- Mensaje cuando no hay actividades en ninguna columna -->
-                        @if($actividades->isEmpty())
+                        @if(isset($actividadesPendientes) && $actividadesPendientes->isEmpty() && isset($actividadesEnProgreso) && $actividadesEnProgreso->isEmpty() && isset($actividadesCompletadas) && $actividadesCompletadas->isEmpty())
                             <div class="col-span-full">
                                 <div class="bg-white rounded-xl shadow-md overflow-hidden p-6 text-center">
                                     <div class="flex flex-col items-center justify-center space-y-4">

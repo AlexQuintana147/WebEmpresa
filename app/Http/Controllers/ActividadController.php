@@ -15,18 +15,29 @@ class ActividadController extends Controller
      */
     public function index()
     {
-        // Si el usuario está autenticado, obtener sus actividades
+        // Si el usuario está autenticado, obtener sus actividades paginadas por estado
         if (Auth::check()) {
-            $actividades = Actividad::where('usuario_id', Auth::id())
+            // Obtener actividades principales
+            $actividadesQuery = Actividad::where('usuario_id', Auth::id())
                 ->where('nivel', 'principal')
                 ->with(['actividadesHijas' => function($query) {
                     $query->orderBy('prioridad', 'desc')
                           ->orderBy('fecha_limite', 'asc');
                 }])
                 ->orderBy('prioridad', 'desc')
-                ->orderBy('fecha_limite', 'asc')
-                ->get();
-            return view('actividades', compact('actividades'));
+                ->orderBy('fecha_limite', 'asc');
+            
+            // Paginar actividades por estado
+            $actividadesPendientes = clone $actividadesQuery;
+            $actividadesPendientes = $actividadesPendientes->where('estado', 'pendiente')->paginate(5, ['*'], 'pendientes_page');
+            
+            $actividadesEnProgreso = clone $actividadesQuery;
+            $actividadesEnProgreso = $actividadesEnProgreso->where('estado', 'en_progreso')->paginate(5, ['*'], 'progreso_page');
+            
+            $actividadesCompletadas = clone $actividadesQuery;
+            $actividadesCompletadas = $actividadesCompletadas->where('estado', 'completada')->paginate(5, ['*'], 'completadas_page');
+            
+            return view('actividades', compact('actividadesPendientes', 'actividadesEnProgreso', 'actividadesCompletadas'));
         }
         
         // Si no está autenticado, mostrar la vista con datos de ejemplo
