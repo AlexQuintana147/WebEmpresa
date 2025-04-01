@@ -13,6 +13,46 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body class="bg-gray-100">
+    <!-- Componente de Notificación -->
+    <div x-data x-cloak
+         x-show="$store.notification.show"
+         x-transition:enter="transform ease-out duration-300 transition"
+         x-transition:enter-start="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
+         x-transition:enter-end="translate-y-0 opacity-100 sm:translate-x-0"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed top-4 right-4 z-50 max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden"
+         :class="{
+            'bg-green-50': $store.notification.type === 'success',
+            'bg-red-50': $store.notification.type === 'error',
+            'bg-amber-50': $store.notification.type === 'warning'
+         }">
+        <div class="p-4">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <i class="fas" :class="{
+                        'fa-check-circle text-green-400': $store.notification.type === 'success',
+                        'fa-exclamation-circle text-red-400': $store.notification.type === 'error',
+                        'fa-exclamation-triangle text-amber-400': $store.notification.type === 'warning'
+                    }"></i>
+                </div>
+                <div class="ml-3 w-0 flex-1 pt-0.5">
+                    <p class="text-sm font-medium" :class="{
+                        'text-green-800': $store.notification.type === 'success',
+                        'text-red-800': $store.notification.type === 'error',
+                        'text-amber-800': $store.notification.type === 'warning'
+                    }" x-text="$store.notification.message"></p>
+                </div>
+                <div class="ml-4 flex-shrink-0 flex">
+                    <button @click="$store.notification.show = false" class="bg-transparent rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <span class="sr-only">Cerrar</span>
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <div class="min-h-screen flex" x-data="{ modalOpen: false }">
         <!-- Sidebar -->

@@ -1,5 +1,42 @@
 // Inicializar Alpine.js store para actividades
 document.addEventListener('alpine:init', () => {
+    // Store para notificaciones
+    Alpine.store('notification', {
+        show: false,
+        message: '',
+        type: 'success',
+        timeout: null,
+        showNotification(message, type = 'success') {
+            this.message = message;
+            this.type = type;
+            this.show = true;
+            
+            // Reproducir sonido según el tipo de notificación
+            const audioElement = document.createElement('audio');
+            audioElement.volume = 0.5;
+            
+            if (type === 'success') {
+                audioElement.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==';
+            } else if (type === 'error') {
+                audioElement.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==';
+            } else {
+                audioElement.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==';
+            }
+            
+            audioElement.play().catch(e => console.log('No se pudo reproducir el sonido'));
+            
+            // Limpiar cualquier timeout existente
+            if (this.timeout) {
+                clearTimeout(this.timeout);
+            }
+            
+            // Auto-ocultar después de 3 segundos
+            this.timeout = setTimeout(() => {
+                this.show = false;
+            }, 3000);
+        }
+    });
+    
     Alpine.store('actividades', {
         modalOpen: false,
         modalTitle: 'Nueva Actividad',
@@ -191,6 +228,14 @@ document.addEventListener('alpine:init', () => {
             form.appendChild(csrfField);
             form.appendChild(statusField);
             
+            // Mostrar notificación de cambio de estado
+            let statusText = '';
+            if (newStatus === 'pendiente') statusText = 'pendiente';
+            else if (newStatus === 'en_progreso') statusText = 'en progreso';
+            else if (newStatus === 'completada') statusText = 'completada';
+            
+            Alpine.store('notification').showNotification(`Estado cambiado a ${statusText}`, 'success');
+            
             document.body.appendChild(form);
             form.submit();
         },
@@ -231,6 +276,9 @@ document.addEventListener('alpine:init', () => {
             
             form.appendChild(methodField);
             form.appendChild(csrfField);
+            
+            // Mostrar notificación de eliminación
+            Alpine.store('notification').showNotification('Actividad eliminada correctamente', 'error');
             
             document.body.appendChild(form);
             form.submit();
@@ -364,6 +412,15 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Mostrar notificación de éxito según la acción realizada
+                    const isEditing = formData.get('actividad_id') ? true : false;
+                    const notificationMessage = isEditing 
+                        ? 'Actividad actualizada correctamente' 
+                        : 'Actividad creada correctamente';
+                    
+                    // Mostrar notificación
+                    Alpine.store('notification').showNotification(notificationMessage, 'success');
+                    
                     // Cerrar modal y recargar página para mostrar cambios
                     Alpine.store('actividades').closeModal();
                     window.location.reload();
