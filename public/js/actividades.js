@@ -7,6 +7,8 @@ document.addEventListener('alpine:init', () => {
         currentActivity: null,
         showSubactivities: false,
         currentParentId: null,
+        deleteModalOpen: false,
+        activityToDelete: null,
         
         init() {
             // Asegurarse de que el modal esté cerrado al inicializar
@@ -183,30 +185,45 @@ document.addEventListener('alpine:init', () => {
             form.submit();
         },
         
+        openDeleteModal(activityId) {
+            this.activityToDelete = activityId;
+            this.deleteModalOpen = true;
+        },
+        
+        closeDeleteModal() {
+            this.deleteModalOpen = false;
+            this.activityToDelete = null;
+        },
+        
         deleteActivity(activityId) {
-            if (confirm('¿Estás seguro de que deseas eliminar esta actividad? Esta acción no se puede deshacer.')) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/actividades/${activityId}`;
-                form.style.display = 'none';
-                
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                const methodField = document.createElement('input');
-                methodField.type = 'hidden';
-                methodField.name = '_method';
-                methodField.value = 'DELETE';
-                
-                const csrfField = document.createElement('input');
-                csrfField.type = 'hidden';
-                csrfField.name = '_token';
-                csrfField.value = csrfToken;
-                
-                form.appendChild(methodField);
-                form.appendChild(csrfField);
-                
-                document.body.appendChild(form);
-                form.submit();
+            // Si se llama directamente, abrimos el modal de confirmación
+            if (!this.deleteModalOpen) {
+                this.openDeleteModal(activityId);
+                return;
             }
+            
+            // Si llegamos aquí, es porque se confirmó la eliminación desde el modal
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/actividades/${activityId}`;
+            form.style.display = 'none';
+            
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const methodField = document.createElement('input');
+            methodField.type = 'hidden';
+            methodField.name = '_method';
+            methodField.value = 'DELETE';
+            
+            const csrfField = document.createElement('input');
+            csrfField.type = 'hidden';
+            csrfField.name = '_token';
+            csrfField.value = csrfToken;
+            
+            form.appendChild(methodField);
+            form.appendChild(csrfField);
+            
+            document.body.appendChild(form);
+            form.submit();
         }
     });
 });
@@ -215,6 +232,84 @@ document.addEventListener('DOMContentLoaded', function() {
     // Asegurarse de que el modal esté cerrado al cargar la página
     if (Alpine.store('actividades')) {
         Alpine.store('actividades').modalOpen = false;
+        Alpine.store('actividades').deleteModalOpen = false;
+    }
+    
+    // Añadir el modal de confirmación de eliminación al DOM si no existe
+    if (!document.getElementById('deleteActivityModal')) {
+        const modalHTML = `
+        <div x-show="$store.actividades.deleteModalOpen" 
+             class="fixed inset-0 z-50 overflow-y-auto" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             x-cloak>
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <!-- Overlay de fondo oscuro -->
+                <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" 
+                     x-show="$store.actividades.deleteModalOpen"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0"
+                     x-transition:enter-end="opacity-60"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-60"
+                     x-transition:leave-end="opacity-0"
+                     @click="$store.actividades.closeDeleteModal()"></div>
+                
+                <!-- Centrar el modal -->
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+                
+                <!-- Modal -->
+                <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+                     x-show="$store.actividades.deleteModalOpen"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                    
+                    <!-- Contenido del modal -->
+                    <div class="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 mx-auto bg-red-100 rounded-full sm:mx-0 sm:h-10 sm:w-10">
+                                <i class="text-red-600 fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                <h3 class="text-lg font-medium leading-6 text-gray-900">Eliminar actividad</h3>
+                                <div class="mt-2">
+                                    <p class="text-sm text-gray-500">¿Estás seguro de que deseas eliminar esta actividad? Esta acción no se puede deshacer y eliminará también todas las subactividades asociadas.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botones de acción -->
+                    <div class="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="button" 
+                                class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+                                @click="$store.actividades.deleteActivity($store.actividades.activityToDelete); $store.actividades.closeDeleteModal()">
+                            Eliminar
+                        </button>
+                        <button type="button" 
+                                class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                                @click="$store.actividades.closeDeleteModal()">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        `;
+        
+        // Crear un contenedor para el modal y añadirlo al body
+        const modalContainer = document.createElement('div');
+        modalContainer.id = 'deleteActivityModal';
+        modalContainer.innerHTML = modalHTML;
+        document.body.appendChild(modalContainer);
     }
     
     // Manejar envío del formulario de actividad
