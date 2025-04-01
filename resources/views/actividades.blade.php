@@ -40,11 +40,17 @@
                     </button>
                 </div>
 
-                <!-- Actividades Principales -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    @if(Auth::check())
-                        @forelse($actividades as $actividad)
-                            <div class="bg-white rounded-xl shadow-md overflow-hidden border-l-4" style="border-color: {{ $actividad->color }}">
+                <!-- Contenedor principal de columnas -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Columna: Actividades Pendientes -->
+                    <div class="bg-yellow-50 rounded-xl p-4 shadow-md">
+                        <h2 class="text-xl font-bold text-yellow-800 mb-4 flex items-center">
+                            <i class="fas fa-tasks mr-2"></i> Pendientes
+                        </h2>
+                        <div class="space-y-4">
+                            @if(Auth::check())
+                                @forelse($actividades->where('estado', 'pendiente') as $actividad)
+                                    <div class="bg-white rounded-xl shadow-md overflow-hidden border-l-4" style="border-color: {{ $actividad->color }}">
                                 <div class="p-5">
                                     <div class="flex justify-between items-start mb-3">
                                         <div class="flex items-center space-x-3">
@@ -210,7 +216,373 @@
                                     @endif
                                 </div>
                             </div>
-                        @empty
+                                @empty
+                                    <div class="bg-white rounded-xl shadow-md overflow-hidden p-6 text-center">
+                                        <div class="flex flex-col items-center justify-center space-y-4">
+                                            <div class="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center">
+                                                <i class="fas fa-tasks text-yellow-500 text-2xl"></i>
+                                            </div>
+                                            <h3 class="text-lg font-semibold text-gray-800">No hay actividades pendientes</h3>
+                                        </div>
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
+                        
+                        <!-- Columna: Actividades En Progreso -->
+                        <div class="bg-blue-50 rounded-xl p-4 shadow-md">
+                            <h2 class="text-xl font-bold text-blue-800 mb-4 flex items-center">
+                                <i class="fas fa-spinner mr-2"></i> En Progreso
+                            </h2>
+                            <div class="space-y-4">
+                                @forelse($actividades->where('estado', 'en_progreso') as $actividad)
+                                    <div class="bg-white rounded-xl shadow-md overflow-hidden border-l-4" style="border-color: {{ $actividad->color }}">
+                                        <div class="p-5">
+                                            <div class="flex justify-between items-start mb-3">
+                                                <div class="flex items-center space-x-3">
+                                                    <div class="flex items-center justify-center w-10 h-10 rounded-lg" style="background-color: {{ $actividad->color }}">
+                                                        <i class="fas {{ $actividad->icono }} text-white text-lg"></i>
+                                                    </div>
+                                                    <h3 class="text-xl font-semibold text-gray-800">{{ $actividad->titulo }}</h3>
+                                                </div>
+                                                <div class="flex space-x-2">
+                                                    <button 
+                                                        @click="$store.actividades.openModal('edit', {{ json_encode($actividad) }})"
+                                                        class="text-gray-500 hover:text-amber-500 transition-colors">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button 
+                                                        @click="$store.actividades.deleteActivity({{ $actividad->id }})"
+                                                        class="text-gray-500 hover:text-red-500 transition-colors">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mb-4">
+                                                <p class="text-gray-600">{{ $actividad->descripcion }}</p>
+                                            </div>
+                                            
+                                            <div class="flex flex-wrap gap-2 mb-4">
+                                                <span class="px-3 py-1 text-xs font-medium rounded-full"
+                                                      style="background-color: {{ $actividad->color }}20; color: {{ $actividad->color }}">
+                                                    {{ ucfirst($actividad->nivel) }}
+                                                </span>
+                                                
+                                                <span class="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                                                    En Progreso
+                                                </span>
+                                                
+                                                <span class="px-3 py-1 text-xs font-medium rounded-full
+                                                    {{ $actividad->prioridad == 1 ? 'bg-gray-100 text-gray-800' : 
+                                                       ($actividad->prioridad == 2 ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800') }}">
+                                                    Prioridad: {{ $actividad->prioridad == 1 ? 'Baja' : ($actividad->prioridad == 2 ? 'Media' : 'Alta') }}
+                                                </span>
+                                            </div>
+                                            
+                                            <div class="flex justify-between items-center mb-4">
+                                                <div class="flex items-center space-x-1 text-gray-500">
+                                                    <i class="far fa-calendar-alt"></i>
+                                                    <span class="text-sm">{{ \Carbon\Carbon::parse($actividad->fecha_limite)->format('d/m/Y') }}</span>
+                                                </div>
+                                                <div class="flex items-center space-x-1 text-gray-500">
+                                                    <i class="far fa-clock"></i>
+                                                    <span class="text-sm">{{ $actividad->hora_limite }}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex space-x-2">
+                                                    <button 
+                                                        @click="$store.actividades.changeStatus({{ $actividad->id }}, 'pendiente')"
+                                                        class="px-2 py-1 text-xs font-medium rounded-lg bg-yellow-100 text-yellow-800 hover:bg-yellow-200 transition-colors">
+                                                        Pendiente
+                                                    </button>
+                                                    <button 
+                                                        @click="$store.actividades.changeStatus({{ $actividad->id }}, 'completada')"
+                                                        class="px-2 py-1 text-xs font-medium rounded-lg bg-green-100 text-green-800 hover:bg-green-200 transition-colors">
+                                                        Completada
+                                                    </button>
+                                                </div>
+                                                <button 
+                                                    @click="$store.actividades.addSubactivity({{ $actividad->id }})"
+                                                    class="px-2 py-1 text-xs font-medium rounded-lg bg-purple-100 text-purple-800 hover:bg-purple-200 transition-colors">
+                                                    <i class="fas fa-plus mr-1"></i> Subactividad
+                                                </button>
+                                            </div>
+                                            
+                                            <!-- Subactividades -->
+                                            @if($actividad->actividadesHijas && $actividad->actividadesHijas->count() > 0)
+                                                <div class="mt-4">
+                                                    <button 
+                                                        @click="$store.actividades.toggleSubactivities({{ $actividad->id }})"
+                                                        class="flex items-center space-x-2 text-sm text-gray-600 hover:text-amber-500 transition-colors">
+                                                        <span>{{ $actividad->actividadesHijas->count() }} Subactividades</span>
+                                                        <i id="toggle-icon-{{ $actividad->id }}" class="fas fa-chevron-down"></i>
+                                                    </button>
+                                                    
+                                                    <div id="subactivities-{{ $actividad->id }}" class="mt-3 pl-4 border-l-2 border-gray-200 hidden">
+                                                        @foreach($actividad->actividadesHijas as $subactividad)
+                                                            <div class="mb-3 p-3 bg-gray-50 rounded-lg border-l-4" style="border-color: {{ $subactividad->color }}">
+                                                                <div class="flex justify-between items-start mb-2">
+                                                                    <div class="flex items-center space-x-2">
+                                                                        <div class="flex items-center justify-center w-6 h-6 rounded" style="background-color: {{ $subactividad->color }}">
+                                                                            <i class="fas {{ $subactividad->icono }} text-white text-xs"></i>
+                                                                        </div>
+                                                                        <h4 class="font-medium text-gray-800">{{ $subactividad->titulo }}</h4>
+                                                                    </div>
+                                                                    <div class="flex space-x-1">
+                                                                        <button 
+                                                                            @click="$store.actividades.openModal('edit', {{ json_encode($subactividad) }})"
+                                                                            class="text-gray-500 hover:text-amber-500 transition-colors text-xs">
+                                                                            <i class="fas fa-edit"></i>
+                                                                        </button>
+                                                                        <button 
+                                                                            @click="$store.actividades.deleteActivity({{ $subactividad->id }})"
+                                                                            class="text-gray-500 hover:text-red-500 transition-colors text-xs">
+                                                                            <i class="fas fa-trash-alt"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div class="flex flex-wrap gap-1 mb-2">
+                                                                    <span class="px-2 py-0.5 text-xs font-medium rounded-full
+                                                                        {{ $subactividad->estado == 'pendiente' ? 'bg-yellow-100 text-yellow-800' : 
+                                                                           ($subactividad->estado == 'en_progreso' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800') }}">
+                                                                        {{ ucfirst(str_replace('_', ' ', $subactividad->estado)) }}
+                                                                    </span>
+                                                                    
+                                                                    <span class="px-2 py-0.5 text-xs font-medium rounded-full
+                                                                        {{ $subactividad->prioridad == 1 ? 'bg-gray-100 text-gray-800' : 
+                                                                           ($subactividad->prioridad == 2 ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800') }}">
+                                                                        P{{ $subactividad->prioridad }}
+                                                                    </span>
+                                                                </div>
+                                                                
+                                                                <div class="flex justify-between items-center text-xs text-gray-500">
+                                                                    <div class="flex items-center space-x-1">
+                                                                        <i class="far fa-calendar-alt"></i>
+                                                                        <span>{{ \Carbon\Carbon::parse($subactividad->fecha_limite)->format('d/m/Y') }}</span>
+                                                                    </div>
+                                                                    <div class="flex space-x-1">
+                                                                        <button 
+                                                                            @click="$store.actividades.changeStatus({{ $subactividad->id }}, 'pendiente')"
+                                                                            class="hover:text-yellow-600 transition-colors"
+                                                                            {{ $subactividad->estado == 'pendiente' ? 'disabled' : '' }}>
+                                                                            <i class="fas fa-circle text-yellow-500"></i>
+                                                                        </button>
+                                                                        <button 
+                                                                            @click="$store.actividades.changeStatus({{ $subactividad->id }}, 'en_progreso')"
+                                                                            class="hover:text-blue-600 transition-colors"
+                                                                            {{ $subactividad->estado == 'en_progreso' ? 'disabled' : '' }}>
+                                                                            <i class="fas fa-circle text-blue-500"></i>
+                                                                        </button>
+                                                                        <button 
+                                                                            @click="$store.actividades.changeStatus({{ $subactividad->id }}, 'completada')"
+                                                                            class="hover:text-green-600 transition-colors"
+                                                                            {{ $subactividad->estado == 'completada' ? 'disabled' : '' }}>
+                                                                            <i class="fas fa-circle text-green-500"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="bg-white rounded-xl shadow-md overflow-hidden p-6 text-center">
+                                        <div class="flex flex-col items-center justify-center space-y-4">
+                                            <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
+                                                <i class="fas fa-spinner text-blue-500 text-2xl"></i>
+                                            </div>
+                                            <h3 class="text-lg font-semibold text-gray-800">No hay actividades en progreso</h3>
+                                        </div>
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
+                        
+                        <!-- Columna: Actividades Completadas -->
+                        <div class="bg-green-50 rounded-xl p-4 shadow-md">
+                            <h2 class="text-xl font-bold text-green-800 mb-4 flex items-center">
+                                <i class="fas fa-check-circle mr-2"></i> Completadas
+                            </h2>
+                            <div class="space-y-4">
+                                @forelse($actividades->where('estado', 'completada') as $actividad)
+                                    <div class="bg-white rounded-xl shadow-md overflow-hidden border-l-4" style="border-color: {{ $actividad->color }}">
+                                        <div class="p-5">
+                                            <div class="flex justify-between items-start mb-3">
+                                                <div class="flex items-center space-x-3">
+                                                    <div class="flex items-center justify-center w-10 h-10 rounded-lg" style="background-color: {{ $actividad->color }}">
+                                                        <i class="fas {{ $actividad->icono }} text-white text-lg"></i>
+                                                    </div>
+                                                    <h3 class="text-xl font-semibold text-gray-800">{{ $actividad->titulo }}</h3>
+                                                </div>
+                                                <div class="flex space-x-2">
+                                                    <button 
+                                                        @click="$store.actividades.openModal('edit', {{ json_encode($actividad) }})"
+                                                        class="text-gray-500 hover:text-amber-500 transition-colors">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button 
+                                                        @click="$store.actividades.deleteActivity({{ $actividad->id }})"
+                                                        class="text-gray-500 hover:text-red-500 transition-colors">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mb-4">
+                                                <p class="text-gray-600">{{ $actividad->descripcion }}</p>
+                                            </div>
+                                            
+                                            <div class="flex flex-wrap gap-2 mb-4">
+                                                <span class="px-3 py-1 text-xs font-medium rounded-full"
+                                                      style="background-color: {{ $actividad->color }}20; color: {{ $actividad->color }}">
+                                                    {{ ucfirst($actividad->nivel) }}
+                                                </span>
+                                                
+                                                <span class="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                                    Completada
+                                                </span>
+                                                
+                                                <span class="px-3 py-1 text-xs font-medium rounded-full
+                                                    {{ $actividad->prioridad == 1 ? 'bg-gray-100 text-gray-800' : 
+                                                       ($actividad->prioridad == 2 ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800') }}">
+                                                    Prioridad: {{ $actividad->prioridad == 1 ? 'Baja' : ($actividad->prioridad == 2 ? 'Media' : 'Alta') }}
+                                                </span>
+                                            </div>
+                                            
+                                            <div class="flex justify-between items-center mb-4">
+                                                <div class="flex items-center space-x-1 text-gray-500">
+                                                    <i class="far fa-calendar-alt"></i>
+                                                    <span class="text-sm">{{ \Carbon\Carbon::parse($actividad->fecha_limite)->format('d/m/Y') }}</span>
+                                                </div>
+                                                <div class="flex items-center space-x-1 text-gray-500">
+                                                    <i class="far fa-clock"></i>
+                                                    <span class="text-sm">{{ $actividad->hora_limite }}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex space-x-2">
+                                                    <button 
+                                                        @click="$store.actividades.changeStatus({{ $actividad->id }}, 'pendiente')"
+                                                        class="px-2 py-1 text-xs font-medium rounded-lg bg-yellow-100 text-yellow-800 hover:bg-yellow-200 transition-colors">
+                                                        Pendiente
+                                                    </button>
+                                                    <button 
+                                                        @click="$store.actividades.changeStatus({{ $actividad->id }}, 'en_progreso')"
+                                                        class="px-2 py-1 text-xs font-medium rounded-lg bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors">
+                                                        En Progreso
+                                                    </button>
+                                                </div>
+                                                <button 
+                                                    @click="$store.actividades.addSubactivity({{ $actividad->id }})"
+                                                    class="px-2 py-1 text-xs font-medium rounded-lg bg-purple-100 text-purple-800 hover:bg-purple-200 transition-colors">
+                                                    <i class="fas fa-plus mr-1"></i> Subactividad
+                                                </button>
+                                            </div>
+                                            
+                                            <!-- Subactividades -->
+                                            @if($actividad->actividadesHijas && $actividad->actividadesHijas->count() > 0)
+                                                <div class="mt-4">
+                                                    <button 
+                                                        @click="$store.actividades.toggleSubactivities({{ $actividad->id }})"
+                                                        class="flex items-center space-x-2 text-sm text-gray-600 hover:text-amber-500 transition-colors">
+                                                        <span>{{ $actividad->actividadesHijas->count() }} Subactividades</span>
+                                                        <i id="toggle-icon-{{ $actividad->id }}" class="fas fa-chevron-down"></i>
+                                                    </button>
+                                                    
+                                                    <div id="subactivities-{{ $actividad->id }}" class="mt-3 pl-4 border-l-2 border-gray-200 hidden">
+                                                        @foreach($actividad->actividadesHijas as $subactividad)
+                                                            <div class="mb-3 p-3 bg-gray-50 rounded-lg border-l-4" style="border-color: {{ $subactividad->color }}">
+                                                                <div class="flex justify-between items-start mb-2">
+                                                                    <div class="flex items-center space-x-2">
+                                                                        <div class="flex items-center justify-center w-6 h-6 rounded" style="background-color: {{ $subactividad->color }}">
+                                                                            <i class="fas {{ $subactividad->icono }} text-white text-xs"></i>
+                                                                        </div>
+                                                                        <h4 class="font-medium text-gray-800">{{ $subactividad->titulo }}</h4>
+                                                                    </div>
+                                                                    <div class="flex space-x-1">
+                                                                        <button 
+                                                                            @click="$store.actividades.openModal('edit', {{ json_encode($subactividad) }})"
+                                                                            class="text-gray-500 hover:text-amber-500 transition-colors text-xs">
+                                                                            <i class="fas fa-edit"></i>
+                                                                        </button>
+                                                                        <button 
+                                                                            @click="$store.actividades.deleteActivity({{ $subactividad->id }})"
+                                                                            class="text-gray-500 hover:text-red-500 transition-colors text-xs">
+                                                                            <i class="fas fa-trash-alt"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div class="flex flex-wrap gap-1 mb-2">
+                                                                    <span class="px-2 py-0.5 text-xs font-medium rounded-full
+                                                                        {{ $subactividad->estado == 'pendiente' ? 'bg-yellow-100 text-yellow-800' : 
+                                                                           ($subactividad->estado == 'en_progreso' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800') }}">
+                                                                        {{ ucfirst(str_replace('_', ' ', $subactividad->estado)) }}
+                                                                    </span>
+                                                                    
+                                                                    <span class="px-2 py-0.5 text-xs font-medium rounded-full
+                                                                        {{ $subactividad->prioridad == 1 ? 'bg-gray-100 text-gray-800' : 
+                                                                           ($subactividad->prioridad == 2 ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800') }}">
+                                                                        P{{ $subactividad->prioridad }}
+                                                                    </span>
+                                                                </div>
+                                                                
+                                                                <div class="flex justify-between items-center text-xs text-gray-500">
+                                                                    <div class="flex items-center space-x-1">
+                                                                        <i class="far fa-calendar-alt"></i>
+                                                                        <span>{{ \Carbon\Carbon::parse($subactividad->fecha_limite)->format('d/m/Y') }}</span>
+                                                                    </div>
+                                                                    <div class="flex space-x-1">
+                                                                        <button 
+                                                                            @click="$store.actividades.changeStatus({{ $subactividad->id }}, 'pendiente')"
+                                                                            class="hover:text-yellow-600 transition-colors"
+                                                                            {{ $subactividad->estado == 'pendiente' ? 'disabled' : '' }}>
+                                                                            <i class="fas fa-circle text-yellow-500"></i>
+                                                                        </button>
+                                                                        <button 
+                                                                            @click="$store.actividades.changeStatus({{ $subactividad->id }}, 'en_progreso')"
+                                                                            class="hover:text-blue-600 transition-colors"
+                                                                            {{ $subactividad->estado == 'en_progreso' ? 'disabled' : '' }}>
+                                                                            <i class="fas fa-circle text-blue-500"></i>
+                                                                        </button>
+                                                                        <button 
+                                                                            @click="$store.actividades.changeStatus({{ $subactividad->id }}, 'completada')"
+                                                                            class="hover:text-green-600 transition-colors"
+                                                                            {{ $subactividad->estado == 'completada' ? 'disabled' : '' }}>
+                                                                            <i class="fas fa-circle text-green-500"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="bg-white rounded-xl shadow-md overflow-hidden p-6 text-center">
+                                        <div class="flex flex-col items-center justify-center space-y-4">
+                                            <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                                                <i class="fas fa-check-circle text-green-500 text-2xl"></i>
+                                            </div>
+                                            <h3 class="text-lg font-semibold text-gray-800">No hay actividades completadas</h3>
+                                        </div>
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
+                        
+                        <!-- Mensaje cuando no hay actividades en ninguna columna -->
+                        @if($actividades->isEmpty())
                             <div class="col-span-full">
                                 <div class="bg-white rounded-xl shadow-md overflow-hidden p-6 text-center">
                                     <div class="flex flex-col items-center justify-center space-y-4">
@@ -218,25 +590,11 @@
                                             <i class="fas fa-tasks text-amber-500 text-3xl"></i>
                                         </div>
                                         <h3 class="text-xl font-semibold text-gray-800">No hay actividades</h3>
-                                        <p class="text-gray-600">Crea tu primera actividad para comenzar a organizar tus tareas.</p>
-                                        <button 
-                                            @click="$store.actividades.openModal('create')"
-                                            class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-sm font-medium rounded-lg 
-                                                   hover:from-amber-600 hover:to-amber-700
-                                                   focus:ring-4 focus:ring-amber-300/50
-                                                   shadow-md hover:shadow-xl
-                                                   transform hover:-translate-y-0.5
-                                                   transition-all duration-300 ease-out
-                                                   active:scale-95">
-                                            <span class="flex items-center space-x-2">
-                                                <i class="fas fa-plus"></i>
-                                                <span>Nueva Actividad</span>
-                                            </span>
-                                        </button>
+                                        <p class="text-gray-600">Crea tu primera actividad</p>
                                     </div>
                                 </div>
                             </div>
-                        @endforelse
+                        @endif
                     @else
                         <!-- Contenido para usuarios no autenticados -->
                         <div class="col-span-full">
@@ -439,6 +797,8 @@
         </div>
     </div>
     
-    <script src="{{ asset('js/actividades.js') }}"></script>
 </body>
 </html>
+
+
+<script src="{{ asset('js/actividades.js') }}"></script>
