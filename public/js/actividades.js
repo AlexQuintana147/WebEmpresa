@@ -14,10 +14,20 @@ document.addEventListener('alpine:init', () => {
             // Asegurarse de que el modal esté cerrado al inicializar
             this.modalOpen = false;
             
-            // Forzar que el modal permanezca cerrado después de la inicialización
-            setTimeout(() => {
+            // Evitar que el modal se abra durante la inicialización
+            document.addEventListener('DOMContentLoaded', () => {
                 this.modalOpen = false;
-            }, 100);
+            });
+            
+            // Prevenir cualquier apertura automática del modal
+            window.addEventListener('load', () => {
+                this.modalOpen = false;
+            });
+            
+            // Forzar el estado cerrado después de cualquier renderizado
+            document.addEventListener('alpine:initialized', () => {
+                this.modalOpen = false;
+            });
         },
         
         openModal(mode, activity = null) {
