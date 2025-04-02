@@ -226,7 +226,7 @@
                 </form>
 
                 <!-- Register Form -->
-                <form x-show="!isLogin" class="space-y-5">
+                <form x-show="!isLogin" class="space-y-5" id="registerForm">
                     @csrf
                     <div class="space-y-1.5">
                         <label for="reg-name" class="block text-sm font-semibold text-gray-700">Nombre</label>
@@ -333,5 +333,6 @@
     }
 </script>
 
-<!-- Incluir el script de login.js -->
+<!-- Incluir los scripts de autenticación -->
 <script src="{{ asset('js/login.js') }}"></script>
+<script src="{{ asset('js/register.js') }}"></script>

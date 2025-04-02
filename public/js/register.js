@@ -1,5 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const registerForm = document.querySelector('form[x-show="!isLogin"]');
+    const registerForm = document.querySelector('#registerForm');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    let isSubmitting = false;
+    
     const errorMessages = {
         nombre: 'El nombre solo puede contener letras y espacios',
         correo: 'Por favor ingrese un correo válido',
@@ -10,16 +13,17 @@ document.addEventListener('DOMContentLoaded', function() {
     function showNotification(message, type = 'error') {
         const notification = document.createElement('div');
         notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 transform transition-all duration-300 ease-in-out ${
-            type === 'success' ? 'bg-green-500' : 'bg-blue-500'
+            type === 'success' ? 'bg-green-500' : 'bg-red-500'
         } text-white`;
         notification.textContent = message;
+        notification.style.transform = 'translateX(100%)';
 
         document.body.appendChild(notification);
 
         // Animación de entrada
-        setTimeout(() => {
+        requestAnimationFrame(() => {
             notification.style.transform = 'translateX(0)';
-        }, 100);
+        });
 
         // Animación de salida y eliminación
         setTimeout(() => {
@@ -65,7 +69,20 @@ document.addEventListener('DOMContentLoaded', function() {
         inputElement.style.borderColor = '#10b981'; // Color verde para indicar validez
     }
 
-    if (registerForm) {
+    // Función para limpiar todos los errores
+    function clearErrors() {
+        registerForm.querySelectorAll('.invalid-feedback').forEach(el => {
+            el.textContent = '';
+            el.classList.add('hidden');
+        });
+        registerForm.querySelectorAll('.is-invalid').forEach(el => {
+            el.classList.remove('is-invalid');
+        });
+    }
+
+    if (registerForm && csrfToken) {
+        console.log('Register form found and initialized');
+        
         // Validación en tiempo real para el campo de correo
         const emailInput = document.querySelector('#reg-email');
         if (emailInput) {
@@ -99,72 +116,104 @@ document.addEventListener('DOMContentLoaded', function() {
 
         registerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            console.log('Form submission started');
+            console.log('Register form submission started');
+
+            if (isSubmitting) return;
+            isSubmitting = true;
 
             // Clear previous error messages
-            registerForm.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
-            registerForm.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            clearErrors();
 
             const formData = {
                 nombre: document.querySelector('#reg-name').value,
                 correo: document.querySelector('#reg-email').value,
                 contrasena: document.querySelector('#reg-password').value,
-                password_confirmation: document.querySelector('#reg-password-confirmation').value
+                password_confirmation: document.querySelector('#reg-password-confirm').value
             };
             console.log('Form data collected:', formData);
 
+            // Validar campos obligatorios
+            if (!formData.nombre || !formData.correo || !formData.contrasena || !formData.password_confirmation) {
+                console.log('Validation failed: Missing required fields');
+                showNotification('Por favor complete todos los campos', 'error');
+                isSubmitting = false;
+                return;
+            }
+
             // Validar correo antes de enviar
-            const emailInput = document.querySelector('#reg-email');
-            if (!formData.correo || !validateEmail(formData.correo)) {
+            if (!validateEmail(formData.correo)) {
                 showFieldError(emailInput, 'Por favor ingrese un correo electrónico válido');
-                return; // Detener el envío si el correo no es válido
+                isSubmitting = false;
+                return;
+            }
+
+            // Validar que las contraseñas coincidan
+            if (formData.contrasena !== formData.password_confirmation) {
+                showFieldError(document.querySelector('#reg-password-confirm'), 'Las contraseñas no coinciden');
+                isSubmitting = false;
+                return;
             }
 
             try {
-                const csrfToken = document.querySelector('meta[name="csrf-token"]');
-                console.log('CSRF Token element:', csrfToken);
-                console.log('CSRF Token value:', csrfToken ? csrfToken.getAttribute('content') : 'Not found');
-
-                if (!csrfToken) {
-                    console.error('CSRF token not found in the document');
-                    showNotification('Error de seguridad: Token CSRF no encontrado', 'error');
-                    return;
-                }
-
                 console.log('Sending registration request...');
                 const response = await fetch('/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken.getAttribute('content')
+                        'X-CSRF-TOKEN': csrfToken
                     },
                     body: JSON.stringify(formData),
                     credentials: 'same-origin'
                 });
 
                 console.log('Response status:', response.status);
-                console.log('Response headers:', [...response.headers.entries()]);
 
                 const data = await response.json();
                 console.log('Response data:', data);
 
                 if (response.ok) {
                     console.log('Registration successful');
-                    showNotification('Registro exitoso', 'success');
+                    showNotification(data.message || 'Registro exitoso', 'success');
+                    
+                    // Cerrar el modal de registro
+                    if (typeof Alpine !== 'undefined') {
+                        Alpine.store('modal').open = false;
+                    }
+                    
+                    // Redireccionar después de un breve retraso
                     setTimeout(() => {
-                        window.location.href = window.location.href;
+                        window.location.reload();
                     }, 1500);
                 } else {
                     console.error('Registration failed:', data);
+                    isSubmitting = false;
+                    
                     if (data.errors) {
+                        // Mostrar errores de validación en los campos correspondientes
                         Object.keys(data.errors).forEach(field => {
-                            const input = document.querySelector(`#reg-${field}`);
-                            if (input) {
-                                input.classList.add('is-invalid');
-                                const feedback = document.createElement('div');
-                                feedback.className = 'invalid-feedback';
-                                feedback.textContent = data.errors[field][0];
-                                input.parentNode.appendChild(feedback);
+                            let inputId;
+                            switch(field) {
+                                case 'nombre':
+                                    inputId = '#reg-name';
+                                    break;
+                                case 'correo':
+                                    inputId = '#reg-email';
+                                    break;
+                                case 'contrasena':
+                                    inputId = '#reg-password';
+                                    break;
+                                case 'password_confirmation':
+                                    inputId = '#reg-password-confirm';
+                                    break;
+                                default:
+                                    inputId = null;
+                            }
+                            
+                            if (inputId) {
+                                const input = document.querySelector(inputId);
+                                if (input) {
+                                    showFieldError(input, data.errors[field][0]);
+                                }
                             }
                         });
                     } else {
@@ -174,9 +223,10 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (error) {
                 console.error('Error during registration:', error);
                 showNotification('Error en el registro: ' + error.message, 'error');
+                isSubmitting = false;
             }
         });
     } else {
-        console.error('Register form not found in the document');
+        console.error('Register form or CSRF token not found in the document');
     }
 });
