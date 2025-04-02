@@ -10,8 +10,31 @@
     @if(session('error'))
     <meta name="error-message" content="{{ session('error') }}">
     @endif
-    <title>Gestión de Presupuesto</title>
-    <style>[x-cloak] { display: none !important; }</style>
+    <title>Gestión Financiera Médica - Clínica Ricardo Palma</title>
+    <style>
+        [x-cloak] { display: none !important; }
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.7; }
+        }
+        @keyframes ping-slow {
+            0% { transform: scale(1); opacity: 1; }
+            75%, 100% { transform: scale(1.5); opacity: 0; }
+        }
+        @keyframes gradient-x {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes pulse-medical {
+            0%, 100% { opacity: 0.5; transform: scale(0.95); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        .animate-pulse-slow { animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .animate-ping-slow { animation: ping-slow 3s cubic-bezier(0, 0, 0.2, 1) infinite; }
+        .animate-gradient-x { animation: gradient-x 15s ease infinite; background-size: 200% 200%; }
+        .animate-pulse-medical { animation: pulse-medical 4s ease-in-out infinite; }
+    </style>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Usamos la misma versión de Alpine.js que en el header para evitar conflictos -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -49,8 +72,23 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="{{ asset('js/presupuesto.js') }}"></script>
 </head>
-<body class="bg-gray-100">
-    <div class="min-h-screen flex" x-data="{}">
+<body class="bg-cyan-50 relative">
+    <!-- Patrones médicos decorativos de fondo -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-5 z-0">
+        <div class="absolute top-20 left-20 w-16 h-16 border-2 border-cyan-700 rounded-full"></div>
+        <div class="absolute top-60 right-40 w-12 h-24 border-2 border-cyan-700 rounded-full"></div>
+        <div class="absolute bottom-80 left-32 w-20 h-20 border-2 border-cyan-700 rotate-45"></div>
+        <div class="absolute bottom-40 right-24 w-16 h-16 border-2 border-cyan-700 rounded-md"></div>
+        <div class="absolute top-1/3 left-1/3 w-8 h-8 border-2 border-cyan-700 rounded-full"></div>
+        <div class="absolute top-2/3 right-1/4 w-10 h-10 border-2 border-cyan-700 rounded-full"></div>
+        <svg class="absolute top-1/4 right-1/3" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0e7490" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
+        </svg>
+        <svg class="absolute bottom-1/4 left-1/4" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0e7490" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+        </svg>
+    </div>
+    <div class="min-h-screen flex relative z-10" x-data="{}">
         <!-- Sidebar -->
         <x-sidebar />
 
@@ -62,39 +100,98 @@
             <!-- Main Content Area -->
             <main class="p-6">
                 <div class="max-w-7xl mx-auto">
-                    <!-- Page Title -->
-                    <div class="mb-10 text-center">
-                        <h1 class="text-4xl font-bold text-gray-800 mb-4">Gestión de Presupuesto</h1>
-                        <p class="text-xl text-gray-600">Controla y administra tus finanzas de manera eficiente</p>
+                    <!-- Page Title with Medical Theme -->
+                    <div class="mb-10 text-center relative">
+                        <!-- Decorative medical elements -->
+                        <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 w-full opacity-10 pointer-events-none">
+                            <div class="flex justify-center space-x-8">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0e7490" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
+                                </svg>
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0e7490" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                                </svg>
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0e7490" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="m4.9 4.9 14.2 14.2"></path>
+                                    <path d="m19.1 4.9-14.2 14.2"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        
+                        <div class="relative inline-block">
+                            <h1 class="text-4xl font-bold text-cyan-900 mb-4 relative z-10">Gestión Financiera Hospitalaria</h1>
+                            <div class="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
+                        </div>
+                        <p class="text-xl text-cyan-700">Administra los recursos económicos de la clínica con precisión y eficiencia</p>
+                        
+                        <!-- Medical icons below title -->
+                        <div class="flex justify-center mt-4 space-x-6">
+                            <div class="text-cyan-600 opacity-70 hover:opacity-100 transition-opacity duration-300">
+                                <i class="fas fa-stethoscope text-lg"></i>
+                            </div>
+                            <div class="text-cyan-600 opacity-70 hover:opacity-100 transition-opacity duration-300">
+                                <i class="fas fa-heartbeat text-lg"></i>
+                            </div>
+                            <div class="text-cyan-600 opacity-70 hover:opacity-100 transition-opacity duration-300">
+                                <i class="fas fa-hospital-user text-lg"></i>
+                            </div>
+                            <div class="text-cyan-600 opacity-70 hover:opacity-100 transition-opacity duration-300">
+                                <i class="fas fa-microscope text-lg"></i>
+                            </div>
+                            <div class="text-cyan-600 opacity-70 hover:opacity-100 transition-opacity duration-300">
+                                <i class="fas fa-notes-medical text-lg"></i>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Budget Overview Cards -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                         <!-- Total Budget Card -->
-                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border-l-4 border-blue-500">
-                            <div class="flex items-center justify-between">
+                        <div class="bg-gradient-to-br from-cyan-50 to-cyan-100 rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border-l-4 border-cyan-500 relative overflow-hidden">
+                            <!-- Patrón médico decorativo de fondo -->
+                            <div class="absolute top-0 right-0 w-24 h-24 opacity-5 pointer-events-none">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#0e7490" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M8 2h8"></path>
+                                    <path d="M12 14v7"></path>
+                                    <path d="M9 18h6"></path>
+                                    <path d="M12 2v12"></path>
+                                    <rect x="4" y="6" width="16" height="8" rx="1"></rect>
+                                </svg>
+                            </div>
+                            <div class="flex items-center justify-between relative z-10">
                                 <div>
-                                    <p class="text-blue-700 text-sm font-medium">Presupuesto Total</p>
-                                    <h3 class="text-2xl font-bold text-blue-900">
+                                    <p class="text-cyan-700 text-sm font-medium">Presupuesto Hospitalario</p>
+                                    <h3 class="text-2xl font-bold text-cyan-900">
                                         @auth
                                             ${{ number_format($presupuestoTotal ?? 0, 2) }}
                                         @else
                                             $50,000
                                         @endauth
                                     </h3>
+                                    <p class="text-xs text-cyan-600 mt-1">Asignación Trimestral</p>
                                 </div>
-                                <div class="p-4 bg-blue-200 rounded-full shadow-inner">
-                                    <i class="fas fa-wallet text-blue-600 text-2xl"></i>
+                                <div class="p-4 bg-cyan-200 rounded-full shadow-inner relative group">
+                                    <i class="fas fa-hospital-user text-cyan-600 text-2xl group-hover:scale-110 transition-transform duration-300"></i>
+                                    <div class="absolute inset-0 rounded-full bg-cyan-400/20 animate-ping-slow opacity-0 group-hover:opacity-100"></div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Spent Amount Card -->
-                        <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border-l-4 border-red-500">
-                            <div class="flex items-center justify-between">
+                        <div class="bg-gradient-to-br from-teal-50 to-teal-100 rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border-l-4 border-teal-500 relative overflow-hidden">
+                            <!-- Patrón médico decorativo de fondo -->
+                            <div class="absolute top-0 right-0 w-24 h-24 opacity-5 pointer-events-none">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#0f766e" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="m4.9 4.9 14.2 14.2"></path>
+                                    <path d="m19.1 4.9-14.2 14.2"></path>
+                                </svg>
+                            </div>
+                            <div class="flex items-center justify-between relative z-10">
                                 <div>
-                                    <p class="text-red-700 text-sm font-medium">Gastado</p>
-                                    <h3 class="text-2xl font-bold text-red-900">
+                                    <p class="text-teal-700 text-sm font-medium">Gastos Operativos Clínicos</p>
+                                    <h3 class="text-2xl font-bold text-teal-900">
                                         @auth
                                             ${{ number_format($gastos ?? 0, 2) }}
                                         @else
@@ -103,66 +200,87 @@
                                     </h3>
                                     @auth
                                         @if($presupuestoTotal > 0)
-                                            <p class="text-xs font-medium mt-1 text-red-600">
-                                                {{ round(($gastos / $presupuestoTotal) * 100) }}% del presupuesto
+                                            <p class="text-xs font-medium mt-1 text-teal-600">
+                                                {{ round(($gastos / $presupuestoTotal) * 100) }}% del presupuesto hospitalario
                                             </p>
                                         @endif
                                     @else
-                                        <p class="text-xs font-medium mt-1 text-red-600">65% del presupuesto</p>
+                                        <p class="text-xs font-medium mt-1 text-teal-600">65% del presupuesto hospitalario</p>
                                     @endauth
                                 </div>
-                                <div class="p-4 bg-red-200 rounded-full shadow-inner">
-                                    <i class="fas fa-chart-line text-red-600 text-2xl"></i>
+                                <div class="p-4 bg-teal-200 rounded-full shadow-inner relative group">
+                                    <i class="fas fa-stethoscope text-teal-600 text-2xl group-hover:scale-110 transition-transform duration-300"></i>
+                                    <div class="absolute inset-0 rounded-full bg-teal-400/20 animate-ping-slow opacity-0 group-hover:opacity-100"></div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Remaining Amount Card -->
-                        <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border-l-4 border-green-500">
-                            <div class="flex items-center justify-between">
+                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border-l-4 border-blue-500 relative overflow-hidden">
+                            <!-- Patrón médico decorativo de fondo -->
+                            <div class="absolute top-0 right-0 w-24 h-24 opacity-5 pointer-events-none">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                                </svg>
+                            </div>
+                            <div class="flex items-center justify-between relative z-10">
                                 <div>
-                                    <p class="text-green-700 text-sm font-medium">Restante</p>
+                                    <p class="text-blue-700 text-sm font-medium">Fondo Sanitario Disponible</p>
                                     <h3 class="text-2xl font-bold"
                                         @auth
                                             @php
-                                                $colorRestante = $restante >= 0 ? 'text-green-900' : 'text-red-600';
+                                                $colorRestante = $restante >= 0 ? 'text-blue-900' : 'text-red-600';
                                             @endphp
                                             class="{{ $colorRestante }}"
                                         @else
-                                            class="text-green-900"
+                                            class="text-blue-900"
                                         @endauth
                                     >
                                         @auth
                                             ${{ number_format($restante ?? 0, 2) }}
                                             @if($restante < 0)
-                                                <i class="fas fa-exclamation-circle ml-1 text-sm"></i>
+                                                <i class="fas fa-exclamation-triangle ml-1 text-sm animate-pulse"></i>
                                             @endif
                                         @else
                                             $17,550
                                         @endauth
                                     </h3>
+                                    <p class="text-xs text-blue-600 mt-1">Recursos para servicios médicos</p>
                                 </div>
-                                <div class="p-4 bg-green-200 rounded-full shadow-inner">
-                                    <i class="fas fa-piggy-bank text-green-600 text-2xl"></i>
+                                <div class="p-4 bg-blue-200 rounded-full shadow-inner relative group">
+                                    <i class="fas fa-heartbeat text-blue-600 text-2xl group-hover:scale-110 transition-transform duration-300"></i>
+                                    <div class="absolute inset-0 rounded-full bg-blue-400/20 animate-ping-slow opacity-0 group-hover:opacity-100"></div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Savings Card -->
-                        <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border-l-4 border-purple-500">
-                            <div class="flex items-center justify-between">
+                        <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border-l-4 border-indigo-500 relative overflow-hidden">
+                            <!-- Patrón médico decorativo de fondo -->
+                            <div class="absolute top-0 right-0 w-24 h-24 opacity-5 pointer-events-none">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <path d="M12 18v-6"></path>
+                                    <path d="M8 18v-1"></path>
+                                    <path d="M16 18v-3"></path>
+                                </svg>
+                            </div>
+                            <div class="flex items-center justify-between relative z-10">
                                 <div>
-                                    <p class="text-purple-700 text-sm font-medium">Ahorros</p>
-                                    <h3 class="text-2xl font-bold text-purple-900">
+                                    <p class="text-indigo-700 text-sm font-medium">Fondo de Investigación Médica</p>
+                                    <h3 class="text-2xl font-bold text-indigo-900">
                                         @auth
                                             ${{ number_format($ahorros ?? 0, 2) }}
                                         @else
                                             $5,000
                                         @endauth
                                     </h3>
+                                    <p class="text-xs text-indigo-600 mt-1">Desarrollo e innovación clínica</p>
                                 </div>
-                                <div class="p-4 bg-purple-200 rounded-full shadow-inner">
-                                    <i class="fas fa-save text-purple-600 text-2xl"></i>
+                                <div class="p-4 bg-indigo-200 rounded-full shadow-inner relative group">
+                                    <i class="fas fa-microscope text-indigo-600 text-2xl group-hover:scale-110 transition-transform duration-300"></i>
+                                    <div class="absolute inset-0 rounded-full bg-indigo-400/20 animate-ping-slow opacity-0 group-hover:opacity-100"></div>
                                 </div>
                             </div>
                         </div>
@@ -170,66 +288,89 @@
 
                     <!-- Budget Visualization Section -->
                     <div class="grid grid-cols-1 gap-6 mb-8">
-                        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
-                            <h2 class="text-xl font-semibold mb-6">Resumen de Presupuesto</h2>
+                        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border-t-4 border-cyan-500 relative overflow-hidden">
+                            <!-- Patrón médico decorativo de fondo -->
+                            <div class="absolute inset-0 opacity-5 pointer-events-none">
+                                <svg class="absolute top-5 right-5" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#0e7490" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
+                                </svg>
+                                <div class="absolute bottom-10 left-10 w-16 h-16 border border-cyan-200 rounded-full"></div>
+                                <div class="absolute top-1/2 left-1/4 w-8 h-8 border border-cyan-200 rotate-45"></div>
+                            </div>
                             
-                            <!-- Budget Progress Bar -->
-                            <div class="mb-6">
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="text-sm font-medium text-gray-700">Progreso del Presupuesto</span>
-                                    <span class="text-sm font-medium"
+                            <div class="relative z-10">
+                                <div class="flex items-center mb-6">
+                                    <i class="fas fa-chart-line text-cyan-600 mr-3 text-xl"></i>
+                                    <h2 class="text-xl font-semibold text-cyan-800">Panel de Control Financiero Hospitalario</h2>
+                                </div>
+                            
+                                <!-- Budget Progress Bar -->
+                                <div class="mb-6 bg-cyan-50/50 p-4 rounded-lg border border-cyan-100">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-hospital-user text-cyan-600 mr-2"></i>
+                                            <span class="text-sm font-medium text-cyan-700">Utilización de Recursos Sanitarios</span>
+                                        </div>
+                                        <span class="text-sm font-medium px-3 py-1 rounded-full"
+                                            @auth
+                                                @php
+                                                    $porcentaje = $presupuestoTotal > 0 ? round(($gastos / $presupuestoTotal) * 100) : 0;
+                                                    $colorTexto = $porcentaje < 70 ? 'bg-cyan-100 text-cyan-800' : ($porcentaje < 100 ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800');
+                                                @endphp
+                                                class="{{ $colorTexto }} font-bold"
+                                            @else
+                                                class="bg-amber-100 text-amber-800 font-bold"
+                                            @endauth
+                                        >
+                                            @auth
+                                                {{ $porcentaje }}%
+                                                @if($porcentaje > 100)
+                                                    <i class="fas fa-exclamation-triangle ml-1 animate-pulse"></i>
+                                                @endif
+                                            @else
+                                                65%
+                                            @endauth
+                                        </span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-3 relative overflow-hidden shadow-inner">
                                         @auth
                                             @php
-                                                $porcentaje = $presupuestoTotal > 0 ? round(($gastos / $presupuestoTotal) * 100) : 0;
-                                                $colorTexto = $porcentaje < 70 ? 'text-green-600' : ($porcentaje < 100 ? 'text-yellow-600' : 'text-red-600');
+                                                $barColor = $porcentaje < 70 ? 'bg-cyan-500' : ($porcentaje < 100 ? 'bg-amber-500' : 'bg-red-500');
+                                                $barWidth = $porcentaje > 100 ? '100%' : $porcentaje . '%';
                                             @endphp
-                                            class="{{ $colorTexto }} font-bold"
-                                        @else
-                                            class="text-yellow-600 font-bold"
-                                        @endauth
-                                    >
-                                        @auth
-                                            {{ $porcentaje }}%
+                                            <div class="{{ $barColor }} h-3 rounded-full transition-all duration-500 ease-in-out relative" style="width: {{ $barWidth }}">
+                                                <div class="absolute inset-0 bg-white opacity-30 overflow-hidden animate-pulse-slow"></div>
+                                            </div>
                                             @if($porcentaje > 100)
-                                                <i class="fas fa-exclamation-triangle ml-1"></i>
+                                                <div class="absolute top-0 right-0 h-3 bg-red-300 border-l-2 border-red-700 overflow-hidden" style="width: {{ min($porcentaje - 100, 50) }}%">
+                                                    <div class="w-full h-full bg-red-500 opacity-60 animate-pulse"></div>
+                                                </div>
                                             @endif
                                         @else
-                                            65%
-                                        @endauth
-                                    </span>
-                                </div>
-                                <div class="w-full bg-gray-200 rounded-full h-3 relative overflow-hidden">
-                                    @auth
-                                        @php
-                                            $barColor = $porcentaje < 70 ? 'bg-green-500' : ($porcentaje < 100 ? 'bg-yellow-500' : 'bg-red-500');
-                                            $barWidth = $porcentaje > 100 ? '100%' : $porcentaje . '%';
-                                        @endphp
-                                        <div class="{{ $barColor }} h-3 rounded-full transition-all duration-500 ease-in-out" style="width: {{ $barWidth }}"></div>
-                                        @if($porcentaje > 100)
-                                            <div class="absolute top-0 right-0 h-3 bg-red-300 border-l-2 border-red-700 overflow-hidden" style="width: {{ min($porcentaje - 100, 50) }}%">
-                                                <div class="w-full h-full bg-red-500 opacity-60 animate-pulse"></div>
+                                            <div class="bg-amber-500 h-3 rounded-full relative" style="width: 65%">
+                                                <div class="absolute inset-0 bg-white opacity-30 overflow-hidden animate-pulse-slow"></div>
                                             </div>
-                                        @endif
-                                    @else
-                                        <div class="bg-yellow-500 h-3 rounded-full" style="width: 65%"></div>
-                                    @endauth
-                                </div>
-                                <div class="flex justify-between text-xs font-medium mt-1">
-                                    <span class="text-gray-600">$0</span>
-                                    <span class="text-gray-600">
-                                        @auth
-                                            ${{ number_format($presupuestoTotal ?? 0, 2) }}
-                                        @else
-                                            $50,000
                                         @endauth
-                                    </span>
+                                    </div>
+                                    <div class="flex justify-between text-xs font-medium mt-2">
+                                        <span class="text-cyan-700 bg-cyan-50 px-2 py-1 rounded-md">$0</span>
+                                        <span class="text-cyan-700 bg-cyan-50 px-2 py-1 rounded-md">
+                                            @auth
+                                                ${{ number_format($presupuestoTotal ?? 0, 2) }}
+                                            @else
+                                                $50,000
+                                            @endauth
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
                             
                             <!-- Category Distribution -->
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <h3 class="text-lg font-medium mb-4">Distribución por Categoría</h3>
+                                <div class="bg-cyan-50/30 p-4 rounded-lg border border-cyan-100">
+                                    <div class="flex items-center mb-4">
+                                        <i class="fas fa-hospital text-cyan-600 mr-2"></i>
+                                        <h3 class="text-lg font-medium text-cyan-800">Distribución por Especialidad Médica</h3>
+                                    </div>
                                     <div class="space-y-4">
                                         @auth
                                             @if(count($categorias) > 0)
@@ -238,10 +379,13 @@
                                                         $porcentaje = $presupuestoTotal > 0 ? round(($categoria->presupuesto / $presupuestoTotal) * 100) : 0;
                                                     @endphp
                                                     <!-- Category Bar -->
-                                                    <div>
-                                                        <div class="flex justify-between items-center mb-1">
-                                                            <span class="text-sm font-medium">{{ $categoria->nombre }}</span>
-                                                            <span class="text-sm font-medium">${{ number_format($categoria->presupuesto, 2) }} ({{ $porcentaje }}%)</span>
+                                                    <div class="bg-white p-3 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300">
+                                                        <div class="flex justify-between items-center mb-2">
+                                                            <div class="flex items-center">
+                                                                <span class="w-2 h-2 rounded-full bg-{{ $categoria->color }}-500 mr-2"></span>
+                                                                <span class="text-sm font-medium text-gray-700">{{ $categoria->nombre }}</span>
+                                                            </div>
+                                                            <span class="text-sm font-medium bg-{{ $categoria->color }}-50 text-{{ $categoria->color }}-700 px-2 py-1 rounded-md">${{ number_format($categoria->presupuesto, 2) }} <span class="text-xs">({{ $porcentaje }}%)</span></span>
                                                         </div>
                                                         @php
                                                             $gastoCategoria = $categoria->transacciones->where('tipo', 'gasto')->sum('monto');
@@ -249,69 +393,126 @@
                                                             $barColorCat = $porcentajeGasto < 70 ? 'bg-' . $categoria->color . '-500' : ($porcentajeGasto < 100 ? 'bg-yellow-500' : 'bg-red-500');
                                                             $barWidthCat = $porcentajeGasto > 100 ? '100%' : $porcentajeGasto . '%';
                                                         @endphp
-                                                        <div class="w-full bg-gray-200 rounded-full h-3 relative overflow-hidden">
-                                                            <div class="{{ $barColorCat }} h-3 rounded-full transition-all duration-500 ease-in-out" style="width: {{ $barWidthCat }}"></div>
+                                                        <div class="w-full bg-gray-200 rounded-full h-3 relative overflow-hidden shadow-inner">
+                                                            <div class="{{ $barColorCat }} h-3 rounded-full transition-all duration-500 ease-in-out relative" style="width: {{ $barWidthCat }}">
+                                                                <div class="absolute inset-0 bg-white opacity-30 overflow-hidden animate-pulse-slow"></div>
+                                                            </div>
                                                             @if($porcentajeGasto > 100)
                                                                 <div class="absolute top-0 right-0 h-3 bg-red-300 border-l-2 border-red-700 overflow-hidden" style="width: {{ min($porcentajeGasto - 100, 30) }}%">
                                                                     <div class="w-full h-full bg-red-500 opacity-60 animate-pulse"></div>
                                                                 </div>
                                                             @endif
                                                         </div>
+                                                        <div class="flex justify-between mt-1 text-xs text-gray-500">
+                                                            <span>Ejecutado: ${{ number_format($gastoCategoria, 2) }}</span>
+                                                            <span class="{{ $porcentajeGasto > 90 ? 'text-red-600 font-medium' : '' }}">{{ $porcentajeGasto }}%</span>
+                                                        </div>
                                                     </div>
                                                 @endforeach
                                             @else
-                                                <p class="text-gray-500 text-sm">No hay categorías de presupuesto. Añade una para comenzar.</p>
+                                                <div class="bg-white p-4 rounded-lg shadow-sm border border-dashed border-cyan-300 text-center">
+                                                    <i class="fas fa-folder-plus text-cyan-400 text-2xl mb-2"></i>
+                                                    <p class="text-gray-500 text-sm">No hay especialidades médicas configuradas. Añade una para comenzar la gestión presupuestaria.</p>
+                                                </div>
                                             @endif
                                         @else
                                             <!-- Category Bar -->
-                                            <div>
-                                                <div class="flex justify-between items-center mb-1">
-                                                    <span class="text-sm font-medium">Vivienda</span>
-                                                    <span class="text-sm font-medium">$12,000 (24%)</span>
+                                            <div class="bg-white p-3 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300">
+                                                <div class="flex justify-between items-center mb-2">
+                                                    <div class="flex items-center">
+                                                        <span class="w-2 h-2 rounded-full bg-blue-500 mr-2"></span>
+                                                        <span class="text-sm font-medium text-gray-700">Cardiología</span>
+                                                    </div>
+                                                    <span class="text-sm font-medium bg-blue-50 text-blue-700 px-2 py-1 rounded-md">$12,000 <span class="text-xs">(24%)</span></span>
                                                 </div>
-                                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                                    <div class="bg-blue-600 h-2 rounded-full" style="width: 24%"></div>
+                                                <div class="w-full bg-gray-200 rounded-full h-3 relative overflow-hidden shadow-inner">
+                                                    <div class="bg-blue-500 h-3 rounded-full relative" style="width: 24%">
+                                                        <div class="absolute inset-0 bg-white opacity-30 overflow-hidden animate-pulse-slow"></div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            
-                                            <!-- Category Bar -->
-                                            <div>
-                                                <div class="flex justify-between items-center mb-1">
-                                                    <span class="text-sm font-medium">Alimentación</span>
-                                                    <span class="text-sm font-medium">$8,000 (16%)</span>
-                                                </div>
-                                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                                    <div class="bg-green-600 h-2 rounded-full" style="width: 16%"></div>
+                                                <div class="flex justify-between mt-1 text-xs text-gray-500">
+                                                    <span>Ejecutado: $2,880</span>
+                                                    <span>24%</span>
                                                 </div>
                                             </div>
                                             
                                             <!-- Category Bar -->
-                                            <div>
-                                                <div class="flex justify-between items-center mb-1">
-                                                    <span class="text-sm font-medium">Transporte</span>
-                                                    <span class="text-sm font-medium">$5,000 (10%)</span>
+                                            <div class="bg-white p-3 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300">
+                                                <div class="flex justify-between items-center mb-2">
+                                                    <div class="flex items-center">
+                                                        <span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+                                                        <span class="text-sm font-medium text-gray-700">Pediatría</span>
+                                                    </div>
+                                                    <span class="text-sm font-medium bg-green-50 text-green-700 px-2 py-1 rounded-md">$8,000 <span class="text-xs">(16%)</span></span>
                                                 </div>
-                                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                                    <div class="bg-purple-600 h-2 rounded-full" style="width: 10%"></div>
+                                                <div class="w-full bg-gray-200 rounded-full h-3 relative overflow-hidden shadow-inner">
+                                                    <div class="bg-green-500 h-3 rounded-full relative" style="width: 16%">
+                                                        <div class="absolute inset-0 bg-white opacity-30 overflow-hidden animate-pulse-slow"></div>
+                                                    </div>
+                                                </div>
+                                                <div class="flex justify-between mt-1 text-xs text-gray-500">
+                                                    <span>Ejecutado: $1,280</span>
+                                                    <span>16%</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Category Bar -->
+                                            <div class="bg-white p-3 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300">
+                                                <div class="flex justify-between items-center mb-2">
+                                                    <div class="flex items-center">
+                                                        <span class="w-2 h-2 rounded-full bg-purple-500 mr-2"></span>
+                                                        <span class="text-sm font-medium text-gray-700">Neurología</span>
+                                                    </div>
+                                                    <span class="text-sm font-medium bg-purple-50 text-purple-700 px-2 py-1 rounded-md">$5,000 <span class="text-xs">(10%)</span></span>
+                                                </div>
+                                                <div class="w-full bg-gray-200 rounded-full h-3 relative overflow-hidden shadow-inner">
+                                                    <div class="bg-purple-500 h-3 rounded-full relative" style="width: 10%">
+                                                        <div class="absolute inset-0 bg-white opacity-30 overflow-hidden animate-pulse-slow"></div>
+                                                    </div>
+                                                </div>
+                                                <div class="flex justify-between mt-1 text-xs text-gray-500">
+                                                    <span>Ejecutado: $500</span>
+                                                    <span>10%</span>
                                                 </div>
                                             </div>
                                         @endauth
                                     </div>
                                 </div>
                                 
-                                <div>
-                                    <h3 class="text-lg font-medium mb-4">Ingresos vs Gastos</h3>
-                                    <div class="flex items-center justify-center h-48">
+                                <div class="bg-cyan-50/30 p-4 rounded-lg border border-cyan-100 mb-4">
+                                    <div class="flex items-center mb-4">
+                                        <i class="fas fa-chart-pie text-cyan-600 mr-2"></i>
+                                        <h3 class="text-lg font-medium text-cyan-800">Ingresos vs Gastos Hospitalarios</h3>
+                                    </div>
+                                    <div class="flex items-center justify-center h-48 bg-white rounded-lg p-2 shadow-inner">
                                         <!-- Chart.js Canvas -->
                                         <canvas id="ingresosGastosChart" width="300" height="200"></canvas>
+                                        
+                                    </div>
+                                    <div class="flex items-center mb-4">
+                                        <i class="fas fa-chart-line text-cyan-600 mr-2"></i>
+                                        <h3 class="text-lg font-medium text-cyan-800">Tendencia Financiera Mensual</h3>
+                                    </div>
+                                    <div class="flex items-center justify-center h-64 bg-white rounded-lg p-2 shadow-inner relative overflow-hidden">
+                                        <!-- Elementos decorativos médicos -->
+                                        <div class="absolute top-2 right-2 w-8 h-8 border border-cyan-200 rounded-full opacity-10"></div>
+                                        <div class="absolute bottom-2 left-2 w-6 h-6 border border-cyan-200 rotate-45 opacity-10"></div>
+                                        <svg class="absolute top-1/4 right-4 opacity-5" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0e7490" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                                        </svg>
+                                        
+                                        <!-- Chart.js Canvas -->
+                                        <canvas id="tendenciaFinancieraChart" width="400" height="250"></canvas>
                                     </div>
                                 </div>
+                                
                                 
                                 <!-- Chart.js Script -->
                                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                                 <script>
                                     document.addEventListener('DOMContentLoaded', function() {
-                                        const ctx = document.getElementById('ingresosGastosChart').getContext('2d');
+                                        // Gráfico de donut para Ingresos vs Gastos
+                                        const ctxDonut = document.getElementById('ingresosGastosChart').getContext('2d');
                                         
                                         @auth
                                             const ingresos = {{ $ingresos }};
@@ -325,19 +526,19 @@
                                             const gastosLabel = 'Gastos: $32,450';
                                         @endauth
                                         
-                                        const chart = new Chart(ctx, {
+                                        const donutChart = new Chart(ctxDonut, {
                                             type: 'doughnut',
                                             data: {
                                                 labels: [ingresosLabel, gastosLabel],
                                                 datasets: [{
                                                     data: [ingresos, gastos],
                                                     backgroundColor: [
-                                                        'rgba(75, 192, 120, 0.8)',
-                                                        'rgba(255, 99, 132, 0.8)'
+                                                        'rgba(6, 182, 212, 0.8)',  /* cyan-500 */
+                                                        'rgba(20, 184, 166, 0.8)'  /* teal-500 */
                                                     ],
                                                     borderColor: [
-                                                        'rgba(75, 192, 120, 1)',
-                                                        'rgba(255, 99, 132, 1)'
+                                                        'rgba(8, 145, 178, 1)',     /* cyan-600 */
+                                                        'rgba(13, 148, 136, 1)'    /* teal-600 */
                                                     ],
                                                     borderWidth: 1
                                                 }]
@@ -364,6 +565,127 @@
                                                 }
                                             }
                                         });
+                                        
+                                        // Gráfico de líneas para la tendencia financiera
+                                        const ctxLine = document.getElementById('tendenciaFinancieraChart').getContext('2d');
+                                        
+                                        // Datos de ejemplo o reales para la tendencia
+                                        @auth
+                                            // Aquí podrías usar datos reales de transacciones agrupadas por mes
+                                            // Este es un ejemplo, deberías reemplazarlo con datos reales de tu backend
+                                            const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'];
+                                            const datosIngresos = [{{ $ingresos * 0.8 }}, {{ $ingresos * 0.9 }}, {{ $ingresos * 0.85 }}, {{ $ingresos * 0.95 }}, {{ $ingresos * 1.05 }}, {{ $ingresos }}];
+                                            const datosGastos = [{{ $gastos * 0.75 }}, {{ $gastos * 0.8 }}, {{ $gastos * 0.9 }}, {{ $gastos * 0.85 }}, {{ $gastos * 0.95 }}, {{ $gastos }}];
+                                        @else
+                                            const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'];
+                                            const datosIngresos = [32000, 36000, 34000, 38000, 42000, 40000];
+                                            const datosGastos = [24300, 25600, 28800, 27200, 30400, 32450];
+                                        @endauth
+                                        
+                                        const lineChart = new Chart(ctxLine, {
+                                            type: 'line',
+                                            data: {
+                                                labels: meses,
+                                                datasets: [
+                                                    {
+                                                        label: 'Ingresos',
+                                                        data: datosIngresos,
+                                                        borderColor: 'rgba(6, 182, 212, 1)', // cyan-500
+                                                        backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                                                        borderWidth: 2,
+                                                        tension: 0.3,
+                                                        fill: true,
+                                                        pointBackgroundColor: 'rgba(6, 182, 212, 1)',
+                                                        pointBorderColor: '#fff',
+                                                        pointBorderWidth: 1,
+                                                        pointRadius: 4,
+                                                        pointHoverRadius: 6
+                                                    },
+                                                    {
+                                                        label: 'Gastos',
+                                                        data: datosGastos,
+                                                        borderColor: 'rgba(20, 184, 166, 1)', // teal-500
+                                                        backgroundColor: 'rgba(20, 184, 166, 0.1)',
+                                                        borderWidth: 2,
+                                                        tension: 0.3,
+                                                        fill: true,
+                                                        pointBackgroundColor: 'rgba(20, 184, 166, 1)',
+                                                        pointBorderColor: '#fff',
+                                                        pointBorderWidth: 1,
+                                                        pointRadius: 4,
+                                                        pointHoverRadius: 6
+                                                    }
+                                                ]
+                                            },
+                                            options: {
+                                                responsive: true,
+                                                maintainAspectRatio: false,
+                                                plugins: {
+                                                    legend: {
+                                                        position: 'top',
+                                                        labels: {
+                                                            font: {
+                                                                size: 12
+                                                            },
+                                                            usePointStyle: true,
+                                                            padding: 20
+                                                        }
+                                                    },
+                                                    tooltip: {
+                                                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                                        titleColor: '#0e7490',
+                                                        bodyColor: '#0f766e',
+                                                        borderColor: '#e2e8f0',
+                                                        borderWidth: 1,
+                                                        padding: 12,
+                                                        displayColors: true,
+                                                        callbacks: {
+                                                            label: function(context) {
+                                                                return context.dataset.label + ': $' + context.raw.toLocaleString('es-ES', {
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2
+                                                                });
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                scales: {
+                                                    y: {
+                                                        beginAtZero: true,
+                                                        grid: {
+                                                            color: 'rgba(226, 232, 240, 0.5)'
+                                                        },
+                                                        ticks: {
+                                                            callback: function(value) {
+                                                                return '$' + value.toLocaleString('es-ES');
+                                                            },
+                                                            font: {
+                                                                size: 11
+                                                            }
+                                                        }
+                                                    },
+                                                    x: {
+                                                        grid: {
+                                                            color: 'rgba(226, 232, 240, 0.5)'
+                                                        },
+                                                        ticks: {
+                                                            font: {
+                                                                size: 11
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                interaction: {
+                                                    intersect: false,
+                                                    mode: 'index'
+                                                },
+                                                elements: {
+                                                    line: {
+                                                        borderJoinStyle: 'round'
+                                                    }
+                                                }
+                                            }
+                                        });
                                     });
                                 </script>
                             </div>
@@ -373,12 +695,12 @@
                     <!-- Budget Categories and Transactions Section -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                         <!-- Expense Categories -->
-                        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
+                        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border-t-4 border-cyan-500">
                             <div class="flex items-center justify-between mb-6">
-                                <h2 class="text-xl font-semibold">Categorías de Gastos</h2>
+                                <h2 class="text-xl font-semibold text-cyan-800">Áreas de Gasto Médico</h2>
                                 @auth
-                                    <button type="button" @click="$store.categoriaModal.open = true" class="flex items-center justify-center p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300" id="btnAddCategoria">
-                                        <i class="fas fa-plus mr-2"></i> Añadir Gastos
+                                    <button type="button" @click="$store.categoriaModal.open = true" class="flex items-center justify-center p-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors duration-300" id="btnAddCategoria">
+                                        <i class="fas fa-plus mr-2"></i> Añadir Área Médica
                                     </button>
                                 @else
                                     <button type="button" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')" class="flex items-center justify-center p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300" id="btnAddCategoria">
@@ -506,16 +828,16 @@
                         </div>
                         
                         <!-- Recent Transactions -->
-                        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
+                        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border-t-4 border-teal-500">
                             <div class="flex items-center justify-between mb-6">
-                                <h2 class="text-xl font-semibold">Transacciones Recientes</h2>
+                                <h2 class="text-xl font-semibold text-teal-800">Movimientos Financieros Clínicos</h2>
                                 @auth
-                                    <button type="button" @click="$store.transaccionModal.open = true" class="flex items-center justify-center p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300" id="btnAddTransaccion">
-                                        <i class="fas fa-plus mr-2"></i> Añadir Transaccion
+                                    <button type="button" @click="$store.transaccionModal.open = true" class="flex items-center justify-center p-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors duration-300" id="btnAddTransaccion">
+                                        <i class="fas fa-plus mr-2"></i> Registrar Movimiento
                                     </button>
                                 @else
-                                    <button type="button" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')" class="flex items-center justify-center p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300" id="btnAddTransaccion">
-                                        <i class="fas fa-plus mr-2"></i> Añadir Transaccion
+                                    <button type="button" onclick="alert('Esta es una demostración. Inicia sesión para realizar esta acción.')" class="flex items-center justify-center p-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors duration-300" id="btnAddTransaccion">
+                                        <i class="fas fa-plus mr-2"></i> Registrar Movimiento
                                     </button>
                                 @endauth
                             </div>
