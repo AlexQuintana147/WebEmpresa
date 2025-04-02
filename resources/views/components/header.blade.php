@@ -53,7 +53,7 @@
                 <div class="flex flex-col">
                     @auth
                         <span class="text-cyan-300 text-xs font-medium">Sistema Médico Activo</span>
-                        <span class="text-cyan-100 text-xs">{{ now()->format('d/m/Y H:i') }}</span>
+                        <span class="text-cyan-100 text-xs">{{ now()->timezone('America/Lima')->format('d/m/Y H:i') }}</span>
                     @else
                         <span class="text-red-300 text-xs font-medium">Sistema Inactivo</span>
                         <span class="text-gray-400 text-xs">Inicie sesión para acceder</span>
