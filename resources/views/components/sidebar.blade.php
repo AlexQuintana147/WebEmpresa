@@ -1,15 +1,33 @@
 <div class="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white w-64 min-h-screen py-8 px-6 flex flex-col shadow-2xl relative overflow-hidden">
     <div class="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-purple-500/5 pointer-events-none"></div>
-    <div class="relative mb-10 text-center">
-        <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-100 to-blue-50 tracking-wide">Administración</h1>
-        <div class="mt-3 h-0.5 bg-gradient-to-r from-transparent via-blue-400/30 to-transparent opacity-30"></div>
+    <div class="relative mb-10 text-center space-y-4">
+        <!-- Logo container with subtle glow effect -->
+        <div class="relative w-32 h-32 mx-auto">
+            <div class="absolute inset-0 bg-blue-500/20 rounded-full blur-xl animate-pulse"></div>
+            <img src="{{ asset('images/logo.png') }}" alt="Clínica Ricardo Palma Logo" 
+                 class="relative w-full h-full object-contain drop-shadow-2xl transition-all duration-300 hover:scale-105"/>
+        </div>
+
+        <!-- Title with enhanced gradient and animation -->
+        <div class="relative">
+            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-200 via-blue-100 to-blue-50 tracking-wider hover:from-blue-100 hover:to-white transition-all duration-500">
+                Clínica Ricardo Palma
+            </h1>
+            
+            <!-- Decorative elements -->
+            <div class="mt-4 flex items-center justify-center space-x-2">
+                <div class="h-0.5 w-12 bg-gradient-to-r from-transparent via-blue-400/50 to-transparent"></div>
+                <div class="w-2 h-2 rounded-full bg-blue-400/50"></div>
+                <div class="h-0.5 w-12 bg-gradient-to-r from-transparent via-blue-400/50 to-transparent"></div>
+            </div>
+        </div>
     </div>
     <nav class="relative flex-1 space-y-2">
         <a href="/" class="group flex items-center py-3.5 px-5 rounded-xl transition-all duration-300 hover:bg-white/10 hover:translate-x-1 {{ request()->is('/') ? 'bg-gradient-to-r from-cyan-500/20 to-cyan-500/10 border-r-4 border-cyan-400' : '' }}">
             <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-400/20 to-cyan-500/20 group-hover:from-cyan-400/30 group-hover:to-cyan-500/30 transition-all duration-300 mr-3">
-                <i class="fas fa-chart-line text-cyan-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                <i class="fas fa-building-columns text-cyan-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
             </div>
-            <span class="font-medium tracking-wide group-hover:text-cyan-300 transition-colors duration-300">Inicio</span>
+            <span class="font-medium tracking-wide group-hover:text-cyan-300 transition-colors duration-300">Sobre Nosotros</span>
         </a>
         <a href="/chat" class="group flex items-center py-3.5 px-5 rounded-xl transition-all duration-300 hover:bg-white/10 hover:translate-x-1 {{ request()->is('chat') ? 'bg-gradient-to-r from-indigo-500/20 to-indigo-500/10 border-r-4 border-indigo-400' : '' }}">
             <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-400/20 to-indigo-500/20 group-hover:from-indigo-400/30 group-hover:to-indigo-500/30 transition-all duration-300 mr-3">
