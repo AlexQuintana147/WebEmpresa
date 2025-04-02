@@ -169,22 +169,27 @@
                 </div>
 
                 <!-- Login Form -->
-                <form x-show="isLogin" class="space-y-5">
+                <form x-show="isLogin" class="space-y-5" id="loginForm">
                     @csrf
+                    <!-- Área para mensajes de error -->
+                    <div id="login-error" class="hidden p-3 mb-3 text-sm text-red-700 bg-red-100 rounded-lg" role="alert"></div>
+                    
                     <div class="space-y-1.5">
                         <label for="email" class="block text-sm font-semibold text-gray-700">Email</label>
-                        <input type="email" id="email" name="email" 
+                        <input type="email" id="email" name="correo" 
                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm 
                                       focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 
                                       transition duration-200 text-gray-900">
+                        <div class="invalid-feedback text-red-600 text-sm mt-1 hidden"></div>
                     </div>
 
                     <div class="space-y-1.5">
                         <label for="password" class="block text-sm font-semibold text-gray-700">Contraseña</label>
-                        <input type="password" id="password" name="password" 
+                        <input type="password" id="password" name="contrasena" 
                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm 
                                       focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 
                                       transition duration-200 text-gray-900">
+                        <div class="invalid-feedback text-red-600 text-sm mt-1 hidden"></div>
                     </div>
 
                     <div class="flex items-center justify-between">
@@ -302,4 +307,31 @@
             console.error('Error al cerrar sesión:', error);
         });
     }
+    
+    // Sistema de notificaciones para el login
+    function showNotification(message, type = 'error') {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 transform transition-all duration-300 ease-in-out ${
+            type === 'success' ? 'bg-green-500' : 'bg-red-500'
+        } text-white`;
+        notification.textContent = message;
+        notification.style.transform = 'translateX(100%)';
+
+        document.body.appendChild(notification);
+
+        requestAnimationFrame(() => {
+            notification.style.transform = 'translateX(0)';
+        });
+
+        setTimeout(() => {
+            notification.style.transform = 'translateX(100%)';
+            notification.style.opacity = '0';
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, 3000);
+    }
 </script>
+
+<!-- Incluir el script de login.js -->
+<script src="{{ asset('js/login.js') }}"></script>

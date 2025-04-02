@@ -1,29 +1,33 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const loginForm = document.querySelector('form[x-show="isLogin"]');
+    const loginForm = document.querySelector('#loginForm');
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
     let isSubmitting = false;
 
-    function showNotification(message, type = 'error') {
-        const notification = document.createElement('div');
-        notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 transform transition-all duration-300 ease-in-out ${
-            type === 'success' ? 'bg-green-500' : 'bg-blue-500'
-        } text-white`;
-        notification.textContent = message;
-        notification.style.transform = 'translateX(100%)';
+    // Usar la función showNotification definida en el header
+    function displayError(message) {
+        const errorDiv = document.getElementById('login-error');
+        if (errorDiv) {
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        } else {
+            // Si no existe el div de error, usar la notificación
+            showNotification(message, 'error');
+        }
+    }
 
-        document.body.appendChild(notification);
-
-        requestAnimationFrame(() => {
-            notification.style.transform = 'translateX(0)';
+    function clearErrors() {
+        const errorDiv = document.getElementById('login-error');
+        if (errorDiv) {
+            errorDiv.textContent = '';
+            errorDiv.classList.add('hidden');
+        }
+        document.querySelectorAll('.invalid-feedback').forEach(el => {
+            el.textContent = '';
+            el.classList.add('hidden');
         });
-
-        setTimeout(() => {
-            notification.style.transform = 'translateX(100%)';
-            notification.style.opacity = '0';
-            setTimeout(() => {
-                notification.remove();
-            }, 300);
-        }, 3000);
+        document.querySelectorAll('.is-invalid').forEach(el => {
+            el.classList.remove('is-invalid');
+        });
     }
 
     if (loginForm && csrfToken) {
@@ -34,8 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
             isSubmitting = true;
 
             // Clear previous error messages
-            loginForm.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
-            loginForm.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            clearErrors();
 
             const formData = {
                 correo: document.querySelector('#email').value,
@@ -46,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Validate required fields
             if (!formData.correo || !formData.contrasena) {
                 console.log('Validation failed: Missing required fields');
-                showNotification('Por favor complete todos los campos', 'error');
+                displayError('Por favor complete todos los campos');
                 isSubmitting = false;
                 return;
             }
@@ -65,25 +68,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await response.json();
 
                 if (response.ok) {
+                    // Mostrar mensaje de éxito
                     showNotification(data.message || 'Inicio de sesión exitoso', 'success');
                     
+                    // Actualizar nombre de usuario si está disponible
                     if (data.user) {
-                        const userNameElement = document.querySelector('.text-white.text-sm.font-medium');
+                        const userNameElement = document.querySelector('.text-white.text-base.font-medium');
                         if (userNameElement) {
                             userNameElement.textContent = data.user.nombre;
                         }
                     }
 
+                    // Cerrar el modal de login
+                    if (typeof Alpine !== 'undefined') {
+                        Alpine.store('modal').open = false;
+                    }
+
+                    // Redireccionar después de un breve retraso
                     setTimeout(() => {
                         window.location.href = '/';
                     }, 1500);
                 } else {
-                    showNotification(data.message || 'Error al iniciar sesión', 'error');
+                    // Mostrar mensaje de error
+                    displayError(data.message || 'Las credenciales proporcionadas son incorrectas');
                     isSubmitting = false;
                 }
             } catch (error) {
                 console.error('Error during login:', error);
-                showNotification('Error al procesar la solicitud', 'error');
+                displayError('Error al procesar la solicitud. Por favor, inténtelo de nuevo más tarde.');
                 isSubmitting = false;
             }
         });
