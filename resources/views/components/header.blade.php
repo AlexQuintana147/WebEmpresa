@@ -53,7 +53,31 @@
                 <div class="flex flex-col">
                     @auth
                         <span class="text-cyan-300 text-xs font-medium">Sistema Médico Activo</span>
-                        <span class="text-cyan-100 text-xs">{{ now()->timezone('America/Lima')->format('d/m/Y H:i') }}</span>
+                        <span class="text-cyan-100 text-xs" id="reloj-peru">{{ now()->timezone('America/Lima')->format('d/m/Y H:i:s') }}</span>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                function actualizarReloj() {
+                                    const ahora = new Date();
+                                    // Configurar para zona horaria de Perú (UTC-5)
+                                    const opciones = {
+                                        timeZone: 'America/Lima',
+                                        day: '2-digit',
+                                        month: '2-digit',
+                                        year: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                        second: '2-digit',
+                                        hour12: false
+                                    };
+                                    const horaFormateada = ahora.toLocaleString('es-PE', opciones);
+                                    document.getElementById('reloj-peru').textContent = horaFormateada;
+                                }
+                                
+                                // Actualizar inmediatamente y luego cada segundo
+                                actualizarReloj();
+                                setInterval(actualizarReloj, 1000);
+                            });
+                        </script>
                     @else
                         <span class="text-red-300 text-xs font-medium">Sistema Inactivo</span>
                         <span class="text-gray-400 text-xs">Inicie sesión para acceder</span>
