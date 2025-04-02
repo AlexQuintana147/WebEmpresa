@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatIA</title>
+    <title>Consulta Virtual - Clínica Ricardo Palma</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
@@ -14,8 +14,17 @@
         })
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        @keyframes pulse-medical {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 0.4; }
+        }
+        .animate-pulse-medical {
+            animation: pulse-medical 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-blue-50">
     <div class="min-h-screen flex">
         <!-- Sidebar -->
         <x-sidebar />
@@ -26,23 +35,38 @@
             <x-header />
 
             <!-- Chat Interface -->
-            <main class="flex-1 p-6 bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200" x-data="{ message: '', messages: [], scrollToBottom() { this.$nextTick(() => { this.$refs.chatContainer.scrollTop = this.$refs.chatContainer.scrollHeight; }); } }">
-                <div class="h-full max-w-7xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
+            <main class="flex-1 p-6 bg-gradient-to-br from-blue-50 via-blue-100/30 to-cyan-100/30" x-data="{ message: '', messages: [], scrollToBottom() { this.$nextTick(() => { this.$refs.chatContainer.scrollTop = this.$refs.chatContainer.scrollHeight; }); } }">
+                <div class="h-full max-w-7xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden border border-cyan-100">
                     <!-- Chat Messages Container -->
                     <div class="h-full flex flex-col">
                         <div class="flex-1 overflow-y-auto p-8 space-y-8" id="chat-messages" x-ref="chatContainer">
+                            <!-- Header Banner -->
+                            <div class="mb-8 bg-gradient-to-r from-cyan-600 to-teal-600 rounded-xl p-4 shadow-lg">
+                                <div class="flex items-center space-x-4">
+                                    <div class="flex-shrink-0">
+                                        <div class="h-14 w-14 rounded-full bg-white flex items-center justify-center shadow-lg">
+                                            <i class="fas fa-stethoscope text-teal-600 text-2xl"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-white text-xl font-bold">Consulta Médica Virtual</h2>
+                                        <p class="text-cyan-100">Atención médica personalizada desde cualquier lugar</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <!-- Welcome Message -->
                             <div class="flex items-start space-x-4 animate-fade-in">
                                 <div class="flex-shrink-0">
-                                    <div class="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-200">
-                                        <i class="fas fa-robot text-white text-lg"></i>
+                                    <div class="h-12 w-12 rounded-full bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-200">
+                                        <i class="fas fa-user-md text-white text-lg"></i>
                                     </div>
                                 </div>
                                 <div class="flex-1">
-                                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl py-3 px-5 shadow-sm max-w-3xl transform hover:-translate-y-0.5 transition-transform duration-200">
-                                        <p class="text-gray-800 font-medium">¡Hola! Soy tu asistente virtual. ¿En qué puedo ayudarte hoy?</p>
+                                    <div class="bg-gradient-to-br from-cyan-50 to-teal-50 rounded-2xl py-3 px-5 shadow-sm max-w-3xl transform hover:-translate-y-0.5 transition-transform duration-200 border border-teal-100">
+                                        <p class="text-gray-800 font-medium">¡Hola! Soy el Dr. Asistente Virtual de la Clínica Ricardo Palma. ¿En qué puedo ayudarle hoy? Puede consultar sobre síntomas, agendar una cita o solicitar información sobre nuestros servicios.</p>
                                     </div>
-                                    <span class="text-xs text-gray-500 ml-2 mt-1 inline-block">Asistente Virtual</span>
+                                    <span class="text-xs text-gray-500 ml-2 mt-1 inline-block">Dr. Asistente Virtual</span>
                                 </div>
                             </div>
 
@@ -51,25 +75,25 @@
                                 <div class="flex items-start space-x-4" :class="{'justify-end space-x-reverse': msg.type === 'user'}">
                                     <template x-if="msg.type === 'bot'">
                                         <div class="flex-shrink-0">
-                                            <div class="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-200">
-                                                <i class="fas fa-robot text-white text-lg"></i>
+                                            <div class="h-12 w-12 rounded-full bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-200">
+                                                <i class="fas fa-user-md text-white text-lg"></i>
                                             </div>
                                         </div>
                                     </template>
                                     <div class="flex-1" :class="{'text-right': msg.type === 'user'}">
                                         <div class="inline-block rounded-2xl py-3 px-5 shadow-sm max-w-3xl transform hover:-translate-y-0.5 transition-transform duration-200"
                                              :class="{
-                                                'bg-gradient-to-br from-blue-50 to-blue-100': msg.type === 'bot',
-                                                'bg-gradient-to-br from-green-50 to-green-100': msg.type === 'user'
+                                                'bg-gradient-to-br from-cyan-50 to-teal-50 border border-teal-100': msg.type === 'bot',
+                                                'bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-100': msg.type === 'user'
                                              }">
                                             <p class="text-gray-800" x-text="msg.text"></p>
                                         </div>
-                                        <span class="text-xs text-gray-500 mx-2 mt-1 inline-block" x-text="msg.type === 'bot' ? 'Asistente Virtual' : 'Tú'"></span>
+                                        <span class="text-xs text-gray-500 mx-2 mt-1 inline-block" x-text="msg.type === 'bot' ? 'Dr. Asistente Virtual' : 'Paciente'"></span>
                                     </div>
                                     <template x-if="msg.type === 'user'">
                                         <div class="flex-shrink-0">
-                                            <div class="h-12 w-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-200">
-                                                <i class="fas fa-user text-white text-lg"></i>
+                                            <div class="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-200">
+                                                <i class="fas fa-hospital-user text-white text-lg"></i>
                                             </div>
                                         </div>
                                     </template>
@@ -78,26 +102,29 @@
                         </div>
 
                         <!-- Chat Input -->
-                        <div class="border-t border-gray-200 p-6 bg-gradient-to-b from-white to-gray-50">
-                            <form @submit.prevent="if(message.trim()) { messages.push({type: 'user', text: message}); messages.push({type: 'bot', text: 'Gracias por tu mensaje. Te responderé en breve.'}); scrollToBottom(); message = ''; }" class="flex space-x-6">
+                        <div class="border-t border-cyan-100 p-6 bg-gradient-to-b from-white to-cyan-50">
+                            <div class="mb-4 px-4 py-2 bg-blue-50 border-l-4 border-blue-500 rounded-lg">
+                                <p class="text-sm text-blue-800"><i class="fas fa-info-circle mr-2"></i> Esta consulta virtual es solo informativa. Para emergencias médicas, por favor llame al 106 o acuda a urgencias.</p>
+                            </div>
+                            <form @submit.prevent="if(message.trim()) { messages.push({type: 'user', text: message}); messages.push({type: 'bot', text: 'Gracias por su consulta. El Dr. Asistente Virtual está analizando su información y responderá en breve.'}); scrollToBottom(); message = ''; }" class="flex space-x-6">
                                 <div class="flex-1 relative">
                                     <input 
                                         type="text" 
                                         x-model="message"
-                                        class="w-full px-8 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 shadow-sm placeholder-gray-400"
-                                        placeholder="Escribe tu mensaje aquí..."
+                                        class="w-full px-8 py-4 bg-white border border-cyan-200 rounded-xl focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition-all duration-300 shadow-sm placeholder-gray-400"
+                                        placeholder="Describa sus síntomas o consulta médica aquí..."
                                     >
-                                    <div class="absolute right-4 top-4 text-gray-400">
-                                        <i class="fas fa-keyboard text-lg"></i>
+                                    <div class="absolute left-3 top-4 text-teal-500">
+                                        <i class="fas fa-notes-medical text-lg"></i>
                                     </div>
                                 </div>
                                 <button 
                                     type="submit"
-                                    class="px-10 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-500/30 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5"
+                                    class="px-10 py-4 bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-xl hover:from-teal-700 hover:to-cyan-700 focus:outline-none focus:ring-4 focus:ring-teal-500/30 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5"
                                     :disabled="!message.trim()"
                                 >
                                     <i class="fas fa-paper-plane mr-2"></i>
-                                    Enviar
+                                    Enviar Consulta
                                 </button>
                             </form>
                         </div>
@@ -106,15 +133,5 @@
             </main>
         </div>
     </div>
-
-    <style>
-        @keyframes fade-in {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-            animation: fade-in 0.5s ease-out;
-        }
-    </style>
 </body>
 </html>
