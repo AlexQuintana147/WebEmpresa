@@ -1,68 +1,75 @@
-<div class="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white w-64 min-h-screen py-8 px-6 flex flex-col shadow-2xl relative overflow-hidden">
-    <div class="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-purple-500/5 pointer-events-none"></div>
+<div class="bg-gradient-to-br from-cyan-900 via-blue-800 to-teal-900 text-white w-64 min-h-screen py-8 px-6 flex flex-col shadow-2xl relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-cyan-500/10 to-teal-500/10 pointer-events-none"></div>
+    <!-- Patrón médico decorativo -->
+    <div class="absolute inset-0 opacity-5 pointer-events-none">
+        <div class="absolute top-10 left-10 w-8 h-8 border-2 border-white rounded-full"></div>
+        <div class="absolute top-40 right-10 w-6 h-12 border-2 border-white rounded-full"></div>
+        <div class="absolute bottom-40 left-12 w-10 h-10 border-2 border-white rotate-45"></div>
+        <div class="absolute bottom-20 right-12 w-8 h-8 border-2 border-white rounded-md"></div>
+    </div>
     <div class="relative mb-10 text-center space-y-4">
         <!-- Logo container with subtle glow effect -->
         <div class="relative w-32 h-32 mx-auto">
-            <div class="absolute inset-0 bg-blue-500/20 rounded-full blur-xl animate-pulse"></div>
+            <div class="absolute inset-0 bg-cyan-500/30 rounded-full blur-xl animate-pulse-medical"></div>
             <img src="{{ asset('images/logo.png') }}" alt="Clínica Ricardo Palma Logo" 
                  class="relative w-full h-full object-contain drop-shadow-2xl transition-all duration-300 hover:scale-105"/>
         </div>
 
         <!-- Title with enhanced gradient and animation -->
         <div class="relative">
-            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-200 via-blue-100 to-blue-50 tracking-wider hover:from-blue-100 hover:to-white transition-all duration-500">
+            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 via-teal-100 to-blue-50 tracking-wider hover:from-cyan-100 hover:to-white transition-all duration-500">
                 Clínica Ricardo Palma
             </h1>
             
             <!-- Decorative elements -->
             <div class="mt-4 flex items-center justify-center space-x-2">
-                <div class="h-0.5 w-12 bg-gradient-to-r from-transparent via-blue-400/50 to-transparent"></div>
-                <div class="w-2 h-2 rounded-full bg-blue-400/50"></div>
-                <div class="h-0.5 w-12 bg-gradient-to-r from-transparent via-blue-400/50 to-transparent"></div>
+                <div class="h-0.5 w-12 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
+                <div class="w-2 h-2 rounded-full bg-cyan-400/50"></div>
+                <div class="h-0.5 w-12 bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
             </div>
         </div>
     </div>
     <nav class="relative flex-1 space-y-2">
         <a href="/" class="group flex items-center py-3.5 px-5 rounded-xl transition-all duration-300 hover:bg-white/10 hover:translate-x-1 {{ request()->is('/') ? 'bg-gradient-to-r from-cyan-500/20 to-cyan-500/10 border-r-4 border-cyan-400' : '' }}">
             <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-400/20 to-cyan-500/20 group-hover:from-cyan-400/30 group-hover:to-cyan-500/30 transition-all duration-300 mr-3">
-                <i class="fas fa-building-columns text-cyan-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                <i class="fas fa-hospital text-cyan-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
             </div>
             <span class="font-medium tracking-wide group-hover:text-cyan-300 transition-colors duration-300">Sobre Nosotros</span>
         </a>
         <a href="/chat" class="group flex items-center py-3.5 px-5 rounded-xl transition-all duration-300 hover:bg-white/10 hover:translate-x-1 {{ request()->is('chat') ? 'bg-gradient-to-r from-indigo-500/20 to-indigo-500/10 border-r-4 border-indigo-400' : '' }}">
             <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-400/20 to-indigo-500/20 group-hover:from-indigo-400/30 group-hover:to-indigo-500/30 transition-all duration-300 mr-3">
-                <i class="fas fa-brain text-indigo-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                <i class="fas fa-user-doctor text-indigo-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
             </div>
             <span class="font-medium tracking-wide group-hover:text-indigo-300 transition-colors duration-300">Chat IA</span>
-            <span class="ml-2 px-2.5 py-1 text-xs font-semibold bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-full shadow-lg animate-gradient-x">BETA</span>
+            <span class="ml-2 px-2.5 py-1 text-xs font-semibold bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 rounded-full shadow-lg animate-gradient-x">BETA</span>
         </a>
         <a href="/instrucciones" class="group flex items-center py-3.5 px-5 rounded-xl transition-all duration-300 hover:bg-white/10 hover:translate-x-1 {{ request()->is('instrucciones') ? 'bg-gradient-to-r from-rose-500/20 to-rose-500/10 border-r-4 border-rose-400' : '' }}">
             <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-rose-400/20 to-rose-500/20 group-hover:from-rose-400/30 group-hover:to-rose-500/30 transition-all duration-300 mr-3">
-                <i class="fas fa-book-open text-rose-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                <i class="fas fa-notes-medical text-rose-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
             </div>
             <span class="font-medium tracking-wide group-hover:text-rose-300 transition-colors duration-300">Instrucciones</span>
         </a>
         <a href="/presupuesto" class="group flex items-center py-3.5 px-5 rounded-xl transition-all duration-300 hover:bg-white/10 hover:translate-x-1 {{ request()->is('presupuesto') ? 'bg-gradient-to-r from-emerald-500/20 to-emerald-500/10 border-r-4 border-emerald-400' : '' }}">
             <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-400/20 to-emerald-500/20 group-hover:from-emerald-400/30 group-hover:to-emerald-500/30 transition-all duration-300 mr-3">
-                <i class="fas fa-wallet text-emerald-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                <i class="fas fa-file-invoice-dollar text-emerald-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
             </div>
             <span class="font-medium tracking-wide group-hover:text-emerald-300 transition-colors duration-300">Presupuesto Mensual</span>
         </a>
         <a href="/actividades" class="group flex items-center py-3.5 px-5 rounded-xl transition-all duration-300 hover:bg-white/10 hover:translate-x-1 {{ request()->is('actividades') ? 'bg-gradient-to-r from-amber-500/20 to-amber-500/10 border-r-4 border-amber-400' : '' }}">
             <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400/20 to-amber-500/20 group-hover:from-amber-400/30 group-hover:to-amber-500/30 transition-all duration-300 mr-3">
-                <i class="fas fa-tasks text-amber-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                <i class="fas fa-clipboard-list text-amber-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
             </div>
             <span class="font-medium tracking-wide group-hover:text-amber-300 transition-colors duration-300">Lista de Actividades</span>
         </a>
         <a href="/calendario" class="group flex items-center py-3.5 px-5 rounded-xl transition-all duration-300 hover:bg-white/10 hover:translate-x-1 {{ request()->is('calendario') ? 'bg-gradient-to-r from-fuchsia-500/20 to-fuchsia-500/10 border-r-4 border-fuchsia-400' : '' }}">
             <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-fuchsia-400/20 to-fuchsia-500/20 group-hover:from-fuchsia-400/30 group-hover:to-fuchsia-500/30 transition-all duration-300 mr-3">
-                <i class="fas fa-calendar-alt text-fuchsia-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                <i class="fas fa-calendar-plus text-fuchsia-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
             </div>
             <span class="font-medium tracking-wide group-hover:text-fuchsia-300 transition-colors duration-300">Calendario</span>
         </a>
         <a href="/notas" class="group flex items-center py-3.5 px-5 rounded-xl transition-all duration-300 hover:bg-white/10 hover:translate-x-1 {{ request()->is('inversiones') ? 'bg-gradient-to-r from-teal-500/20 to-teal-500/10 border-r-4 border-teal-400' : '' }}">
             <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-teal-400/20 to-teal-500/20 group-hover:from-teal-400/30 group-hover:to-teal-500/30 transition-all duration-300 mr-3">
-                <i class="fas fa-sticky-note text-teal-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                <i class="fas fa-stethoscope text-teal-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
             </div>
             <span class="font-medium tracking-wide group-hover:text-teal-300 transition-colors duration-300">Notas</span>
         </a>
@@ -70,42 +77,49 @@
         <!-- Sección diferenciada para Pacientes (solo visible para pacientes) -->
         @auth
             @if(Auth::user()->rol_id == 2)
-            <div class="mt-8 relative group/patient">
+            <!-- Separador con símbolo médico -->
+            <div class="my-6 flex items-center justify-center">
+                <div class="h-px w-12 bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent"></div>
+                <div class="mx-2 text-cyan-400/50"><i class="fas fa-staff-snake text-sm"></i></div>
+                <div class="h-px w-12 bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent"></div>
+            </div>
+            
+            <div class="relative group/patient">
                 <!-- Efecto de neón flotante -->
-                <div class="absolute -inset-1 bg-gradient-to-r from-teal-400/20 to-purple-500/20 rounded-xl blur-sm opacity-0 group-hover/patient:opacity-40 transition-opacity duration-300"></div>
+                <div class="absolute -inset-1 bg-gradient-to-r from-cyan-400/20 to-teal-500/20 rounded-xl blur-sm opacity-0 group-hover/patient:opacity-40 transition-opacity duration-300"></div>
                 
                 <!-- Contenedor principal del área de pacientes -->
-                <div class="relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-1 shadow-2xl border border-gray-700/50 hover:border-teal-400/30 transition-all duration-300">
+                <div class="relative bg-gradient-to-br from-blue-900 to-teal-900 rounded-xl p-1 shadow-2xl border border-cyan-700/50 hover:border-cyan-400/30 transition-all duration-300">
                     <!-- Cabecera destacada -->
                     <div class="flex items-center px-5 py-4">
                         <div class="mr-3 relative">
-                            <i class="fas fa-user-shield text-teal-400 text-xl"></i>
-                            <div class="absolute -right-1 -bottom-1 w-2 h-2 bg-teal-400 rounded-full animate-pulse"></div>
+                            <i class="fas fa-heartbeat text-cyan-400 text-xl"></i>
+                            <div class="absolute -right-1 -bottom-1 w-2 h-2 bg-cyan-400 rounded-full animate-pulse-medical"></div>
                         </div>
-                        <h2 class="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-teal-200 to-teal-100">Acceso Pacientes</h2>
+                        <h2 class="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-teal-100">Área de Pacientes</h2>
                     </div>
                     
                     <!-- Separador dinámico -->
-                    <div class="h-px bg-gradient-to-r from-transparent via-teal-400/20 to-transparent mb-4"></div>
+                    <div class="h-px bg-gradient-to-r from-transparent via-cyan-400/20 to-transparent mb-4"></div>
 
                     <!-- Elementos de navegación para pacientes -->
                     <div class="space-y-3 px-2 pb-2">
                         <!-- Historial Médico -->
-                        <a href="/historial" class="group flex items-center p-3 rounded-lg transition-all duration-300 hover:bg-teal-900/20 hover:translate-x-2 hover:shadow-lg hover:shadow-teal-500/10">
-                            <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-teal-400/20 to-teal-500/20 group-hover:from-teal-400/30 group-hover:to-teal-500/30 transition-all duration-300 mr-3">
-                                <i class="fas fa-file-waveform text-teal-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                        <a href="/historial" class="group flex items-center p-3 rounded-lg transition-all duration-300 hover:bg-cyan-900/20 hover:translate-x-2 hover:shadow-lg hover:shadow-cyan-500/10">
+                            <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-400/20 to-cyan-500/20 group-hover:from-cyan-400/30 group-hover:to-cyan-500/30 transition-all duration-300 mr-3">
+                                <i class="fas fa-file-medical text-cyan-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
                             </div>
                             <div class="flex-1">
-                                <span class="font-medium tracking-wide group-hover:text-teal-300 transition-colors duration-300">Historial Médico</span>
+                                <span class="font-medium tracking-wide group-hover:text-cyan-300 transition-colors duration-300">Historial Médico</span>
                                 <p class="text-xs text-gray-400 mt-1">Registros completos</p>
                             </div>
-                            <i class="fas fa-chevron-right text-gray-400 text-sm ml-2 group-hover:text-teal-300 transition-colors duration-300"></i>
+                            <i class="fas fa-chevron-right text-gray-400 text-sm ml-2 group-hover:text-cyan-300 transition-colors duration-300"></i>
                         </a>
 
                         <!-- Atención Médica -->
                         <a href="/atencionmedica" class="group flex items-center p-3 rounded-lg transition-all duration-300 hover:bg-blue-900/20 hover:translate-x-2 hover:shadow-lg hover:shadow-blue-500/10">
                             <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-blue-400/20 to-blue-500/20 group-hover:from-blue-400/30 group-hover:to-blue-500/30 transition-all duration-300 mr-3">
-                                <i class="fas fa-hospital-user text-blue-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                                <i class="fas fa-user-nurse text-blue-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
                             </div>
                             <div class="flex-1">
                                 <span class="font-medium tracking-wide group-hover:text-blue-300 transition-colors duration-300">Atención Médica</span>
@@ -117,13 +131,13 @@
                         <!-- Atención Directa -->
                         <a href="/atenciondirecta" class="group flex items-center p-3 rounded-lg transition-all duration-300 hover:bg-purple-900/20 hover:translate-x-2 hover:shadow-lg hover:shadow-purple-500/10">
                             <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-purple-400/20 to-purple-500/20 group-hover:from-purple-400/30 group-hover:to-purple-500/30 transition-all duration-300 mr-3">
-                                <i class="fas fa-comment-medical text-purple-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                                <i class="fas fa-comment-medical text-teal-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
                             </div>
                             <div class="flex-1">
-                                <span class="font-medium tracking-wide group-hover:text-purple-300 transition-colors duration-300">Atención Directa</span>
+                                <span class="font-medium tracking-wide group-hover:text-teal-300 transition-colors duration-300">Atención Directa</span>
                                 <p class="text-xs text-gray-400 mt-1">Comunicación inmediata</p>
                             </div>
-                            <i class="fas fa-chevron-right text-gray-400 text-sm ml-2 group-hover:text-purple-300 transition-colors duration-300"></i>
+                            <i class="fas fa-chevron-right text-gray-400 text-sm ml-2 group-hover:text-teal-300 transition-colors duration-300"></i>
                         </a>
                     </div>
                 </div>
@@ -131,18 +145,19 @@
             @endif
         @endauth
     </nav>
-    <div class="mt-auto pt-6 border-t border-gray-700/30">
+    <!-- Indicador de estado del sistema médico -->
+    <div class="mt-auto pt-6 border-t border-cyan-700/30">
         <div class="flex items-center px-5 py-3 space-x-3 text-sm">
             @auth
                 <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-green-400/10 to-green-500/10">
-                    <i class="fas fa-power-off text-green-400 text-lg"></i>
+                    <i class="fas fa-heartbeat text-green-400 text-lg animate-pulse-medical"></i>
                 </div>
-                <span class="font-medium tracking-wide text-green-400">Online</span>
+                <span class="font-medium tracking-wide text-green-400">Sistema Activo</span>
             @else
                 <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-red-400/10 to-red-500/10">
-                    <i class="fas fa-power-off text-red-400 text-lg"></i>
+                    <i class="fas fa-heart-crack text-red-400 text-lg"></i>
                 </div>
-                <span class="font-medium tracking-wide text-gray-400">Offline</span>
+                <span class="font-medium tracking-wide text-gray-400">Sistema Inactivo</span>
             @endauth
         </div>
     </div>

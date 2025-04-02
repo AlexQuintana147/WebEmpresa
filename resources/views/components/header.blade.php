@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="auth-check" content="{{ Auth::check() }}">
-    <title>WebEmpresa</title>
+    <title>Clínica Ricardo Palma</title>
     <style>[x-cloak]{display:none !important;}</style>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
@@ -27,29 +27,57 @@
     </script>
 </head>
 <body>
-<header class="bg-gradient-to-br from-gray-900 via-gray-800 to-black shadow-lg border-b border-gray-700 text-white relative overflow-hidden" x-data="{ isLogin: true }" x-cloak>
+<header class="bg-gradient-to-br from-cyan-900 via-blue-800 to-teal-900 shadow-lg border-b border-cyan-700 text-white relative overflow-hidden" x-data="{ isLogin: true }" x-cloak>
     
-    <div class="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-purple-500/5 pointer-events-none"></div>
+    <!-- Patrón médico decorativo en el fondo -->
+    <div class="absolute inset-0 bg-gradient-to-b from-cyan-500/10 to-teal-500/10 pointer-events-none"></div>
+    <div class="absolute inset-0 opacity-5 pointer-events-none">
+        <div class="absolute top-5 left-10 w-6 h-6 border-2 border-white rounded-full"></div>
+        <div class="absolute top-10 right-20 w-4 h-8 border-2 border-white rounded-full"></div>
+        <div class="absolute bottom-5 left-1/4 w-8 h-8 border-2 border-white rotate-45"></div>
+        <div class="absolute top-1/2 right-1/3 w-6 h-6 border-2 border-white rounded-md"></div>
+    </div>
+    
+    <!-- Contenido principal del header -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-20">
+            <!-- Indicador de salud del sistema -->
+            <div class="hidden md:flex items-center space-x-3">
+                <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-400/20 to-cyan-500/20">
+                    @auth
+                        <i class="fas fa-heartbeat text-cyan-400 text-lg animate-pulse-medical"></i>
+                    @else
+                        <i class="fas fa-heart-crack text-red-400 text-lg"></i>
+                    @endauth
+                </div>
+                <div class="flex flex-col">
+                    @auth
+                        <span class="text-cyan-300 text-xs font-medium">Sistema Médico Activo</span>
+                        <span class="text-cyan-100 text-xs">{{ now()->format('d/m/Y H:i') }}</span>
+                    @else
+                        <span class="text-red-300 text-xs font-medium">Sistema Inactivo</span>
+                        <span class="text-gray-400 text-xs">Inicie sesión para acceder</span>
+                    @endauth
+                </div>
+            </div>
 
             <!-- Profile and Login Section -->
-            <div class="flex items-center justify-end w-full">
+            <div class="flex items-center justify-end w-full md:w-auto">
                 <div class="flex items-center space-x-4">
                     <div class="relative group">
                         <div class="relative cursor-pointer transform transition-all duration-300 hover:scale-105">
                             <!-- Gradient border animation container -->
-                            <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full opacity-0 group-hover:opacity-100 blur transition-opacity duration-300"></div>
+                            <div class="absolute -inset-0.5 bg-gradient-to-r from-cyan-600 to-teal-600 rounded-full opacity-0 group-hover:opacity-100 blur transition-opacity duration-300"></div>
                             
                             <!-- Profile image container -->
-                            <div class="relative bg-gradient-to-br from-gray-900 to-black p-0.5 rounded-full">
-                                <img class="h-12 w-12 rounded-full object-cover shadow-lg ring-2 ring-gray-700/50 transform transition-all duration-300 group-hover:ring-red-500/50" 
+                            <div class="relative bg-gradient-to-br from-cyan-900 to-teal-900 p-0.5 rounded-full">
+                                <img class="h-12 w-12 rounded-full object-cover shadow-lg ring-2 ring-cyan-700/50 transform transition-all duration-300 group-hover:ring-cyan-500/50" 
                                     src="{{ Auth::user()->imagen ?? asset('images/iconPerfil.png') }}"
                                     alt="Profile picture">
                             </div>
                             
                             <!-- Status indicator -->
-                            <div class="absolute -bottom-1 -right-1 rounded-full p-1 bg-gradient-to-r from-gray-900 to-black">
+                            <div class="absolute -bottom-1 -right-1 rounded-full p-1 bg-gradient-to-r from-cyan-900 to-teal-900">
                                 @auth
                                     <div class="h-3.5 w-3.5 rounded-full bg-gradient-to-r from-green-400 to-green-500 shadow-lg shadow-green-500/50 group-hover:animate-pulse"></div>
                                 @else
@@ -62,18 +90,16 @@
                         @auth
                             <div class="flex items-center space-x-4">
                                 <span class="text-white text-base font-medium">{{ Auth::user()->nombre }}</span>
-                                <button onclick="window.location.href='/opciones'" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg 
-                                               border-2 border-blue-400
-                                               hover:from-blue-600 hover:to-blue-700
-                                               focus:ring-4 focus:ring-blue-300/50
+                                <button onclick="window.location.href='/opciones'" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-teal-600 text-white text-sm font-medium rounded-lg 
+                                               border-2 border-cyan-400/30
+                                               hover:from-cyan-600 hover:to-teal-700
+                                               focus:ring-4 focus:ring-cyan-300/50
                                                shadow-md hover:shadow-xl
                                                transform hover:-translate-y-0.5
                                                transition-all duration-300 ease-out
                                                active:scale-95">
                                     <span class="flex items-center space-x-2">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                                        </svg>
+                                        <i class="fas fa-user-md w-5 h-5"></i>
                                         <span>Opciones</span>
                                     </span>
                                 </button>
@@ -86,26 +112,22 @@
                                                transition-all duration-300 ease-out 
                                                active:scale-95">
                                     <span class="flex items-center space-x-2">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                        </svg>
+                                        <i class="fas fa-sign-out-alt w-5 h-5"></i>
                                         <span>Salir</span>
                                     </span>
                                 </button>
                             </div>
                         @else
                             <button @click="$store.modal.open = true" 
-                                    class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-medium rounded-lg 
-                                           hover:from-blue-700 hover:to-blue-800 
-                                           focus:ring-4 focus:ring-blue-300/50 
+                                    class="px-6 py-2.5 bg-gradient-to-r from-cyan-600 to-teal-700 text-white text-sm font-medium rounded-lg 
+                                           hover:from-cyan-700 hover:to-teal-800 
+                                           focus:ring-4 focus:ring-cyan-300/50 
                                            shadow-md hover:shadow-xl 
                                            transform hover:-translate-y-0.5 
                                            transition-all duration-300 ease-out 
                                            active:scale-95">
                                 <span class="flex items-center space-x-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                                    </svg>
+                                    <i class="fas fa-user-md w-5 h-5"></i>
                                     <span>Ingresar</span>
                                 </span>
                             </button>
@@ -126,7 +148,7 @@
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
          @click.self="$store.modal.open = false"
-         class="fixed inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+         class="fixed inset-0 bg-cyan-900 bg-opacity-60 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center">
         <div class="relative p-8 border-0 w-[28rem] shadow-2xl rounded-2xl bg-white"
              x-show="$store.modal.open"
              x-transition:enter="transition ease-out duration-300"
@@ -153,7 +175,7 @@
                         <label for="email" class="block text-sm font-semibold text-gray-700">Email</label>
                         <input type="email" id="email" name="email" 
                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm 
-                                      focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 
+                                      focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 
                                       transition duration-200 text-gray-900">
                     </div>
 
@@ -161,24 +183,24 @@
                         <label for="password" class="block text-sm font-semibold text-gray-700">Contraseña</label>
                         <input type="password" id="password" name="password" 
                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm 
-                                      focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 
+                                      focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 
                                       transition duration-200 text-gray-900">
                     </div>
 
                     <div class="flex items-center justify-between">
                         <div class="flex items-center">
                             <input type="checkbox" id="remember" name="remember" 
-                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500/20 border-gray-300 rounded transition duration-200">
+                                   class="h-4 w-4 text-cyan-600 focus:ring-cyan-500/20 border-gray-300 rounded transition duration-200">
                             <label for="remember" class="ml-2 block text-sm text-gray-600">Recordarme</label>
                         </div>
-                        <a href="#" class="text-sm text-blue-600 hover:text-blue-700 font-medium transition duration-200">¿Olvidaste tu contraseña?</a>
+                        <a href="#" class="text-sm text-cyan-600 hover:text-cyan-700 font-medium transition duration-200">¿Olvidaste tu contraseña?</a>
                     </div>
 
                     <div class="space-y-3 pt-2">
                         <button type="submit" 
-                                class="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-semibold rounded-xl 
-                                       hover:from-blue-700 hover:to-blue-800 
-                                       focus:ring-4 focus:ring-blue-500/20 
+                                class="w-full py-3 px-4 bg-gradient-to-r from-cyan-600 to-teal-700 text-white text-sm font-semibold rounded-xl 
+                                       hover:from-cyan-700 hover:to-teal-800 
+                                       focus:ring-4 focus:ring-cyan-500/20 
                                        shadow-md hover:shadow-lg 
                                        transform hover:-translate-y-0.5 
                                        transition-all duration-200 ease-in-out">
@@ -198,59 +220,46 @@
                     </div>
                 </form>
 
-                <!-- Registration Form -->
+                <!-- Register Form -->
                 <form x-show="!isLogin" class="space-y-5">
+                    @csrf
                     <div class="space-y-1.5">
-                        <label for="reg-name" class="block text-sm font-semibold text-gray-700">Nombre Completo</label>
-                        <input type="text" id="reg-name" name="nombre" 
+                        <label for="reg-name" class="block text-sm font-semibold text-gray-700">Nombre</label>
+                        <input type="text" id="reg-name" name="name" 
                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm 
-                                      focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 
-                                      transition duration-200 text-gray-900"
-                               pattern="[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+"
-                               title="Por favor ingrese solo letras (se permiten acentos y ñ)"
-                               onkeypress="return /[A-Za-zÁáÉéÍíÓóÚúÑñ\s]/i.test(event.key)"
-                               required>
-                        <p class="mt-1 text-sm text-gray-500">Solo se permiten letras en este campo</p>
+                                      focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 
+                                      transition duration-200 text-gray-900">
                     </div>
 
                     <div class="space-y-1.5">
                         <label for="reg-email" class="block text-sm font-semibold text-gray-700">Email</label>
-                        <input type="email" id="reg-email" name="correo" 
+                        <input type="email" id="reg-email" name="email" 
                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm 
-                                      focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 
+                                      focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 
                                       transition duration-200 text-gray-900">
                     </div>
 
                     <div class="space-y-1.5">
                         <label for="reg-password" class="block text-sm font-semibold text-gray-700">Contraseña</label>
-                        <input type="password" id="reg-password" name="contrasena" 
+                        <input type="password" id="reg-password" name="password" 
                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm 
-                                      focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 
-                                      transition duration-200 text-gray-900"
-                               pattern="^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,}$"
-                               title="La contraseña debe tener al menos 6 caracteres, una mayúscula, un número y un carácter especial">
-                        <p class="mt-1 text-sm text-gray-500">
-                            La contraseña debe contener:
-                            <span class="block mt-1 ml-2">• Mínimo 6 caracteres</span>
-                            <span class="block ml-2">• Al menos una letra mayúscula</span>
-                            <span class="block ml-2">• Al menos un número</span>
-                            <span class="block ml-2">• Al menos un carácter especial (!@#$%^&*)</span>
-                        </p>
+                                      focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 
+                                      transition duration-200 text-gray-900">
                     </div>
 
                     <div class="space-y-1.5">
-                        <label for="reg-password-confirmation" class="block text-sm font-semibold text-gray-700">Confirmar Contraseña</label>
-                        <input type="password" id="reg-password-confirmation" name="password_confirmation" 
+                        <label for="reg-password-confirm" class="block text-sm font-semibold text-gray-700">Confirmar Contraseña</label>
+                        <input type="password" id="reg-password-confirm" name="password_confirmation" 
                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm 
-                                      focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 
+                                      focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 
                                       transition duration-200 text-gray-900">
                     </div>
 
                     <div class="space-y-3 pt-2">
                         <button type="submit" 
-                                class="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-semibold rounded-xl 
-                                       hover:from-blue-700 hover:to-blue-800 
-                                       focus:ring-4 focus:ring-blue-500/20 
+                                class="w-full py-3 px-4 bg-gradient-to-r from-cyan-600 to-teal-700 text-white text-sm font-semibold rounded-xl 
+                                       hover:from-cyan-700 hover:to-teal-800 
+                                       focus:ring-4 focus:ring-cyan-500/20 
                                        shadow-md hover:shadow-lg 
                                        transform hover:-translate-y-0.5 
                                        transition-all duration-200 ease-in-out">
@@ -265,7 +274,7 @@
                                        shadow-sm hover:shadow 
                                        transform hover:-translate-y-0.5 
                                        transition-all duration-200 ease-in-out">
-                            Volver al Login
+                            Ya tengo una cuenta
                         </button>
                     </div>
                 </form>
@@ -273,26 +282,24 @@
         </div>
     </div>
 </header>
-<script src="{{ asset('js/register.js') }}"></script>
-<script src="{{ asset('js/login.js') }}"></script>
+
 <script>
-function logout() {
-    fetch('/logout', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        credentials: 'same-origin'
-    })
-    .then(response => response.json())
-    .then(data => {
-        window.location.href = '/';
-    })
-    .catch(error => {
-        console.error('Error during logout:', error);
-    });
-}
+    function logout() {
+        fetch('/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.href = '/';
+            }
+        })
+        .catch(error => {
+            console.error('Error al cerrar sesión:', error);
+        });
+    }
 </script>
-</body>
-</html>
