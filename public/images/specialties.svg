@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#f8fafc" rx="20" ry="20"/>
+  
+  <!-- Cardiology Icon -->
+  <circle cx="200" cy="150" r="60" fill="#0ea5e9" opacity="0.1"/>
+  <path d="M170 150 Q200 120 230 150 Q260 180 230 210 Q200 240 170 210 Q140 180 170 150" 
+        fill="#0ea5e9" opacity="0.2"/>
+  <path d="M200 130 L200 170 L180 150 L220 150 L200 130" fill="#0ea5e9"/>
+  
+  <!-- Neurology Icon -->
+  <circle cx="400" cy="150" r="60" fill="#06b6d4" opacity="0.1"/>
+  <path d="M400 110 Q430 130 420 160 Q450 170 430 190 Q440 220 400 210 Q360 220 370 190 Q350 170 380 160 Q370 130 400 110" 
+        fill="#06b6d4" opacity="0.2"/>
+  <circle cx="400" cy="150" r="15" fill="#06b6d4" opacity="0.3"/>
+  
+  <!-- Orthopedics Icon -->
+  <circle cx="600" cy="150" r="60" fill="#0891b2" opacity="0.1"/>
+  <rect x="590" y="110" width="20" height="80" rx="5" fill="#0891b2" opacity="0.2"/>
+  <ellipse cx="600" cy="110" rx="15" ry="10" fill="#0891b2" opacity="0.3"/>
+  <ellipse cx="600" cy="190" rx="15" ry="10" fill="#0891b2" opacity="0.3"/>
+  
+  <!-- Pediatrics Icon -->
+  <circle cx="200" cy="350" r="60" fill="#0ea5e9" opacity="0.1"/>
+  <circle cx="180" cy="330" r="15" fill="#0ea5e9" opacity="0.2"/>
+  <circle cx="220" cy="330" r="15" fill="#0ea5e9" opacity="0.2"/>
+  <path d="M180 370 Q200 390 220 370" stroke="#0ea5e9" stroke-width="3" fill="none"/>
+  
+  <!-- Ophthalmology Icon -->
+  <circle cx="400" cy="350" r="60" fill="#06b6d4" opacity="0.1"/>
+  <ellipse cx="400" cy="350" rx="30" ry="20" fill="#06b6d4" opacity="0.2"/>
+  <circle cx="400" cy="350" r="10" fill="#06b6d4" opacity="0.3"/>
+  
+  <!-- Dermatology Icon -->
+  <circle cx="600" cy="350" r="60" fill="#0891b2" opacity="0.1"/>
+  <path d="M570 350 Q600 320 630 350 Q600 380 570 350" fill="#0891b2" opacity="0.2"/>
+  <circle cx="600" cy="350" r="20" fill="#0891b2" opacity="0.15"/>
+  <circle cx="600" cy="350" r="15" fill="#0891b2" opacity="0.1"/>
+  
+  <!-- Connecting Lines -->
+  <path d="M200 210 L200 290" stroke="#0ea5e9" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+  <path d="M400 210 L400 290" stroke="#06b6d4" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+  <path d="M600 210 L600 290" stroke="#0891b2" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+  
+  <path d="M260 150 L340 150" stroke="#0ea5e9" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+  <path d="M460 150 L540 150" stroke="#06b6d4" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+  <path d="M260 350 L340 350" stroke="#0ea5e9" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+  <path d="M460 350 L540 350" stroke="#06b6d4" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+</svg>

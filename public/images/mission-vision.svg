@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#f8fafc" rx="20" ry="20"/>
+  
+  <!-- Target/Mission Icon -->
+  <circle cx="250" cy="250" r="100" fill="#0ea5e9" opacity="0.05"/>
+  <circle cx="250" cy="250" r="80" fill="#0ea5e9" opacity="0.1"/>
+  <circle cx="250" cy="250" r="60" fill="#0ea5e9" opacity="0.15"/>
+  <circle cx="250" cy="250" r="40" fill="#0ea5e9" opacity="0.2"/>
+  <circle cx="250" cy="250" r="20" fill="#0ea5e9" opacity="0.3"/>
+  <circle cx="250" cy="250" r="10" fill="#0ea5e9"/>
+  
+  <!-- Vision/Eye Icon -->
+  <ellipse cx="550" cy="250" rx="100" ry="60" fill="#06b6d4" opacity="0.1"/>
+  <circle cx="550" cy="250" r="30" fill="#06b6d4" opacity="0.2"/>
+  <circle cx="550" cy="250" r="15" fill="#06b6d4" opacity="0.3"/>
+  <circle cx="550" cy="250" r="7" fill="#06b6d4"/>
+  
+  <!-- Connecting Path -->
+  <path d="M300 250 Q400 200 500 250" stroke="#0ea5e9" stroke-width="3" fill="none"/>
+  
+  <!-- Decorative Elements -->
+  <path d="M150 400 Q400 450 650 400" stroke="#0ea5e9" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+  <circle cx="200" cy="150" r="20" fill="#0ea5e9" opacity="0.1"/>
+  <circle cx="600" cy="150" r="20" fill="#06b6d4" opacity="0.1"/>
+  <circle cx="400" cy="100" r="30" fill="#0891b2" opacity="0.1"/>
+  <circle cx="400" cy="500" r="30" fill="#0891b2" opacity="0.1"/>
+</svg>

@@ -8,7 +8,7 @@ use App\Http\Controllers\TareaController;
 use App\Http\Controllers\NotaController;
 
 Route::get('/', function () {
-    return view('dashboard');
+    return view('sobrenosotros');
 });
 
 Route::get('/chat', function () {
