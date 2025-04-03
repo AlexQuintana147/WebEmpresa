@@ -62,9 +62,9 @@
                                     console.log('Información de depuración:', response.debug_info);
                                     console.log('Salida completa del script Python:', response.debug_info.raw_output);
                                 }
-                                // Procesar la respuesta para manejar saltos de línea
+                                // Procesar la respuesta para manejar saltos de línea y permitir HTML
                                 const formattedResponse = response.response.replace(/\n/g, '<br>');
-                                this.messages.push({type: 'bot', text: formattedResponse});
+                                this.messages.push({type: 'bot', text: formattedResponse, html: true});
                                 
                                 // Forzar actualización de la vista
                                 this.$nextTick(() => {

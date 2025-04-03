@@ -55,9 +55,34 @@ class ChatbotController extends Controller
             // Limpiar caracteres de control y otros caracteres problemáticos
             $response = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $response);
             
+            // Reemplazar caracteres con tilde mal codificados por sus equivalentes sin tilde
+            $tildes = array(
+                '/[áàäâãå]/u' => 'a',
+                '/[éèëê]/u' => 'e',
+                '/[íìïî]/u' => 'i',
+                '/[óòöôõ]/u' => 'o',
+                '/[úùüû]/u' => 'u',
+                '/[ñ]/u' => 'n',
+                '/[ÁÀÄÂÃÅ]/u' => 'A',
+                '/[ÉÈËÊ]/u' => 'E',
+                '/[ÍÌÏÎ]/u' => 'I',
+                '/[ÓÒÖÔÕ]/u' => 'O',
+                '/[ÚÙÜÛ]/u' => 'U',
+                '/[Ñ]/u' => 'N',
+                '/[?]/' => '' // Eliminar signos de interrogación que puedan aparecer por problemas de codificación
+            );
+            
+            // Solo aplicar la conversión si hay caracteres mal codificados
+            if (strpos($response, '?') !== false) {
+                $response = preg_replace(array_keys($tildes), array_values($tildes), $response);
+            }
+            
             // Extraer solo la respuesta del chatbot (entre las líneas de guiones)
             if (preg_match('/\-{10,}\n(.+?)\n\-{10,}/s', $response, $matches)) {
                 $response = trim($matches[1]);
+                
+                // Aplicar formato en negrita y cursiva al mensaje de emergencia
+                $response = preg_replace('/En caso de emergencia, puedes llamar al 106\./', '<em><strong>En caso de emergencia, puedes llamar al 106.</strong></em>', $response);
             }
             
             // Registrar la respuesta para depuración

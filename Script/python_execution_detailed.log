@@ -64,3 +64,21 @@
 [2025-04-03 16:25:59] Ruta: D:\TRABAJOS\WebEmpresa\public
 [2025-04-03 16:25:59] Argumentos: ['D:\\TRABAJOS\\WebEmpresa\\Script/app.py', 'tengo dolor en mis dientes? hay algo que me recetes?']
 [2025-04-03 16:25:59] Pregunta: tengo dolor en mis dientes? hay algo que me recetes?
+
+[2025-04-03 17:16:26] ===== INICIO DE EJECUCIÓN =====
+[2025-04-03 17:16:26] Sistema: Windows 10
+[2025-04-03 17:16:26] Ruta: D:\TRABAJOS\WebEmpresa
+[2025-04-03 17:16:26] Argumentos: ['d:\\TRABAJOS\\WebEmpresa\\Script\\app.py', '¿Qué', 'debo', 'hacer', 'si', 'tengo', 'fiebre', 'alta?']
+[2025-04-03 17:16:26] Pregunta: ¿Qué
+
+[2025-04-03 17:17:14] ===== INICIO DE EJECUCIÓN =====
+[2025-04-03 17:17:14] Sistema: Windows 10
+[2025-04-03 17:17:14] Ruta: D:\TRABAJOS\WebEmpresa\public
+[2025-04-03 17:17:14] Argumentos: ['D:\\TRABAJOS\\WebEmpresa\\Script/app.py', 'tengo dolor de espalda']
+[2025-04-03 17:17:14] Pregunta: tengo dolor de espalda
+
+[2025-04-03 17:18:26] ===== INICIO DE EJECUCIÓN =====
+[2025-04-03 17:18:26] Sistema: Windows 10
+[2025-04-03 17:18:26] Ruta: D:\TRABAJOS\WebEmpresa\public
+[2025-04-03 17:18:26] Argumentos: ['D:\\TRABAJOS\\WebEmpresa\\Script/app.py', 'que pastillas son las mas recomendables para cuidar la salud?']
+[2025-04-03 17:18:26] Pregunta: que pastillas son las mas recomendables para cuidar la salud?
