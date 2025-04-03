@@ -55,6 +55,11 @@ class ChatbotController extends Controller
             // Limpiar caracteres de control y otros caracteres problemáticos
             $response = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $response);
             
+            // Extraer solo la respuesta del chatbot (entre las líneas de guiones)
+            if (preg_match('/\-{10,}\n(.+?)\n\-{10,}/s', $response, $matches)) {
+                $response = trim($matches[1]);
+            }
+            
             // Registrar la respuesta para depuración
             Log::info("Respuesta del script Python:", [
                 'return_code' => $returnCode,
@@ -85,13 +90,10 @@ class ChatbotController extends Controller
                 ], 500);
             }
             
-            // Devolver la respuesta como JSON
+            // Devolver la respuesta como JSON (solo la respuesta del chatbot, sin información de depuración)
             return response()->json([
                 'success' => true,
-                'response' => $response,
-                'debug_info' => [
-                    'raw_output' => $response
-                ]
+                'response' => $response
             ]);
             
         } catch (\Exception $e) {
