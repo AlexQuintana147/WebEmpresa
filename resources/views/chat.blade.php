@@ -13,6 +13,92 @@
             })
         })
     </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('chatApp', () => ({
+                message: '',
+                messages: [],
+                isLoading: false,
+                
+                sendMessage() {
+                    if (!this.message.trim()) return;
+                    
+                    // Agregar mensaje del usuario
+                    this.messages.push({type: 'user', text: this.message});
+                    
+                    // Guardar el mensaje para enviarlo
+                    const questionText = this.message;
+                    
+                    // Limpiar el campo de entrada
+                    this.message = '';
+                    
+                    // Mostrar indicador de carga
+                    this.isLoading = true;
+                    
+                    // Hacer scroll hacia abajo
+                    this.scrollToBottom();
+                    
+                    // Enviar la consulta al servidor
+                    $.ajax({
+                        url: '{{ route("chat.query") }}',
+                        type: 'POST',
+                        data: {
+                            question: questionText,
+                            _token: '{{ csrf_token() }}'
+                        },
+                        success: (response) => {
+                            // Ocultar indicador de carga
+                            this.isLoading = false;
+                            
+                            // Depurar la respuesta recibida
+                            console.log('Respuesta completa del servidor:', response);
+                            
+                            // Agregar respuesta del chatbot
+                            if (response.success) {
+                                console.log('Agregando respuesta exitosa:', response.response);
+                                // Mostrar información de depuración completa en la consola
+                                if (response.debug_info) {
+                                    console.log('Información de depuración:', response.debug_info);
+                                    console.log('Salida completa del script Python:', response.debug_info.raw_output);
+                                }
+                                // Procesar la respuesta para manejar saltos de línea
+                                const formattedResponse = response.response.replace(/\n/g, '<br>');
+                                this.messages.push({type: 'bot', text: formattedResponse});
+                                
+                                // Forzar actualización de la vista
+                                this.$nextTick(() => {
+                                    console.log('Mensajes actualizados:', this.messages);
+                                    // Verificar que el elemento del DOM se haya actualizado
+                                    const messageElements = document.querySelectorAll('#chat-messages > div');
+                                    console.log('Elementos de mensaje en el DOM:', messageElements.length);
+                                });
+                            } else {
+                                console.log('Error en la respuesta:', response.message, response.debug_info);
+                                this.messages.push({type: 'bot', text: 'Lo siento, ocurrió un error al procesar tu consulta. Por favor, intenta de nuevo.'});
+                            }
+                            
+                            // Hacer scroll hacia abajo
+                            this.scrollToBottom();
+                        },
+                        error: (xhr) => {
+                            this.messages.push({
+                                type: 'bot', 
+                                text: `Error técnico: ${xhr.responseJSON?.message || 'Consulte los logs'}`
+                            });
+                            console.error('Detalles completos:', xhr.responseJSON?.debug_info);
+                        }
+                    });
+                },
+                
+                scrollToBottom() {
+                    this.$nextTick(() => {
+                        this.$refs.chatContainer.scrollTop = this.$refs.chatContainer.scrollHeight;
+                    });
+                }
+            }))
+        })
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         @keyframes pulse-medical {
@@ -35,7 +121,7 @@
             <x-header />
 
             <!-- Chat Interface -->
-            <main class="flex-1 p-6 bg-gradient-to-br from-blue-50 via-blue-100/30 to-cyan-100/30" x-data="{ message: '', messages: [], scrollToBottom() { this.$nextTick(() => { this.$refs.chatContainer.scrollTop = this.$refs.chatContainer.scrollHeight; }); } }">
+            <main class="flex-1 p-6 bg-gradient-to-br from-blue-50 via-blue-100/30 to-cyan-100/30" x-data="chatApp">
                 <div class="h-full max-w-7xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden border border-cyan-100">
                     <!-- Chat Messages Container -->
                     <div class="h-full flex flex-col">
@@ -86,7 +172,7 @@
                                                 'bg-gradient-to-br from-cyan-50 to-teal-50 border border-teal-100': msg.type === 'bot',
                                                 'bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-100': msg.type === 'user'
                                              }">
-                                            <p class="text-gray-800" x-text="msg.text"></p>
+                                            <p class="text-gray-800" x-html="msg.text"></p>
                                         </div>
                                         <span class="text-xs text-gray-500 mx-2 mt-1 inline-block" x-text="msg.type === 'bot' ? 'Dr. Asistente Virtual' : 'Paciente'"></span>
                                     </div>
@@ -106,7 +192,10 @@
                             <div class="mb-4 px-4 py-2 bg-blue-50 border-l-4 border-blue-500 rounded-lg">
                                 <p class="text-sm text-blue-800"><i class="fas fa-info-circle mr-2"></i> Esta consulta virtual es solo informativa. Para emergencias médicas, por favor llame al 106 o acuda a urgencias.</p>
                             </div>
-                            <form @submit.prevent="if(message.trim()) { messages.push({type: 'user', text: message}); messages.push({type: 'bot', text: 'Gracias por su consulta. El Dr. Asistente Virtual está analizando su información y responderá en breve.'}); scrollToBottom(); message = ''; }" class="flex space-x-6">
+                            <div x-show="isLoading" class="mb-4 px-4 py-2 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg animate-pulse-medical">
+                                <p class="text-sm text-yellow-800"><i class="fas fa-spinner fa-spin mr-2"></i> El Dr. Asistente Virtual está analizando su consulta. Por favor espere un momento...</p>
+                            </div>
+                            <form @submit.prevent="sendMessage()" class="flex space-x-6">
                                 <div class="flex-1 relative">
                                     <input 
                                         type="text" 

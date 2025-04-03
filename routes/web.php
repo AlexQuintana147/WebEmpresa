@@ -15,6 +15,8 @@ Route::get('/chat', function () {
     return view('chat');
 });
 
+Route::post('/chat/query', [App\Http\Controllers\ChatbotController::class, 'processQuery'])->name('chat.query');
+
 Route::get('/instrucciones', function () {
     return view('instrucciones');
 });
@@ -73,3 +75,6 @@ Route::post('/logout', [LoginController::class, 'logout']);
 Route::post('/actualizar-perfil', [UserController::class, 'update'])
     ->name('profile.update')
     ->middleware('auth');
+
+// Ruta para probar la ejecución de scripts Python
+Route::get('/test-python', [\App\Http\Controllers\ChatbotController::class, 'testPythonExecution']);
