@@ -120,8 +120,14 @@ class ChatbotController extends Controller
                 Log::info("Se limpiaron caracteres UTF-8 inválidos");
             }
             
-            // Mantener el formato exacto de la respuesta, incluyendo las líneas de guiones
-            // Solo aplicar formato HTML al mensaje de emergencia sin alterar el resto
+            // Extraer solo la última respuesta disponible del chatbot
+            if (preg_match('/Última respuesta disponible del chatbot:\s*\n-+\s*\n(.+?)\s*\n-+/s', $response, $matches)) {
+                $response = trim($matches[1]);
+            } elseif (preg_match('/Respuesta del chatbot:\s*\n-+\s*\n(.+?)\s*\n-+/s', $response, $matches)) {
+                $response = trim($matches[1]);
+            }
+            
+            // Aplicar formato HTML al mensaje de emergencia sin alterar el resto
             $response = preg_replace('/En caso de emergencia, puedes llamar al 106\./', '<em><strong>En caso de emergencia, puedes llamar al 106.</strong></em>', $response);
             
             // Registrar la respuesta para depuración
@@ -152,11 +158,7 @@ class ChatbotController extends Controller
             // Usar opciones JSON_UNESCAPED_UNICODE y JSON_UNESCAPED_SLASHES para preservar caracteres especiales
             return response()->json([
                 'success' => true,
-                'response' => $response,
-                'encoding_info' => [
-                    'detected' => mb_detect_encoding($response, 'UTF-8, ISO-8859-1, Windows-1252', true),
-                    'is_valid_utf8' => mb_check_encoding($response, 'UTF-8')
-                ]
+                'response' => $response
             ], 200, [
                 'Content-Type' => 'application/json; charset=UTF-8'
             ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);

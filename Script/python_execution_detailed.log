@@ -160,3 +160,15 @@
 [2025-04-03 19:10:02] Ruta: D:\TRABAJOS\WebEmpresa\public
 [2025-04-03 19:10:02] Argumentos: ['D:\\TRABAJOS\\WebEmpresa\\Script/app.py', 'hola, como estas?']
 [2025-04-03 19:10:02] Pregunta: hola, como estas?
+
+[2025-04-03 19:14:06] ===== INICIO DE EJECUCIÓN =====
+[2025-04-03 19:14:06] Sistema: Windows 10
+[2025-04-03 19:14:06] Ruta: D:\TRABAJOS\WebEmpresa\public
+[2025-04-03 19:14:06] Argumentos: ['D:\\TRABAJOS\\WebEmpresa\\Script/app.py', 'hola']
+[2025-04-03 19:14:06] Pregunta: hola
+
+[2025-04-03 19:16:42] ===== INICIO DE EJECUCIÓN =====
+[2025-04-03 19:16:42] Sistema: Windows 10
+[2025-04-03 19:16:42] Ruta: D:\TRABAJOS\WebEmpresa\public
+[2025-04-03 19:16:42] Argumentos: ['D:\\TRABAJOS\\WebEmpresa\\Script/app.py', 'hola']
+[2025-04-03 19:16:42] Pregunta: hola
