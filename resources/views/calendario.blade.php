@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,9 +10,100 @@
     @if(session('error'))
     <meta name="error-message" content="{{ session('error') }}">
     @endif
-    <title>Calendario</title>
-    <style>[x-cloak] { display: none !important; }</style>
+    <title>Calendario Médico - Clínica Ricardo Palma</title>
+    <style>
+        [x-cloak] { display: none !important; }
+        
+        /* Animaciones mejoradas */
+        @keyframes pulse-medical {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        @keyframes float-medical {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-3px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        @keyframes glow-medical {
+            0%, 100% { box-shadow: 0 0 5px rgba(8, 145, 178, 0.2); }
+            50% { box-shadow: 0 0 15px rgba(8, 145, 178, 0.4); }
+        }
+        
+        /* Clases de animación */
+        .animate-pulse-medical {
+            animation: pulse-medical 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        .animate-float-medical {
+            animation: float-medical 4s ease-in-out infinite;
+        }
+        
+        .animate-glow-medical {
+            animation: glow-medical 3s ease-in-out infinite;
+        }
+        
+        /* Gradientes y colores */
+        .medical-gradient {
+            background-image: linear-gradient(135deg, #0891b2, #0e7490);
+        }
+        
+        .medical-gradient-light {
+            background-image: linear-gradient(135deg, #e0f2fe, #bae6fd);
+        }
+        
+        /* Tarjetas y elementos UI */
+        .medical-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid #0891b2;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .medical-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(8, 145, 178, 0.2), 0 4px 6px -2px rgba(8, 145, 178, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        /* Estilos para el calendario */
+        .calendar-cell {
+            transition: all 0.2s ease;
+        }
+        
+        .calendar-cell:hover {
+            background-color: #f0f9ff;
+        }
+        
+        .calendar-header {
+            background: linear-gradient(to right, #0891b2, #0e7490);
+            color: white;
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+        
+        /* Tipos de citas */
+        .appointment-urgent {
+            border-left: 4px solid #ef4444;
+        }
+        
+        .appointment-regular {
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .appointment-checkup {
+            border-left: 4px solid #10b981;
+        }
+        
+        /* Tooltip personalizado */
+        .medical-tooltip {
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e5e7eb;
+            border-left: 4px solid #0891b2;
+        }
+    </style>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
         // Inicialización global de Alpine.js
@@ -210,26 +301,9 @@
             }
 
             // Configurar botones de navegación
-            const prevButton = document.querySelector('.fa-chevron-left').parentElement;
-            const nextButton = document.querySelector('.fa-chevron-right').parentElement;
+            //const prevButton = document.querySelector('.fa-chevron-left').parentElement;
+            //const nextButton = document.querySelector('.fa-chevron-right').parentElement;
 
-            prevButton.addEventListener('click', () => {
-                currentMonth--;
-                if (currentMonth < 0) {
-                    currentMonth = 11;
-                    currentYear--;
-                }
-                updateCalendar();
-            });
-
-            nextButton.addEventListener('click', () => {
-                currentMonth++;
-                if (currentMonth > 11) {
-                    currentMonth = 0;
-                    currentYear++;
-                }
-                updateCalendar();
-            });
 
             // Función para obtener el primer día de la semana (lunes)
             function getMonday(d) {
@@ -301,7 +375,8 @@
                     console.log(`\nProcesando tarea ${index + 1}:`, {
                         titulo: tarea.titulo,
                         dia_semana: tarea.dia_semana,
-                        hora_inicio: tarea.hora_inicio
+                        hora_inicio: tarea.hora_inicio,
+                        hora_fin: tarea.hora_fin
                     });
                 
                     // Obtener el día de la semana (1-7)
@@ -314,87 +389,245 @@
                         return;
                     }
                     
-                    // Obtener la hora de inicio para determinar la celda
+                    // Obtener la hora de inicio y fin para determinar las celdas
                     const startHour = tarea.hora_inicio.substring(0, 5);
+                    const endHour = tarea.hora_fin.substring(0, 5);
                     
-                    // Encontrar la celda correspondiente usando los atributos data-day y data-hour
-                    const hourParts = startHour.split(':');
-                    const hourValue = parseInt(hourParts[0]);
+                    // Convertir horas a valores numéricos para cálculos
+                    const startHourParts = startHour.split(':');
+                    const endHourParts = endHour.split(':');
+                    const startHourValue = parseInt(startHourParts[0]);
+                    const endHourValue = parseInt(endHourParts[0]);
                     
-                    // Buscar la hora más cercana disponible en la tabla (8, 10, 12, 14, 16, 18)
-                    let nearestHour;
+                    // Horas disponibles en la tabla
                     const availableHours = [8, 10, 12, 14, 16, 18];
                     
-                    // Encontrar la hora más cercana
-                    if (availableHours.includes(hourValue)) {
-                        nearestHour = hourValue;
+                    // Encontrar la hora de inicio más cercana en la tabla
+                    let startNearestHour;
+                    if (availableHours.includes(startHourValue)) {
+                        startNearestHour = startHourValue;
                     } else {
-                        // Encontrar la hora más cercana por abajo o por arriba
-                        const lowerHours = availableHours.filter(h => h <= hourValue);
-                        const higherHours = availableHours.filter(h => h >= hourValue);
+                        // Encontrar la hora más cercana por abajo
+                        const lowerHours = availableHours.filter(h => h <= startHourValue);
+                        const higherHours = availableHours.filter(h => h >= startHourValue);
                         
                         if (lowerHours.length === 0) {
-                            nearestHour = Math.min(...higherHours);
+                            startNearestHour = Math.min(...higherHours);
                         } else if (higherHours.length === 0) {
-                            nearestHour = Math.max(...lowerHours);
+                            startNearestHour = Math.max(...lowerHours);
                         } else {
                             const maxLower = Math.max(...lowerHours);
                             const minHigher = Math.min(...higherHours);
                             
                             // Elegir la hora más cercana
-                            nearestHour = (hourValue - maxLower) <= (minHigher - hourValue) ? maxLower : minHigher;
+                            startNearestHour = (startHourValue - maxLower) <= (minHigher - startHourValue) ? maxLower : minHigher;
                         }
                     }
                     
-                    const hourOnly = `${nearestHour}:00`;
+                    // Encontrar la hora de fin más cercana en la tabla (pero debe ser >= que la hora de inicio)
+                    let endNearestHour;
+                    // Filtrar horas disponibles que sean mayores o iguales a la hora de inicio
+                    const validEndHours = availableHours.filter(h => h >= startNearestHour);
                     
-                    // Buscar la celda que corresponde al día y hora más cercana
-                    const targetCell = document.querySelector(`#weekly-calendar-table td[data-day="${diaSemana}"][data-hour="${hourOnly}"]`);
+                    if (availableHours.includes(endHourValue) && endHourValue >= startNearestHour) {
+                        endNearestHour = endHourValue;
+                    } else {
+                        // Si la hora de fin es menor que la hora de inicio en la tabla, usar la siguiente hora disponible
+                        if (endHourValue <= startNearestHour) {
+                            const nextHours = availableHours.filter(h => h > startNearestHour);
+                            endNearestHour = nextHours.length > 0 ? Math.min(...nextHours) : availableHours[availableHours.length - 1];
+                        } else {
+                            // Encontrar la hora más cercana por arriba para el fin
+                            const lowerHours = availableHours.filter(h => h <= endHourValue && h >= startNearestHour);
+                            const higherHours = availableHours.filter(h => h >= endHourValue);
+                            
+                            if (lowerHours.length === 0) {
+                                // Si no hay horas menores, usar la primera hora mayor
+                                endNearestHour = higherHours.length > 0 ? Math.min(...higherHours) : availableHours[availableHours.length - 1];
+                            } else {
+                                // Usar la hora más cercana por abajo que sea >= a la hora de inicio
+                                endNearestHour = Math.max(...lowerHours);
+                                
+                                // Si la hora de fin es significativamente mayor que la última hora disponible en lowerHours,
+                                // extender hasta la siguiente hora disponible
+                                if (endHourValue > endNearestHour + 1 && higherHours.length > 0) {
+                                    endNearestHour = Math.min(...higherHours);
+                                }
+                            }
+                        }
+                    }
                     
-                    if (!targetCell) {
-                        console.error(`Error: No se encontró celda para día ${diaSemana} y hora ${hourOnly}`);
+                    // Si después de todos los cálculos, la hora de fin es igual a la de inicio, intentar extender a la siguiente hora disponible
+                    if (endNearestHour === startNearestHour) {
+                        const nextHours = availableHours.filter(h => h > startNearestHour);
+                        if (nextHours.length > 0) {
+                            endNearestHour = Math.min(...nextHours);
+                        }
+                    }
+                    
+                    console.log(`Hora de inicio ajustada: ${startNearestHour}:00, Hora de fin ajustada: ${endNearestHour}:00`);
+                    
+                    // Crear un contenedor principal para la tarea que se extenderá verticalmente
+                    const taskContainer = document.createElement('div');
+                    taskContainer.className = 'task-container absolute inset-x-0 rounded-md overflow-hidden z-10 medical-card animate-float-medical';
+                    taskContainer.style.backgroundColor = tarea.color || '#3B82F6';
+                    taskContainer.style.color = 'white';
+                    taskContainer.style.top = '0';
+                    taskContainer.style.bottom = '0';
+                    taskContainer.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+                    taskContainer.style.transition = 'all 0.3s ease';
+                    
+                    // Contenido de la tarea
+                    taskContainer.innerHTML = `
+                        <div class="p-2 h-full flex flex-col justify-between">
+                            <div class="flex items-center mb-1">
+                                <i class="fas ${tarea.icono || 'fa-calendar'} mr-2 text-white"></i>
+                                <span class="font-semibold truncate text-white">${tarea.titulo}</span>
+                            </div>
+                            <div class="text-xs bg-white/20 rounded px-2 py-1 inline-flex items-center self-start">
+                                <i class="far fa-clock mr-1"></i>
+                                ${tarea.hora_inicio.substring(0, 5)} - ${tarea.hora_fin.substring(0, 5)}
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Añadir efecto hover
+                    taskContainer.addEventListener('mouseenter', () => {
+                        taskContainer.style.transform = 'translateY(-3px)';
+                        taskContainer.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+                    });
+                    
+                    taskContainer.addEventListener('mouseleave', () => {
+                        taskContainer.style.transform = '';
+                        taskContainer.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+                    });
+                    
+                    // Buscar la celda de inicio
+                    const startCell = document.querySelector(`#weekly-calendar-table td[data-day="${diaSemana}"][data-hour="${startNearestHour}:00"]`);
+                    
+                    if (!startCell) {
+                        console.error(`Error: No se encontró celda para día ${diaSemana} y hora ${startNearestHour}:00`);
                         return;
                     }
                     
-                    console.log(`Renderizando tarea "${tarea.titulo}" en día ${diaSemana} (${['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'][diaSemana]}) hora ${startHour}`);
+                    // Determinar las celdas que abarcará la tarea
+                    let currentHour = startNearestHour;
+                    const cellsToSpan = [];
                     
-                    // Crear el elemento de la tarea con un diseño más limpio
-                    // Verificar si ya hay tareas en esta celda y ajustar la posición
-                    const taskElement = document.createElement('div');
-                    taskElement.className = 'p-1 rounded text-xs overflow-hidden mb-1';
-                    taskElement.style.backgroundColor = tarea.color || '#3B82F6';
-                    taskElement.style.color = 'white';
-                    taskElement.innerHTML = `
-                        <div class="flex items-center">
-                            <i class="fas ${tarea.icono || 'fa-calendar'} mr-1"></i>
-                            <span class="font-medium truncate">${tarea.titulo}</span>
-                        </div>
-                        <div class="text-xs opacity-90">${tarea.hora_inicio.substring(0, 5)} - ${tarea.hora_fin.substring(0, 5)}</div>
-                    `;
+                    while (currentHour <= endNearestHour) {
+                        const cell = document.querySelector(`#weekly-calendar-table td[data-day="${diaSemana}"][data-hour="${currentHour}:00"]`);
+                        if (cell) {
+                            cellsToSpan.push(cell);
+                        }
+                        
+                        // Avanzar a la siguiente hora disponible
+                        const nextHours = availableHours.filter(h => h > currentHour);
+                        if (nextHours.length > 0) {
+                            currentHour = Math.min(...nextHours);
+                        } else {
+                            break; // Salir si no hay más horas disponibles
+                        }
+                    }
+                    
+                    console.log(`La tarea abarcará ${cellsToSpan.length} celdas`);
+                    
+                    if (cellsToSpan.length === 0) {
+                        console.error('Error: No se encontraron celdas para abarcar');
+                        return;
+                    }
+                    
+                    // Si solo hay una celda, simplemente añadir la tarea a esa celda
+                    if (cellsToSpan.length === 1) {
+                        const cell = cellsToSpan[0];
+                        cell.style.position = 'relative';
+                        cell.appendChild(taskContainer);
+                    } else {
+                        // Si hay múltiples celdas, crear un contenedor que abarque todas las celdas
+                        const firstCell = cellsToSpan[0];
+                        
+                        // Definir variables importantes primero
+                        const rowSpan = cellsToSpan.length;
+                        const cellHeight = 64; // Altura de cada celda en píxeles (h-16 = 4rem = 64px)
+                        
+                        // Limpiar todas las celdas excepto la primera
+                        for (let i = 1; i < cellsToSpan.length; i++) {
+                            cellsToSpan[i].innerHTML = '';
+                            cellsToSpan[i].style.border = 'none';
+                            cellsToSpan[i].style.padding = '0';
+                            // Asegurarse de que las celdas no tengan altura propia
+                            cellsToSpan[i].style.height = '0';
+                        }
+                        
+                        // Posicionar el contenedor de la tarea
+                        firstCell.style.position = 'relative';
+                        // Asegurar que la primera celda tenga suficiente altura para contener toda la tarea
+                        firstCell.style.height = `${rowSpan * cellHeight}px`;
+                        firstCell.style.verticalAlign = 'top';
+                        
+                        // Configurar el contenedor para que abarque todas las celdas
+                        taskContainer.style.height = `${rowSpan * cellHeight}px`;
+                        taskContainer.style.position = 'absolute';
+                        taskContainer.style.top = '0';
+                        taskContainer.style.left = '0';
+                        taskContainer.style.right = '0';
+                        taskContainer.style.bottom = '0';
+                        taskContainer.style.zIndex = '10';
+                        
+                        // Añadir el contenedor a la primera celda
+                        firstCell.appendChild(taskContainer);
+                        
+                        // Extender la primera celda para que abarque todas las filas
+                        firstCell.setAttribute('rowspan', rowSpan);
+                        
+                        // Ocultar las celdas que están siendo abarcadas
+                        for (let i = 1; i < cellsToSpan.length; i++) {
+                            cellsToSpan[i].style.display = 'none';
+                        }
+                    }
                     
                     // Añadir eventos para mostrar/ocultar tooltip con la descripción
-                    taskElement.addEventListener('mouseenter', (e) => {
+                    taskContainer.addEventListener('mouseenter', (e) => {
                         // Preparar contenido del tooltip
                         const descripcion = tarea.descripcion || 'Sin descripción';
                         
+                        // Aplicar clases médicas al tooltip
+                        tooltip.className = 'fixed z-50 p-4 bg-white text-gray-800 text-sm rounded-lg shadow-xl max-w-xs border-l-4 medical-tooltip animate-glow-medical';
+                        tooltip.style.minWidth = '250px';
+                        
                         // Usar el color de la tarea para el borde izquierdo del tooltip
-                        tooltip.style.borderLeftColor = tarea.color || '#3B82F6';
+                        tooltip.style.borderLeftColor = tarea.color || '#0891b2';
+                        
+                        // Determinar el tipo de cita para mostrar un icono adecuado
+                        let tipoIcono = 'fa-stethoscope';
+                        let tipoTexto = 'Consulta Regular';
+                        
+                        if (tarea.titulo.toLowerCase().includes('urgencia') || tarea.titulo.toLowerCase().includes('emergencia')) {
+                            tipoIcono = 'fa-heartbeat';
+                            tipoTexto = 'Consulta Urgente';
+                        } else if (tarea.titulo.toLowerCase().includes('control') || tarea.titulo.toLowerCase().includes('revisión')) {
+                            tipoIcono = 'fa-clipboard-check';
+                            tipoTexto = 'Control Médico';
+                        }
                         
                         tooltip.innerHTML = `
-                            <div class="font-bold text-base mb-2 pb-1 border-b border-gray-200 flex items-center">
-                                <i class="fas ${tarea.icono || 'fa-calendar'} mr-2" style="color: ${tarea.color || '#3B82F6'}"></i>
+                            <div class="font-bold text-base mb-2 pb-2 border-b border-gray-200 flex items-center">
+                                <i class="fas ${tarea.icono || 'fa-calendar'} mr-2 text-lg" style="color: ${tarea.color || '#0891b2'}"></i>
                                 <span>${tarea.titulo}</span>
                             </div>
-                            <div class="text-gray-600 leading-relaxed">${descripcion}</div>
-                            <div class="mt-2 pt-1 border-t border-gray-200 text-xs text-gray-500 flex justify-between">
-                                <span><i class="far fa-clock mr-1"></i>${tarea.hora_inicio.substring(0, 5)} - ${tarea.hora_fin.substring(0, 5)}</span>
-                                <span><i class="far fa-calendar-alt mr-1"></i>${['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'][parseInt(tarea.dia_semana)]}</span>
+                            <div class="text-gray-700 leading-relaxed mb-3">${descripcion}</div>
+                            <div class="bg-cyan-50 rounded-md p-2 mb-3 flex items-center text-cyan-800">
+                                <i class="fas ${tipoIcono} mr-2"></i>
+                                <span>${tipoTexto}</span>
+                            </div>
+                            <div class="mt-2 pt-2 border-t border-gray-200 text-sm text-gray-600 flex justify-between">
+                                <span class="flex items-center"><i class="far fa-clock mr-1 text-cyan-600"></i>${tarea.hora_inicio.substring(0, 5)} - ${tarea.hora_fin.substring(0, 5)}</span>
+                                <span class="flex items-center"><i class="far fa-calendar-alt mr-1 text-cyan-600"></i>${['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'][parseInt(tarea.dia_semana)]}</span>
                             </div>
                         `;
                         
                         // Posicionar el tooltip cerca del elemento (no del cursor)
-                        const rect = taskElement.getBoundingClientRect();
-                        const tooltipHeight = 150; // Altura estimada actualizada
+                        const rect = taskContainer.getBoundingClientRect();
+                        const tooltipHeight = 200; // Altura estimada actualizada
                         
                         // Posicionar arriba o abajo dependiendo del espacio disponible
                         const spaceBelow = window.innerHeight - rect.bottom;
@@ -420,7 +653,7 @@
                         tooltip.style.transform = 'translateY(0)';
                     });
                     
-                    taskElement.addEventListener('mouseleave', () => {
+                    taskContainer.addEventListener('mouseleave', () => {
                         // Ocultar el tooltip con animación
                         tooltip.style.opacity = '0';
                         tooltip.style.transform = 'translateY(10px)';
@@ -432,8 +665,8 @@
                         }, 300);
                     });
                     
-                    // Añadir la tarea a la celda
-                    targetCell.appendChild(taskElement);
+                    // Nota: Ya no necesitamos añadir la tarea a la celda aquí, ya que se hace arriba
+                    // dependiendo de si es una sola celda o múltiples celdas
                 });
                 console.log('Renderizado de tareas completado.');
             }
@@ -452,7 +685,7 @@
     <script src="{{ asset('js/calendario.js') }}"></script>
     <style>[x-cloak] { display: none !important; }</style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-50">
     <div class="min-h-screen flex" x-data="{ modalOpen: false }">
         <!-- Sidebar -->
         <x-sidebar />
@@ -464,89 +697,153 @@
             <!-- Main Content Area -->
             <main class="p-6">
                 <div class="max-w-7xl mx-auto">
-                    <!-- Page Title -->
-                    <div class="mb-10 text-center">
-                        <h1 class="text-4xl font-bold text-gray-800 mb-4">Calendario de Eventos</h1>
-                        <p class="text-xl text-gray-600">Organiza y visualiza tus eventos y fechas importantes</p>
-                    </div>
-
-                    <!-- Calendar Grid -->
-                    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                        <!-- Calendar Header -->
-                        <div class="flex items-center justify-between mb-6">
-                            <h2 class="text-xl font-semibold">Calendario</h2>
-                            <div class="flex space-x-2">
-                                <button class="p-2 hover:bg-gray-100 rounded-full">
-                                    <i class="fas fa-chevron-left text-gray-600"></i>
-                                </button>
-                                <button class="p-2 hover:bg-gray-100 rounded-full">
-                                    <i class="fas fa-chevron-right text-gray-600"></i>
-                                </button>
+                    <!-- Page Title con decoración médica -->
+                    <div class="mb-10 text-center relative">
+                        <!-- Elementos decorativos médicos -->
+                        <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 w-16 h-16 text-cyan-500 opacity-10 animate-float-medical">
+                            <i class="fas fa-stethoscope text-6xl"></i>
+                        </div>
+                        <h1 class="text-4xl font-bold text-cyan-900 mb-4 flex items-center justify-center">
+                            <span class="medical-gradient text-white p-2 rounded-lg shadow-md mr-4 inline-flex items-center justify-center">
+                                <i class="fas fa-calendar-plus text-white mr-2"></i>
+                            </span>
+                            Agenda Médica
+                        </h1>
+                        <p class="text-xl text-cyan-700">Gestiona tus citas médicas y horarios de consulta</p>
+                        <!-- Indicadores médicos -->
+                        <div class="flex justify-center mt-4 space-x-6">
+                            <div class="flex items-center text-sm text-cyan-700">
+                                <i class="fas fa-user-md text-cyan-600 mr-2"></i>
+                                <span>Consultas</span>
+                            </div>
+                            <div class="flex items-center text-sm text-cyan-700">
+                                <i class="fas fa-procedures text-cyan-600 mr-2"></i>
+                                <span>Tratamientos</span>
+                            </div>
+                            <div class="flex items-center text-sm text-cyan-700">
+                                <i class="fas fa-notes-medical text-cyan-600 mr-2"></i>
+                                <span>Seguimientos</span>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Calendar Days -->
-                        <div class="grid grid-cols-7 gap-2 mb-4">
-                            <div class="text-center font-medium text-gray-600">Dom</div>
-                            <div class="text-center font-medium text-gray-600">Lun</div>
-                            <div class="text-center font-medium text-gray-600">Mar</div>
-                            <div class="text-center font-medium text-gray-600">Mié</div>
-                            <div class="text-center font-medium text-gray-600">Jue</div>
-                            <div class="text-center font-medium text-gray-600">Vie</div>
-                            <div class="text-center font-medium text-gray-600">Sáb</div>
+                    <!-- Calendar Grid con estilo médico -->
+                    <div class="bg-white rounded-lg shadow-md p-6 mb-6 border-t-4 border-cyan-600">
+                        <!-- Calendar Header -->
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-semibold text-cyan-800 flex items-center">
+                                <i class="fas fa-calendar-alt text-cyan-600 mr-2"></i>
+                                Vista Mensual de Disponibilidad
+                            </h2>
                         </div>
 
-                        <!-- Calendar Grid -->
+                        <!-- Calendar Days con estilo médico -->
+                        <div class="grid grid-cols-7 gap-2 mb-4 bg-gradient-to-r from-cyan-50 to-teal-50 p-2 rounded-lg">
+                            <div class="text-center font-medium text-cyan-800 py-2">Dom</div>
+                            <div class="text-center font-medium text-cyan-800 py-2">Lun</div>
+                            <div class="text-center font-medium text-cyan-800 py-2">Mar</div>
+                            <div class="text-center font-medium text-cyan-800 py-2">Mié</div>
+                            <div class="text-center font-medium text-cyan-800 py-2">Jue</div>
+                            <div class="text-center font-medium text-cyan-800 py-2">Vie</div>
+                            <div class="text-center font-medium text-cyan-800 py-2">Sáb</div>
+                        </div>
+
+                        <!-- Calendar Grid con estilo médico -->
                         <div class="grid grid-cols-7 gap-2">
                             <!-- Calendar will be dynamically populated by JavaScript -->
                         </div>
+                        
+                        <!-- Leyenda de tipos de disponibilidad -->
+                        <div class="mt-6 pt-4 border-t border-gray-100">
+                            <h3 class="text-sm font-medium text-cyan-800 mb-3">Tipos de Disponibilidad:</h3>
+                            <div class="flex flex-wrap gap-3">
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 rounded-full bg-cyan-500 mr-2"></div>
+                                    <span class="text-xs text-gray-600">Consulta General</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 rounded-full bg-teal-500 mr-2"></div>
+                                    <span class="text-xs text-gray-600">Consulta Especializada</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+                                    <span class="text-xs text-gray-600">Procedimientos</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 rounded-full bg-purple-500 mr-2"></div>
+                                    <span class="text-xs text-gray-600">Seguimiento</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                                    <span class="text-xs text-gray-600">Emergencias</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Weekly Calendar View -->
-                    <div class="bg-white rounded-lg shadow-md p-6 mb-6 mt-8">
-
+                    <!-- Vista Semanal de Consultas Médicas -->
+                    <div class="bg-white rounded-lg shadow-md p-6 mb-6 mt-8 border-t-4 border-teal-600">
+                        <!-- Encabezado de la vista semanal -->
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-semibold text-teal-800 flex items-center">
+                                <i class="fas fa-clock text-teal-600 mr-2"></i>
+                                Horarios de Disponibilidad Médica
+                            </h2>
+                            <div class="flex items-center space-x-3">
+                                <span class="text-sm text-teal-700">Configuración Semanal</span>
+                            </div>
+                        </div>
                         
-                        <!-- Task Modal -->
-                        <div x-show="modalOpen" x-cloak @click.away="modalOpen = false" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm transition-all duration-300">
+                        <!-- Modal de Cita Médica -->
+                        <div x-show="modalOpen" x-cloak @click.away="modalOpen = false" class="fixed inset-0 bg-cyan-900 bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm transition-all duration-300">
                             <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl transform transition-all duration-300" 
                                  x-transition:enter="ease-out duration-300" 
                                  x-transition:enter-start="opacity-0 scale-95" 
                                  x-transition:enter-end="opacity-100 scale-100">
-                                <!-- Header with gradient background -->
-                                <div class="flex justify-between items-center mb-6 pb-3 border-b border-gray-100">
-                                    <h3 class="text-xl font-bold text-gray-800 flex items-center">
-                                        <span class="bg-gradient-to-r from-blue-500 to-purple-600 h-8 w-1 rounded-full mr-3"></span>
-                                        Nueva Tarea
+                                <!-- Header con estilo médico -->
+                                <div class="flex justify-between items-center mb-6 pb-3 border-b border-cyan-100">
+                                    <h3 class="text-xl font-bold text-cyan-800 flex items-center">
+                                        <span class="bg-gradient-to-r from-cyan-500 to-teal-600 h-8 w-1 rounded-full mr-3"></span>
+                                        Nuevo Horario de Disponibilidad
                                     </h3>
-                                    <button @click="modalOpen = false" class="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors duration-200">
+                                    <button @click="modalOpen = false" class="text-gray-400 hover:text-cyan-600 bg-gray-100 hover:bg-cyan-50 rounded-full p-2 transition-colors duration-200">
                                         <i class="fas fa-times"></i>
                                     </button>
                                 </div>
                                 
                                 <form class="space-y-5" action="{{ route('tareas.store') }}" method="POST">
                                     @csrf
-                                    <!-- Título field with icon -->
+                                    <!-- Tipo de Consulta field with icon -->
                                     <div class="group">
-                                        <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                                            <i class="fas fa-heading text-blue-500 mr-2"></i>
-                                            Título
+                                        <label class="block text-sm font-medium text-cyan-700 mb-2 flex items-center">
+                                            <i class="fas fa-stethoscope text-cyan-500 mr-2"></i>
+                                            Tipo de Consulta
                                         </label>
                                         <div class="relative">
-                                            <input type="text" name="titulo" 
-                                                class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 outline-none" 
-                                                placeholder="Título del evento" required>
+                                            <select name="titulo" 
+                                                class="w-full border border-cyan-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all duration-200 outline-none appearance-none bg-white" 
+                                                required>
+                                                <option value="Consulta General">Consulta General</option>
+                                                <option value="Consulta Especializada">Consulta Especializada</option>
+                                                <option value="Seguimiento">Seguimiento</option>
+                                                <option value="Procedimientos">Procedimientos</option>
+                                                <option value="Emergencias">Emergencias</option>
+                                            </select>
+                                            <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                                                <i class="fas fa-chevron-down text-cyan-400"></i>
+                                            </div>
                                         </div>
                                     </div>
                                     
-                                    <!-- Día field with icon -->
+                                    <!-- Día de disponibilidad field with icon -->
                                     <div class="group">
-                                        <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                                            <i class="fas fa-calendar-day text-green-500 mr-2"></i>
-                                            Día
+                                        <label class="block text-sm font-medium text-cyan-700 mb-2 flex items-center">
+                                            <i class="fas fa-calendar-day text-teal-500 mr-2"></i>
+                                            Día de Disponibilidad
                                         </label>
                                         <div class="relative">
                                             <select name="dia_semana" 
-                                                class="w-full border border-gray-300 rounded-lg px-4 py-3 appearance-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 outline-none bg-white" 
+                                                class="w-full border border-cyan-200 rounded-lg px-4 py-3 appearance-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 outline-none bg-white" 
                                                 required>
                                                 <option value="1">Lunes</option>
                                                 <option value="2">Martes</option>
@@ -557,34 +854,34 @@
                                                 <option value="7">Domingo</option>
                                             </select>
                                             <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
-                                                <i class="fas fa-chevron-down text-gray-400"></i>
+                                                <i class="fas fa-chevron-down text-cyan-400"></i>
                                             </div>
                                         </div>
                                     </div>
                                     
-                                    <!-- Time fields with validation -->
+                                    <!-- Horario de consulta con validación -->
                                     <div x-data="{startTime: '', endTime: '', error: false, errorMessage: ''}" class="grid grid-cols-2 gap-4">
                                         <div class="group">
-                                            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                                                <i class="fas fa-hourglass-start text-orange-500 mr-2"></i>
+                                            <label class="block text-sm font-medium text-cyan-700 mb-2 flex items-center">
+                                                <i class="fas fa-clock text-cyan-500 mr-2"></i>
                                                 Hora de inicio
                                             </label>
                                             <div class="relative">
                                                 <input type="time" name="hora_inicio" x-model="startTime" 
                                                     @change="if(endTime) { if(startTime > endTime) { error = true; errorMessage = 'La hora de fin no puede ser anterior a la hora de inicio'; } else if(startTime === endTime) { error = true; errorMessage = 'La hora de fin no puede ser igual a la hora de inicio'; } else { error = false; } }" 
-                                                    class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 outline-none" 
+                                                    class="w-full border border-cyan-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all duration-200 outline-none" 
                                                     required>
                                             </div>
                                         </div>
                                         <div class="group">
-                                            <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                                                <i class="fas fa-hourglass-end text-red-500 mr-2"></i>
+                                            <label class="block text-sm font-medium text-cyan-700 mb-2 flex items-center">
+                                                <i class="fas fa-clock text-teal-500 mr-2"></i>
                                                 Hora de fin
                                             </label>
                                             <div class="relative">
                                                 <input type="time" name="hora_fin" x-model="endTime" 
                                                     @change="if(startTime) { if(startTime > endTime) { error = true; errorMessage = 'La hora de fin no puede ser anterior a la hora de inicio'; } else if(startTime === endTime) { error = true; errorMessage = 'La hora de fin no puede ser igual a la hora de inicio'; } else { error = false; } }" 
-                                                    class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 outline-none" 
+                                                    class="w-full border border-cyan-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 outline-none" 
                                                     required>
                                             </div>
                                         </div>
@@ -598,12 +895,12 @@
                                     <div class="group">
                                         <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                                             <i class="fas fa-align-left text-purple-500 mr-2"></i>
-                                            Descripción
+                                            Detalles del Horario
                                         </label>
                                         <div class="relative">
                                             <textarea name="descripcion" 
                                                 class="w-full border border-gray-300 rounded-lg px-4 py-3 h-24 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 outline-none" 
-                                                placeholder="Descripción de la tarea"></textarea>
+                                                placeholder="Detalles adicionales sobre este horario de disponibilidad (tipo de pacientes, requisitos especiales, etc.)"></textarea>
                                         </div>
                                     </div>
                                     
@@ -707,8 +1004,7 @@
 
                         <!-- Weekly Calendar Header -->
                         <div class="flex items-center justify-between mb-6">
-                            <h2 class="text-xl font-semibold">Vista Semanal</h2>
-                            <div class="flex items-center space-x-2">
+                            <div class="flex items-center space-x-3">
                                 <button @click="
                                     const isAuthenticated = document.querySelector('meta[name=\'auth-check\']').content === '1';
                                     if (!isAuthenticated) {
@@ -716,9 +1012,9 @@
                                     } else {
                                         modalOpen = true;
                                     }
-                                " class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 mr-4">
-                                    <i class="fas fa-calendar-plus"></i>
-                                    <span class="ml-2">Agregar Tarea</span>
+                                " class="medical-gradient text-white px-4 py-2 rounded-lg flex items-center shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 mr-2">
+                                    <i class="fas fa-calendar-plus mr-2"></i>
+                                    <span>Agregar Cita</span>
                                 </button>
                                 <button @click="
                                     const isAuthenticated = document.querySelector('meta[name=\'auth-check\']').content === '1';
@@ -727,9 +1023,9 @@
                                     } else {
                                         $store.modal.editOpen = true;
                                     }
-                                " class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 mr-4">
-                                    <i class="fas fa-edit"></i>
-                                    <span>Editar Tarea</span>
+                                " class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg flex items-center shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 mr-2">
+                                    <i class="fas fa-edit mr-2"></i>
+                                    <span>Editar Cita</span>
                                 </button>
                                 <button @click="
                                     const isAuthenticated = document.querySelector('meta[name=\'auth-check\']').content === '1';
@@ -738,102 +1034,123 @@
                                     } else {
                                         $store.modal.deleteOpen = true;
                                     }
-                                " class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 mr-4">
-                                    <i class="fas fa-trash"></i>
-                                    <span>Eliminar Tarea</span>
+                                " class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-lg flex items-center shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 mr-2">
+                                    <i class="fas fa-trash-alt mr-2"></i>
+                                    <span>Eliminar Cita</span>
                                 </button>
-                                <button class="p-2 hover:bg-gray-100 rounded-full">
-                                    <i class="fas fa-chevron-left text-gray-600"></i>
-                                </button>
-                                <button class="p-2 hover:bg-gray-100 rounded-full">
-                                    <i class="fas fa-chevron-right text-gray-600"></i>
-                                </button>
+                                <div class="ml-2 flex items-center bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                                    <button class="p-2 hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center">
+                                        <i class="fas fa-chevron-left text-cyan-700"></i>
+                                    </button>
+                                    <div class="h-6 border-r border-gray-200"></div>
+                                    <button class="p-2 hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center">
+                                        <i class="fas fa-chevron-right text-cyan-700"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Weekly Calendar Grid -->
-                        <div class="overflow-x-auto">
+                        <!-- Weekly Calendar Grid -->                        
+                        <div class="overflow-hidden bg-white rounded-lg shadow-md p-4">
                             <div class="min-w-max">
-                                <!-- Time Slots - New Implementation with Table -->
+                                <!-- Time Slots - New Implementation with Table -->                                
                                 <table class="w-full border-collapse" id="weekly-calendar-table">
                                     <thead>
-                                        <tr>
-                                            <th class="w-20 p-2 text-center text-sm font-medium text-gray-600 bg-gray-50 border">Hora</th>
-                                            <th class="p-2 text-center font-medium text-gray-600 bg-gray-50 border">Lunes</th>
-                                            <th class="p-2 text-center font-medium text-gray-600 bg-gray-50 border">Martes</th>
-                                            <th class="p-2 text-center font-medium text-gray-600 bg-gray-50 border">Miércoles</th>
-                                            <th class="p-2 text-center font-medium text-gray-600 bg-gray-50 border">Jueves</th>
-                                            <th class="p-2 text-center font-medium text-gray-600 bg-gray-50 border">Viernes</th>
-                                            <th class="p-2 text-center font-medium text-gray-600 bg-gray-50 border">Sábado</th>
-                                            <th class="p-2 text-center font-medium text-gray-600 bg-gray-50 border">Domingo</th>
+                                        <tr class="calendar-header">
+                                            <th class="w-20 p-3 text-center text-sm font-semibold text-white bg-cyan-600 border-b-2 border-cyan-700 rounded-tl-lg">Hora</th>
+                                            <th class="p-3 text-center font-semibold text-white bg-cyan-600 border-b-2 border-cyan-700">Lunes</th>
+                                            <th class="p-3 text-center font-semibold text-white bg-cyan-600 border-b-2 border-cyan-700">Martes</th>
+                                            <th class="p-3 text-center font-semibold text-white bg-cyan-600 border-b-2 border-cyan-700">Miércoles</th>
+                                            <th class="p-3 text-center font-semibold text-white bg-cyan-600 border-b-2 border-cyan-700">Jueves</th>
+                                            <th class="p-3 text-center font-semibold text-white bg-cyan-600 border-b-2 border-cyan-700">Viernes</th>
+                                            <th class="p-3 text-center font-semibold text-white bg-cyan-600 border-b-2 border-cyan-700">Sábado</th>
+                                            <th class="p-3 text-center font-semibold text-white bg-cyan-600 border-b-2 border-cyan-700 rounded-tr-lg">Domingo</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody class="bg-white">
                                         <!-- 8:00 AM -->
-                                        <tr>
-                                            <td class="p-2 text-center text-sm text-gray-600 bg-gray-50 border">8:00</td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="1" data-hour="8:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="2" data-hour="8:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="3" data-hour="8:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="4" data-hour="8:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="5" data-hour="8:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="6" data-hour="8:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="7" data-hour="8:00"></td>
+                                        <tr class="hover:bg-blue-50 transition-colors duration-150">
+                                            <td class="p-3 text-center text-sm font-medium text-cyan-800 bg-cyan-50 border-b border-r border-gray-200 flex items-center justify-center">
+                                                <i class="fas fa-clock text-cyan-600 mr-2"></i>
+                                                <span>8:00</span>
+                                            </td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="1" data-hour="8:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="2" data-hour="8:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="3" data-hour="8:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="4" data-hour="8:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="5" data-hour="8:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="6" data-hour="8:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="7" data-hour="8:00"></td>
                                         </tr>
                                         <!-- 10:00 AM -->
-                                        <tr>
-                                            <td class="p-2 text-center text-sm text-gray-600 bg-gray-50 border">10:00</td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="1" data-hour="10:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="2" data-hour="10:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="3" data-hour="10:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="4" data-hour="10:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="5" data-hour="10:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="6" data-hour="10:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="7" data-hour="10:00"></td>
+                                        <tr class="hover:bg-blue-50 transition-colors duration-150">
+                                            <td class="p-3 text-center text-sm font-medium text-cyan-800 bg-cyan-50 border-b border-r border-gray-200 flex items-center justify-center">
+                                                <i class="fas fa-clock text-cyan-600 mr-2"></i>
+                                                <span>10:00</span>
+                                            </td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="1" data-hour="10:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="2" data-hour="10:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="3" data-hour="10:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="4" data-hour="10:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="5" data-hour="10:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="6" data-hour="10:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="7" data-hour="10:00"></td>
                                         </tr>
                                         <!-- 12:00 PM -->
-                                        <tr>
-                                            <td class="p-2 text-center text-sm text-gray-600 bg-gray-50 border">12:00</td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="1" data-hour="12:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="2" data-hour="12:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="3" data-hour="12:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="4" data-hour="12:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="5" data-hour="12:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="6" data-hour="12:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="7" data-hour="12:00"></td>
+                                        <tr class="hover:bg-blue-50 transition-colors duration-150">
+                                            <td class="p-3 text-center text-sm font-medium text-cyan-800 bg-cyan-50 border-b border-r border-gray-200 flex items-center justify-center">
+                                                <i class="fas fa-clock text-cyan-600 mr-2"></i>
+                                                <span>12:00</span>
+                                            </td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="1" data-hour="12:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="2" data-hour="12:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="3" data-hour="12:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="4" data-hour="12:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="5" data-hour="12:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="6" data-hour="12:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="7" data-hour="12:00"></td>
                                         </tr>
                                         <!-- 2:00 PM -->
-                                        <tr>
-                                            <td class="p-2 text-center text-sm text-gray-600 bg-gray-50 border">14:00</td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="1" data-hour="14:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="2" data-hour="14:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="3" data-hour="14:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="4" data-hour="14:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="5" data-hour="14:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="6" data-hour="14:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="7" data-hour="14:00"></td>
+                                        <tr class="hover:bg-blue-50 transition-colors duration-150">
+                                            <td class="p-3 text-center text-sm font-medium text-cyan-800 bg-cyan-50 border-b border-r border-gray-200 flex items-center justify-center">
+                                                <i class="fas fa-clock text-cyan-600 mr-2"></i>
+                                                <span>14:00</span>
+                                            </td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="1" data-hour="14:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="2" data-hour="14:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="3" data-hour="14:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="4" data-hour="14:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="5" data-hour="14:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="6" data-hour="14:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="7" data-hour="14:00"></td>
                                         </tr>
                                         <!-- 4:00 PM -->
-                                        <tr>
-                                            <td class="p-2 text-center text-sm text-gray-600 bg-gray-50 border">16:00</td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="1" data-hour="16:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="2" data-hour="16:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="3" data-hour="16:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="4" data-hour="16:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="5" data-hour="16:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="6" data-hour="16:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="7" data-hour="16:00"></td>
+                                        <tr class="hover:bg-blue-50 transition-colors duration-150">
+                                            <td class="p-3 text-center text-sm font-medium text-cyan-800 bg-cyan-50 border-b border-r border-gray-200 flex items-center justify-center">
+                                                <i class="fas fa-clock text-cyan-600 mr-2"></i>
+                                                <span>16:00</span>
+                                            </td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="1" data-hour="16:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="2" data-hour="16:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="3" data-hour="16:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="4" data-hour="16:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="5" data-hour="16:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="6" data-hour="16:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="7" data-hour="16:00"></td>
                                         </tr>
                                         <!-- 6:00 PM -->
-                                        <tr>
-                                            <td class="p-2 text-center text-sm text-gray-600 bg-gray-50 border">18:00</td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="1" data-hour="18:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="2" data-hour="18:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="3" data-hour="18:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="4" data-hour="18:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="5" data-hour="18:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="6" data-hour="18:00"></td>
-                                            <td class="border p-1 h-16 align-top overflow-y-auto" data-day="7" data-hour="18:00"></td>
+                                        <tr class="hover:bg-blue-50 transition-colors duration-150">
+                                            <td class="p-3 text-center text-sm font-medium text-cyan-800 bg-cyan-50 border-r border-gray-200 flex items-center justify-center rounded-bl-lg">
+                                                <i class="fas fa-clock text-cyan-600 mr-2"></i>
+                                                <span>18:00</span>
+                                            </td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="1" data-hour="18:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="2" data-hour="18:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="3" data-hour="18:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="4" data-hour="18:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="5" data-hour="18:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell" data-day="6" data-hour="18:00"></td>
+                                            <td class="border border-gray-200 p-2 h-16 align-top overflow-y-auto calendar-cell rounded-br-lg" data-day="7" data-hour="18:00"></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -864,67 +1181,104 @@
 </script>
 <!-- Edit Task Modal -->
 <div x-data="{ tareas: [] }" x-init="$watch('$store.modal.editOpen', value => { if(value) { tareas = window.tareas } })" x-show="$store.modal.editOpen" x-cloak @click.away="$store.modal.editOpen = false" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm transition-all duration-300">
-    <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl transform transition-all duration-300" 
+    <div class="bg-white rounded-xl p-0 w-full max-w-md shadow-2xl transform transition-all duration-300 overflow-hidden" 
          x-transition:enter="ease-out duration-300" 
          x-transition:enter-start="opacity-0 scale-95" 
          x-transition:enter-end="opacity-100 scale-100">
-        <!-- Header with gradient background -->
-        <div class="flex justify-between items-center mb-6 pb-3 border-b border-gray-100">
-            <h3 class="text-xl font-bold text-gray-800 flex items-center">
-                <span class="bg-gradient-to-r from-green-500 to-teal-600 h-8 w-1 rounded-full mr-3"></span>
-                <span x-text="$store.editTask.isEditing ? 'Editar Tarea' : 'Tareas Semanales'"></span>
+        <!-- Header with medical gradient background -->
+        <div class="medical-gradient text-white p-4 flex justify-between items-center">
+            <h3 class="text-xl font-bold flex items-center">
+                <i class="fas fa-stethoscope mr-3 animate-pulse-medical"></i>
+                <span x-text="$store.editTask.isEditing ? 'Editar Cita Médica' : 'Citas Programadas'"></span>
             </h3>
-            <button @click="$store.modal.editOpen = false; $store.editTask.cancelEdit()" class="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors duration-200">
+            <button @click="$store.modal.editOpen = false; $store.editTask.cancelEdit()" class="text-white hover:text-cyan-100 bg-cyan-700 hover:bg-cyan-800 rounded-full p-2 transition-colors duration-200">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         
         <!-- Edit Task Form -->
-        <div x-show="$store.editTask.isEditing && $store.editTask.selectedTask" class="mb-4">
+        <div x-show="$store.editTask.isEditing && $store.editTask.selectedTask" class="p-6">
             <form @submit.prevent="$store.editTask.saveChanges()">
                 <!-- Título -->
                 <div class="mb-4">
-                    <label for="titulo" class="block text-sm font-medium text-gray-700 mb-1">Título</label>
-                    <input type="text" id="titulo" x-model="$store.editTask.selectedTask.titulo" 
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    <label for="titulo" class="block text-sm font-medium text-cyan-800 mb-1 flex items-center">
+                        <i class="fas fa-file-medical mr-2 text-cyan-600"></i>
+                        Título de la Cita
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-pen-fancy text-cyan-500"></i>
+                        </div>
+                        <input type="text" id="titulo" x-model="$store.editTask.selectedTask.titulo" 
+                               class="w-full pl-10 pr-3 py-2 border border-cyan-200 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-cyan-50" required>
+                    </div>
                 </div>
                 
                 <!-- Descripción -->
                 <div class="mb-4">
-                    <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-                    <textarea id="descripcion" x-model="$store.editTask.selectedTask.descripcion" 
-                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-24"></textarea>
+                    <label for="descripcion" class="block text-sm font-medium text-cyan-800 mb-1 flex items-center">
+                        <i class="fas fa-notes-medical mr-2 text-cyan-600"></i>
+                        Descripción
+                    </label>
+                    <div class="relative">
+                        <textarea id="descripcion" x-model="$store.editTask.selectedTask.descripcion" 
+                                  class="w-full px-3 py-2 border border-cyan-200 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-cyan-50 h-24"></textarea>
+                    </div>
                 </div>
                 
                 <!-- Color -->
                 <div class="mb-4">
-                    <label for="color" class="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                    <label for="color" class="block text-sm font-medium text-cyan-800 mb-1 flex items-center">
+                        <i class="fas fa-palette mr-2 text-cyan-600"></i>
+                        Color de la Cita
+                    </label>
                     <input type="color" id="color" x-model="$store.editTask.selectedTask.color" 
-                           class="w-full h-10 border border-gray-300 rounded-md cursor-pointer">
+                           class="w-full h-10 border border-cyan-200 rounded-md cursor-pointer">
                 </div>
                 
-                <!-- Hora Inicio -->
-                <div class="mb-4">
-                    <label for="hora_inicio" class="block text-sm font-medium text-gray-700 mb-1">Hora de inicio</label>
-                    <input type="time" id="hora_inicio" x-model="$store.editTask.selectedTask.hora_inicio" 
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                </div>
-                
-                <!-- Hora Fin -->
-                <div class="mb-4">
-                    <label for="hora_fin" class="block text-sm font-medium text-gray-700 mb-1">Hora de fin</label>
-                    <input type="time" id="hora_fin" x-model="$store.editTask.selectedTask.hora_fin" 
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <!-- Horario - Flex container para hora inicio y fin -->
+                <div class="flex space-x-4 mb-4">
+                    <!-- Hora Inicio -->
+                    <div class="flex-1">
+                        <label for="hora_inicio" class="block text-sm font-medium text-cyan-800 mb-1 flex items-center">
+                            <i class="fas fa-hourglass-start mr-2 text-cyan-600"></i>
+                            Hora de inicio
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="far fa-clock text-cyan-500"></i>
+                            </div>
+                            <input type="time" id="hora_inicio" x-model="$store.editTask.selectedTask.hora_inicio" 
+                                   class="w-full pl-10 pr-3 py-2 border border-cyan-200 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-cyan-50" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Hora Fin -->
+                    <div class="flex-1">
+                        <label for="hora_fin" class="block text-sm font-medium text-cyan-800 mb-1 flex items-center">
+                            <i class="fas fa-hourglass-end mr-2 text-cyan-600"></i>
+                            Hora de fin
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="far fa-clock text-cyan-500"></i>
+                            </div>
+                            <input type="time" id="hora_fin" x-model="$store.editTask.selectedTask.hora_fin" 
+                                   class="w-full pl-10 pr-3 py-2 border border-cyan-200 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-cyan-50" required>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Botones -->
-                <div class="flex justify-end space-x-2 mt-6">
+                <div class="flex justify-end space-x-3 mt-6">
                     <button type="button" @click="$store.editTask.cancelEdit()" 
-                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">
+                            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors flex items-center">
+                        <i class="fas fa-times-circle mr-2"></i>
                         Cancelar
                     </button>
                     <button type="submit" 
-                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                            class="px-4 py-2 medical-gradient text-white rounded-md hover:opacity-90 transition-colors flex items-center shadow-md">
+                        <i class="fas fa-save mr-2"></i>
                         Guardar cambios
                     </button>
                 </div>
@@ -932,11 +1286,11 @@
         </div>
         
         <!-- Task List Grouped by Day -->
-        <div x-show="!$store.editTask.isEditing" class="max-h-96 overflow-y-auto">
+        <div x-show="!$store.editTask.isEditing" class="max-h-96 overflow-y-auto p-6">
             <template x-if="tareas.length === 0">
-                <div class="text-center py-8">
-                    <i class="fas fa-calendar-times text-gray-300 text-5xl mb-4"></i>
-                    <p class="text-gray-500">No hay tareas programadas</p>
+                <div class="text-center py-8 bg-cyan-50 rounded-lg">
+                    <i class="fas fa-calendar-times text-cyan-300 text-5xl mb-4 animate-pulse-medical"></i>
+                    <p class="text-cyan-700">No hay citas médicas programadas</p>
                 </div>
             </template>
             
@@ -945,26 +1299,29 @@
                 <div>
                     <!-- Day header -->
                     <template x-if="tareas.filter(t => parseInt(t.dia_semana) === dayNumber).length > 0">
-                        <div class="flex items-center py-2 px-1 mb-2 border-b border-gray-200">
-                            <i class="fas fa-calendar-day mr-2 text-gray-600"></i>
-                            <h3 class="font-medium text-gray-700" x-text="getDayName(dayNumber)"></h3>
+                        <div class="flex items-center py-2 px-1 mb-2 border-b border-cyan-200 text-cyan-800">
+                            <i class="fas fa-calendar-day mr-2 text-cyan-600"></i>
+                            <h3 class="font-medium" x-text="getDayName(dayNumber)"></h3>
                         </div>
                     </template>
                     
                     <!-- Tasks for this day -->
                     <template x-for="(tarea, index) in tareas.filter(t => parseInt(t.dia_semana) === dayNumber)" :key="index">
-                        <div class="mb-4 p-4 rounded-lg transition-colors duration-200 cursor-pointer" 
-                             :style="{ backgroundColor: tarea.color || '#3B82F6', color: 'white', borderLeft: '4px solid ' + (tarea.color ? tarea.color.replace('F6', 'D6') : '#2563EB') }"
+                        <div class="mb-4 p-4 rounded-lg transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md transform hover:-translate-y-1 medical-card" 
+                             :style="{ backgroundColor: tarea.color || '#0891b2', color: 'white', borderLeft: '4px solid ' + (tarea.color ? tarea.color.replace('91', '70') : '#0e7490') }"
                              @click="$store.editTask.selectTask(tarea)">
                             <div class="flex justify-between items-start">
                                 <div>
-                                    <h4 class="font-medium" x-text="tarea.titulo"></h4>
+                                    <h4 class="font-medium flex items-center">
+                                        <i class="fas fa-stethoscope mr-2"></i>
+                                        <span x-text="tarea.titulo"></span>
+                                    </h4>
                                     <p class="text-sm opacity-90 mt-1" x-text="tarea.descripcion || 'Sin descripción'"></p>
                                 </div>
                             </div>
-                            <div class="flex items-center justify-between mt-3 text-sm">
+                            <div class="flex items-center justify-between mt-3 text-sm bg-white/20 rounded px-2 py-1 inline-block">
                                 <div class="flex items-center">
-                                    <i class="fas fa-clock mr-1"></i>
+                                    <i class="far fa-clock mr-1"></i>
                                     <span x-text="tarea.hora_inicio + ' - ' + tarea.hora_fin"></span>
                                 </div>
                             </div>
@@ -978,49 +1335,61 @@
 
 <!-- Delete Task Modal -->
 <div x-data="{ tareas: [] }" x-init="$watch('$store.modal.deleteOpen', value => { if(value) { tareas = window.tareas } })" x-show="$store.modal.deleteOpen" x-cloak @click.away="$store.modal.deleteOpen = false" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm transition-all duration-300">
-    <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl transform transition-all duration-300" 
+    <div class="bg-white rounded-xl p-0 w-full max-w-md shadow-2xl transform transition-all duration-300 overflow-hidden" 
          x-transition:enter="ease-out duration-300" 
          x-transition:enter-start="opacity-0 scale-95" 
          x-transition:enter-end="opacity-100 scale-100">
-        <!-- Header with gradient background -->
-        <div class="flex justify-between items-center mb-6 pb-3 border-b border-gray-100">
-            <h3 class="text-xl font-bold text-gray-800 flex items-center">
-                <span class="bg-gradient-to-r from-red-500 to-red-600 h-8 w-1 rounded-full mr-3"></span>
-                <span>Eliminar Tarea</span>
+        <!-- Header with medical gradient background -->
+        <div class="bg-gradient-to-r from-red-500 to-rose-600 text-white p-4 flex justify-between items-center">
+            <h3 class="text-xl font-bold flex items-center">
+                <i class="fas fa-trash-alt mr-3 animate-pulse-medical"></i>
+                <span>Eliminar Cita Médica</span>
             </h3>
-            <button @click="$store.modal.deleteOpen = false; $store.deleteTask.cancelDelete()" class="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors duration-200">
+            <button @click="$store.modal.deleteOpen = false; $store.deleteTask.cancelDelete()" class="text-white hover:text-red-100 bg-red-700 hover:bg-red-800 rounded-full p-2 transition-colors duration-200">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         
         <!-- Delete Task Confirmation -->
-        <div x-show="$store.deleteTask.selectedTask" class="mb-4">
-            <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+        <div x-show="$store.deleteTask.selectedTask" class="p-6">
+            <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-md shadow-sm">
                 <div class="flex items-center">
-                    <i class="fas fa-exclamation-triangle text-red-500 mr-3"></i>
-                    <p class="text-red-700">¿Estás seguro de que deseas eliminar esta tarea?</p>
+                    <i class="fas fa-exclamation-triangle text-red-500 mr-3 text-xl"></i>
+                    <p class="text-red-700 font-medium">¿Estás seguro de que deseas eliminar esta cita médica?</p>
                 </div>
-                <p class="mt-2 text-red-600" x-text="'Tarea: ' + $store.deleteTask.selectedTask.titulo"></p>
+                <div class="mt-4 p-3 bg-white rounded-md border border-red-100 shadow-sm">
+                    <div class="flex items-center text-red-800">
+                        <i class="fas fa-calendar-day mr-2"></i>
+                        <span class="font-semibold" x-text="$store.deleteTask.selectedTask.titulo"></span>
+                    </div>
+                    <div class="mt-2 text-sm text-gray-600" x-text="$store.deleteTask.selectedTask.descripcion || 'Sin descripción'"></div>
+                    <div class="mt-2 flex items-center text-sm text-gray-600">
+                        <i class="far fa-clock mr-1 text-red-400"></i>
+                        <span x-text="$store.deleteTask.selectedTask.hora_inicio + ' - ' + $store.deleteTask.selectedTask.hora_fin"></span>
+                    </div>
+                </div>
             </div>
             
-            <div class="flex justify-end space-x-2 mt-6">
+            <div class="flex justify-end space-x-3 mt-6">
                 <button @click="$store.deleteTask.cancelDelete(); $store.modal.deleteOpen = false" 
-                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">
+                        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i>
                     Cancelar
                 </button>
                 <button @click="$store.deleteTask.deleteTask()" 
-                        class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+                        class="px-4 py-2 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-md hover:opacity-90 transition-colors flex items-center shadow-md">
+                    <i class="fas fa-trash-alt mr-2"></i>
                     Eliminar
                 </button>
             </div>
         </div>
         
         <!-- Task List Grouped by Day -->
-        <div x-show="!$store.deleteTask.selectedTask" class="max-h-96 overflow-y-auto">
+        <div x-show="!$store.deleteTask.selectedTask" class="max-h-96 overflow-y-auto p-6">
             <template x-if="tareas.length === 0">
-                <div class="text-center py-8">
-                    <i class="fas fa-calendar-times text-gray-300 text-5xl mb-4"></i>
-                    <p class="text-gray-500">No hay tareas semanales para eliminar</p>
+                <div class="text-center py-8 bg-red-50 rounded-lg">
+                    <i class="fas fa-calendar-times text-red-300 text-5xl mb-4 animate-pulse-medical"></i>
+                    <p class="text-red-700">No hay citas médicas para eliminar</p>
                 </div>
             </template>
             
@@ -1029,29 +1398,32 @@
                 <div>
                     <!-- Day header -->
                     <template x-if="tareas.filter(t => parseInt(t.dia_semana) === dayNumber).length > 0">
-                        <div class="flex items-center py-2 px-1 mb-2 border-b border-gray-200">
-                            <i class="fas fa-calendar-day mr-2 text-gray-600"></i>
-                            <h3 class="font-medium text-gray-700" x-text="getDayName(dayNumber)"></h3>
+                        <div class="flex items-center py-2 px-1 mb-2 border-b border-red-200 text-red-800">
+                            <i class="fas fa-calendar-day mr-2 text-red-600"></i>
+                            <h3 class="font-medium" x-text="getDayName(dayNumber)"></h3>
                         </div>
                     </template>
                     
                     <!-- Tasks for this day -->
                     <template x-for="(tarea, index) in tareas.filter(t => parseInt(t.dia_semana) === dayNumber)" :key="index">
-                        <div class="mb-4 p-4 rounded-lg transition-colors duration-200 cursor-pointer hover:opacity-90" 
+                        <div class="mb-4 p-4 rounded-lg transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md transform hover:-translate-y-1 medical-card" 
                              :style="{ backgroundColor: tarea.color || '#EF4444', color: 'white', borderLeft: '4px solid ' + (tarea.color ? tarea.color.replace('44', '22') : '#B91C1C') }"
                              @click="$store.deleteTask.selectTask(tarea)">
                             <div class="flex justify-between items-start">
                                 <div>
-                                    <h4 class="font-medium" x-text="tarea.titulo"></h4>
+                                    <h4 class="font-medium flex items-center">
+                                        <i class="fas fa-user-md mr-2"></i>
+                                        <span x-text="tarea.titulo"></span>
+                                    </h4>
                                     <p class="text-sm opacity-90 mt-1" x-text="tarea.descripcion || 'Sin descripción'"></p>
                                 </div>
                                 <div>
-                                    <i class="fas fa-trash-alt hover:text-red-200"></i>
+                                    <i class="fas fa-trash-alt hover:text-red-200 bg-red-700 p-2 rounded-full"></i>
                                 </div>
                             </div>
-                            <div class="flex items-center justify-between mt-3 text-sm">
+                            <div class="flex items-center justify-between mt-3 text-sm bg-white/20 rounded px-2 py-1 inline-block">
                                 <div class="flex items-center">
-                                    <i class="fas fa-clock mr-1"></i>
+                                    <i class="far fa-clock mr-1"></i>
                                     <span x-text="tarea.hora_inicio + ' - ' + tarea.hora_fin"></span>
                                 </div>
                             </div>
