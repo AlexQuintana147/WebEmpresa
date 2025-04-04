@@ -62,8 +62,17 @@
                                     console.log('Información de depuración:', response.debug_info);
                                     console.log('Salida completa del script Python:', response.debug_info.raw_output);
                                 }
-                                // Procesar la respuesta para manejar saltos de línea y permitir HTML
-                                const formattedResponse = response.response.replace(/\n/g, '<br>');
+                                // Procesar la respuesta para manejar saltos de línea y preservar el formato exacto
+                                // Convertir saltos de línea a <br> y preservar las líneas de guiones
+                                let formattedResponse = response.response;
+                                
+                                // Verificar si hay caracteres malformados y reemplazarlos
+                                formattedResponse = formattedResponse
+                                    .replace(/[\u00A0-\u9999<>]/g, function(i) {
+                                        return '&#'+i.charCodeAt(0)+';';
+                                    })
+                                    .replace(/\n/g, '<br>')
+                                    .replace(/(-{2,})/g, '<span style="display:inline-block;width:100%;">$1</span>');
                                 this.messages.push({type: 'bot', text: formattedResponse, html: true});
                                 
                                 // Forzar actualización de la vista
