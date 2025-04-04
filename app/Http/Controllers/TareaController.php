@@ -35,11 +35,42 @@ class TareaController extends Controller
             'titulo' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'dia_semana' => 'required|integer|min:1|max:7',
-            'hora_inicio' => 'required',
-            'hora_fin' => 'required',
+            'hora_inicio' => 'required|date_format:H:i',
+            'hora_fin' => 'required|date_format:H:i|after:hora_inicio',
             'color' => 'nullable|string',
             'icono' => 'nullable|string',
         ]);
+        
+        // Validar que las horas estén dentro del rango permitido (8:00 - 18:00)
+        $horaInicio = $request->hora_inicio;
+        $horaFin = $request->hora_fin;
+        
+        if (strtotime($horaInicio) < strtotime('08:00') || strtotime($horaFin) > strtotime('18:00')) {
+            return redirect()->back()->with('error', 'El horario de citas debe estar entre las 8:00 y las 18:00 horas')->withInput();
+        }
+        
+        // Verificar si hay conflictos de horario
+        $diaSemana = $request->dia_semana;
+        $tareasExistentes = Auth::user()->tareas
+            ->where('dia_semana', $diaSemana)
+            ->filter(function($tarea) use ($horaInicio, $horaFin) {
+                // Verificar si hay solapamiento de horarios
+                return (
+                    // Nueva cita comienza durante una existente
+                    (strtotime($horaInicio) >= strtotime($tarea->hora_inicio) && 
+                     strtotime($horaInicio) < strtotime($tarea->hora_fin)) ||
+                    // Nueva cita termina durante una existente
+                    (strtotime($horaFin) > strtotime($tarea->hora_inicio) && 
+                     strtotime($horaFin) <= strtotime($tarea->hora_fin)) ||
+                    // Nueva cita abarca completamente una existente
+                    (strtotime($horaInicio) <= strtotime($tarea->hora_inicio) && 
+                     strtotime($horaFin) >= strtotime($tarea->hora_fin))
+                );
+            });
+        
+        if ($tareasExistentes->count() > 0) {
+            return redirect()->back()->with('error', 'Ya existe una cita programada en ese horario')->withInput();
+        }
 
         $tarea = new Tarea($request->all());
         $tarea->usuario_id = Auth::id();
@@ -88,11 +119,43 @@ class TareaController extends Controller
             'titulo' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'dia_semana' => 'required|integer|min:1|max:7',
-            'hora_inicio' => 'required',
-            'hora_fin' => 'required',
+            'hora_inicio' => 'required|date_format:H:i',
+            'hora_fin' => 'required|date_format:H:i|after:hora_inicio',
             'color' => 'nullable|string',
             'icono' => 'nullable|string',
         ]);
+        
+        // Validar que las horas estén dentro del rango permitido (8:00 - 18:00)
+        $horaInicio = $request->hora_inicio;
+        $horaFin = $request->hora_fin;
+        
+        if (strtotime($horaInicio) < strtotime('08:00') || strtotime($horaFin) > strtotime('18:00')) {
+            return redirect()->back()->with('error', 'El horario de citas debe estar entre las 8:00 y las 18:00 horas')->withInput();
+        }
+        
+        // Verificar si hay conflictos de horario con otras tareas (excluyendo la tarea actual)
+        $diaSemana = $request->dia_semana;
+        $tareasExistentes = Auth::user()->tareas
+            ->where('dia_semana', $diaSemana)
+            ->where('id', '!=', $tarea->id) // Excluir la tarea que se está editando
+            ->filter(function($t) use ($horaInicio, $horaFin) {
+                // Verificar si hay solapamiento de horarios
+                return (
+                    // Nueva cita comienza durante una existente
+                    (strtotime($horaInicio) >= strtotime($t->hora_inicio) && 
+                     strtotime($horaInicio) < strtotime($t->hora_fin)) ||
+                    // Nueva cita termina durante una existente
+                    (strtotime($horaFin) > strtotime($t->hora_inicio) && 
+                     strtotime($horaFin) <= strtotime($t->hora_fin)) ||
+                    // Nueva cita abarca completamente una existente
+                    (strtotime($horaInicio) <= strtotime($t->hora_inicio) && 
+                     strtotime($horaFin) >= strtotime($t->hora_fin))
+                );
+            });
+        
+        if ($tareasExistentes->count() > 0) {
+            return redirect()->back()->with('error', 'Ya existe una cita programada en ese horario')->withInput();
+        }
 
         $tarea->update($request->all());
 

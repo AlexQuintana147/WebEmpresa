@@ -122,17 +122,80 @@
             Alpine.store('editTask', {
                 selectedTask: null,
                 isEditing: false,
+                error: false,
+                errorMessage: '',
                 
                 // Método para seleccionar una tarea para editar
                 selectTask(task) {
                     this.selectedTask = JSON.parse(JSON.stringify(task)); // Clonar la tarea para evitar modificar la original
                     this.isEditing = true;
+                    this.error = false;
+                    this.errorMessage = '';
                 },
                 
                 // Método para cancelar la edición
                 cancelEdit() {
                     this.selectedTask = null;
                     this.isEditing = false;
+                    this.error = false;
+                    this.errorMessage = '';
+                },
+                
+                // Método para validar las restricciones de tiempo
+                validateTimeConstraints() {
+                    if (!this.selectedTask) return false;
+                    
+                    const startTime = this.selectedTask.hora_inicio;
+                    const endTime = this.selectedTask.hora_fin;
+                    
+                    // Validar que la hora de inicio no sea posterior a la hora de fin
+                    if (startTime > endTime) {
+                        this.error = true;
+                        this.errorMessage = 'La hora de fin no puede ser anterior a la hora de inicio';
+                        return false;
+                    }
+                    // Validar que las horas no sean iguales
+                    else if (startTime === endTime) {
+                        this.error = true;
+                        this.errorMessage = 'La hora de fin no puede ser igual a la hora de inicio';
+                        return false;
+                    }
+                    // Validar que las horas estén dentro del rango permitido (8:00 - 18:00)
+                    else if (startTime < '08:00' || endTime > '18:00') {
+                        this.error = true;
+                        this.errorMessage = 'El horario de citas debe estar entre las 8:00 y las 18:00 horas';
+                        return false;
+                    }
+                    
+                    // Verificar conflictos con otras citas
+                    const diaSemana = this.selectedTask.dia_semana;
+                    const conflictos = window.tareas.filter(tarea => {
+                        // Excluir la tarea actual que se está editando
+                        if (tarea.id === this.selectedTask.id) return false;
+                        
+                        // Solo verificar tareas del mismo día
+                        if (parseInt(tarea.dia_semana) !== parseInt(diaSemana)) return false;
+                        
+                        // Verificar solapamiento de horarios
+                        return (
+                            // Nueva cita comienza durante una existente
+                            (startTime >= tarea.hora_inicio && startTime < tarea.hora_fin) ||
+                            // Nueva cita termina durante una existente
+                            (endTime > tarea.hora_inicio && endTime <= tarea.hora_fin) ||
+                            // Nueva cita abarca completamente una existente
+                            (startTime <= tarea.hora_inicio && endTime >= tarea.hora_fin)
+                        );
+                    });
+                    
+                    if (conflictos.length > 0) {
+                        this.error = true;
+                        this.errorMessage = 'Ya existe una cita programada en ese horario';
+                        return false;
+                    }
+                    
+                    this.error = false;
+                    this.errorMessage = '';
+                    return true;
                 },
                 
                 // Método para guardar los cambios
@@ -141,6 +204,11 @@
                     if (!this.selectedTask) {
                         console.error('Error: No hay tarea seleccionada para guardar');
                         return;
+                    }
+                    
+                    // Validar restricciones de tiempo antes de enviar
+                    if (!this.validateTimeConstraints()) {
+                        return; // No continuar si hay errores
                     }
                     
                     try {
@@ -860,17 +928,41 @@
                                     </div>
                                     
                                     <!-- Horario de consulta con validación -->
-                                    <div x-data="{startTime: '', endTime: '', error: false, errorMessage: ''}" class="grid grid-cols-2 gap-4">
+                                    <div x-data="{startTime: '', endTime: '', error: false, errorMessage: '', checkTimeConstraints() { 
+                                        // Validar que la hora de inicio no sea anterior a la hora de fin
+                                        if(this.startTime > this.endTime) { 
+                                            this.error = true; 
+                                            this.errorMessage = 'La hora de fin no puede ser anterior a la hora de inicio'; 
+                                            return false;
+                                        } 
+                                        // Validar que las horas no sean iguales
+                                        else if(this.startTime === this.endTime) { 
+                                            this.error = true; 
+                                            this.errorMessage = 'La hora de fin no puede ser igual a la hora de inicio'; 
+                                            return false;
+                                        } 
+                                        // Validar que las horas estén dentro del rango permitido (8:00 - 18:00)
+                                        else if(this.startTime < '08:00' || this.endTime > '18:00') {
+                                            this.error = true;
+                                            this.errorMessage = 'El horario de citas debe estar entre las 8:00 y las 18:00 horas';
+                                            return false;
+                                        }
+                                        else { 
+                                            this.error = false; 
+                                            return true;
+                                        }
+                                    }}" class="grid grid-cols-2 gap-4">
                                         <div class="group">
                                             <label class="block text-sm font-medium text-cyan-700 mb-2 flex items-center">
                                                 <i class="fas fa-clock text-cyan-500 mr-2"></i>
                                                 Hora de inicio
                                             </label>
                                             <div class="relative">
-                                                <input type="time" name="hora_inicio" x-model="startTime" 
-                                                    @change="if(endTime) { if(startTime > endTime) { error = true; errorMessage = 'La hora de fin no puede ser anterior a la hora de inicio'; } else if(startTime === endTime) { error = true; errorMessage = 'La hora de fin no puede ser igual a la hora de inicio'; } else { error = false; } }" 
+                                                <input type="time" name="hora_inicio" x-model="startTime" min="08:00" max="18:00"
+                                                    @change="checkTimeConstraints()" 
                                                     class="w-full border border-cyan-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all duration-200 outline-none" 
                                                     required>
+                                                <div class="text-xs text-cyan-600 mt-1">Mínimo: 8:00, Máximo: 18:00</div>
                                             </div>
                                         </div>
                                         <div class="group">
@@ -879,10 +971,11 @@
                                                 Hora de fin
                                             </label>
                                             <div class="relative">
-                                                <input type="time" name="hora_fin" x-model="endTime" 
-                                                    @change="if(startTime) { if(startTime > endTime) { error = true; errorMessage = 'La hora de fin no puede ser anterior a la hora de inicio'; } else if(startTime === endTime) { error = true; errorMessage = 'La hora de fin no puede ser igual a la hora de inicio'; } else { error = false; } }" 
+                                                <input type="time" name="hora_fin" x-model="endTime" min="08:00" max="18:00"
+                                                    @change="checkTimeConstraints()" 
                                                     class="w-full border border-cyan-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 outline-none" 
                                                     required>
+                                                <div class="text-xs text-cyan-600 mt-1">Mínimo: 8:00, Máximo: 18:00</div>
                                             </div>
                                         </div>
                                         <div x-show="error" class="col-span-2 text-red-500 text-sm mt-1 bg-red-50 p-2 rounded-lg flex items-center" x-transition>
@@ -1198,6 +1291,11 @@
         
         <!-- Edit Task Form -->
         <div x-show="$store.editTask.isEditing && $store.editTask.selectedTask" class="p-6">
+            <!-- Mensaje de error -->
+            <div x-show="$store.editTask.error" class="mb-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-md flex items-center" x-transition>
+                <i class="fas fa-exclamation-circle mr-2"></i>
+                <span x-text="$store.editTask.errorMessage"></span>
+            </div>
             <form @submit.prevent="$store.editTask.saveChanges()">
                 <!-- Título -->
                 <div class="mb-4">
@@ -1249,7 +1347,10 @@
                                 <i class="far fa-clock text-cyan-500"></i>
                             </div>
                             <input type="time" id="hora_inicio" x-model="$store.editTask.selectedTask.hora_inicio" 
+                                   min="08:00" max="18:00"
+                                   @change="$store.editTask.validateTimeConstraints()"
                                    class="w-full pl-10 pr-3 py-2 border border-cyan-200 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-cyan-50" required>
+                            <div class="text-xs text-cyan-600 mt-1">Mínimo: 8:00, Máximo: 18:00</div>
                         </div>
                     </div>
                     
@@ -1264,7 +1365,9 @@
                                 <i class="far fa-clock text-cyan-500"></i>
                             </div>
                             <input type="time" id="hora_fin" x-model="$store.editTask.selectedTask.hora_fin" 
+                                   min="08:00" max="18:00"
                                    class="w-full pl-10 pr-3 py-2 border border-cyan-200 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-cyan-50" required>
+                            <div class="text-xs text-cyan-600 mt-1">Mínimo: 8:00, Máximo: 18:00</div>
                         </div>
                     </div>
                 </div>
