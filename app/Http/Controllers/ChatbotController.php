@@ -127,8 +127,6 @@ class ChatbotController extends Controller
                 $response = trim($matches[1]);
             }
             
-            // Aplicar formato HTML al mensaje de emergencia sin alterar el resto
-            $response = preg_replace('/En caso de emergencia, puedes llamar al 106\./', '<em><strong>En caso de emergencia, puedes llamar al 106.</strong></em>', $response);
             
             // Registrar la respuesta para depuración
             Log::info("Respuesta del script Python (después de conversión):", [

@@ -28,7 +28,7 @@ try:
     # Configurar las opciones de Chrome
     chrome_options = Options()
     # El modo headless puede causar problemas con interacciones en chatbots
-    # chrome_options.add_argument("--headless")  # Comentado para evitar problemas
+    chrome_options.add_argument("--headless")  # Comentado para evitar problemas
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--disable-gpu")
