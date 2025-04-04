@@ -53,13 +53,13 @@
             <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-400/20 to-emerald-500/20 group-hover:from-emerald-400/30 group-hover:to-emerald-500/30 transition-all duration-300 mr-3">
                 <i class="fas fa-file-invoice-dollar text-emerald-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
             </div>
-            <span class="font-medium tracking-wide group-hover:text-emerald-300 transition-colors duration-300">Presupuesto Mensual</span>
+            <span class="font-medium tracking-wide group-hover:text-emerald-300 transition-colors duration-300">Gestión Financiera</span>
         </a>
         <a href="/actividades" class="group flex items-center py-3.5 px-5 rounded-xl transition-all duration-300 hover:bg-white/10 hover:translate-x-1 {{ request()->is('actividades') ? 'bg-gradient-to-r from-amber-500/20 to-amber-500/10 border-r-4 border-amber-400' : '' }}">
             <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400/20 to-amber-500/20 group-hover:from-amber-400/30 group-hover:to-amber-500/30 transition-all duration-300 mr-3">
                 <i class="fas fa-clipboard-list text-amber-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
             </div>
-            <span class="font-medium tracking-wide group-hover:text-amber-300 transition-colors duration-300">Lista de Actividades</span>
+            <span class="font-medium tracking-wide group-hover:text-amber-300 transition-colors duration-300">Gestión de Pacientes</span>
         </a>
         <a href="/calendario" class="group flex items-center py-3.5 px-5 rounded-xl transition-all duration-300 hover:bg-white/10 hover:translate-x-1 {{ request()->is('calendario') ? 'bg-gradient-to-r from-fuchsia-500/20 to-fuchsia-500/10 border-r-4 border-fuchsia-400' : '' }}">
             <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-fuchsia-400/20 to-fuchsia-500/20 group-hover:from-fuchsia-400/30 group-hover:to-fuchsia-500/30 transition-all duration-300 mr-3">

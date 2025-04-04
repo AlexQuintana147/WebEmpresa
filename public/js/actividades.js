@@ -39,7 +39,7 @@ document.addEventListener('alpine:init', () => {
     
     Alpine.store('actividades', {
         modalOpen: false,
-        modalTitle: 'Nueva Actividad',
+        modalTitle: 'Nuevo Paciente',
         modalMode: 'create',
         currentActivity: null,
         showSubactivities: false,
@@ -73,7 +73,7 @@ document.addEventListener('alpine:init', () => {
             document.querySelectorAll('.border-red-500').forEach(el => el.classList.remove('border-red-500'));
             
             this.modalMode = mode;
-            this.modalTitle = mode === 'create' ? 'Nueva Actividad' : 'Editar Actividad';
+            this.modalTitle = mode === 'create' ? 'Nuevo Paciente' : 'Editar Paciente';
             this.currentActivity = activity;
             
             if (mode === 'create') {
@@ -84,7 +84,7 @@ document.addEventListener('alpine:init', () => {
                 
                 // Establecer valores predeterminados
                 document.getElementById('color').value = '#4A90E2';
-                document.getElementById('icono').value = 'fa-tasks';
+                document.getElementById('icono').value = 'fa-user-md';
                 document.getElementById('nivel').value = this.currentParentId ? 'secundaria' : 'principal';
                 document.getElementById('estado').value = 'pendiente';
                 document.getElementById('prioridad').value = '1';
