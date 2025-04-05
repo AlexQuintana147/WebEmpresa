@@ -1,13 +1,72 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Inversiones</title>
+    <title>Notas Clínicas</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <style>[x-cloak] { display: none !important; }</style>
+    <style>
+        [x-cloak] { display: none !important; }
+        
+        /* Estilos médicos personalizados */
+        .medical-gradient {
+            background: linear-gradient(135deg, #e6f7ff 0%, #cce7f8 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .medical-gradient::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .medical-card {
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .medical-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #0ea5e9, #0891b2);
+        }
+        .medical-card:hover {
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        /* Animaciones médicas */
+        @keyframes pulse-medical {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 0.4; }
+        }
+        .animate-pulse-medical {
+            animation: pulse-medical 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        /* Iconos de categorías médicas */
+        .category-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+    </style>
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.store('modal', {
@@ -46,7 +105,7 @@
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
-<body class="bg-gray-100">
+<body class="bg-blue-50">
     <!-- Notification Component -->
     <div x-data x-cloak
          x-show="$store.notification.show"
@@ -106,7 +165,7 @@
                             {
                                 id: {{ $nota->id }},
                                 title: '{{ addslashes($nota->titulo) }}',
-                                content: '{{ addslashes($nota->contenido) }}',
+                                content: '{!! addslashes(str_replace(array("\r\n", "\r", "\n"), "\\n", $nota->contenido)) !!}',
                                 category: '{{ $nota->categoria }}',
                                 color: '{{ $nota->color }}',
                                 date: '{{ $nota->created_at->format('d M Y') }}',
@@ -118,13 +177,13 @@
                 @else
                     // For non-logged-in users, load notes from localStorage or use example notes
                     JSON.parse(localStorage.getItem('guestNotes')) || [
-                        {id: 1, title: 'Reunión importante', content: 'Reunión con el cliente el viernes a las 10:00 AM', date: '10 Jun 2024', color: 'blue', category: 'trabajo', isPinned: true, isArchived: false}, 
-                        {id: 2, title: 'Pago de facturas', content: 'Recordar pagar las facturas de servicios antes del día 15', date: '12 Jun 2024', color: 'red', category: 'finanzas', isPinned: false, isArchived: false}, 
-                        {id: 3, title: 'Ideas para proyecto', content: 'Investigar nuevas tecnologías para implementar en el próximo proyecto', date: '15 Jun 2024', color: 'green', category: 'trabajo', isPinned: false, isArchived: false}
+                        {id: 1, title: 'Control hipertensión', content: 'Paciente presenta PA 130/85. Continuar con tratamiento actual. Próximo control en 2 semanas.', date: '10 Jun 2024', color: 'blue', category: 'seguimiento', isPinned: true, isArchived: false}, 
+                        {id: 2, title: 'Revisión post-quirúrgica', content: 'Herida en buen estado, sin signos de infección. Retirar puntos en 7 días. Mantener analgesia.', date: '12 Jun 2024', color: 'green', category: 'procedimientos', isPinned: false, isArchived: false}, 
+                        {id: 3, title: 'Resultados laboratorio', content: 'Hemograma normal. Glucemia 110 mg/dl. Perfil lipídico alterado, considerar estatinas en próxima visita.', date: '15 Jun 2024', color: 'teal', category: 'laboratorio', isPinned: false, isArchived: false}
                     ]
                 @endauth,
-                categories: ['personal', 'trabajo', 'finanzas', 'ideas', 'otros'],
-                colors: ['blue', 'green', 'red', 'purple', 'yellow', 'teal', 'orange', 'pink'],
+                categories: ['historial_clinico', 'seguimiento', 'medicacion', 'procedimientos', 'laboratorio', 'otros'],
+                colors: ['blue', 'green', 'red', 'purple', 'teal', 'cyan', 'indigo', 'pink'],
                 searchQuery: '',
                 activeFilter: 'all',
                 showArchived: false,
@@ -160,51 +219,54 @@
                 <div class="max-w-7xl mx-auto">
                     <!-- Page Title -->
                     <div class="mb-6 text-center">
-                        <h1 class="text-4xl font-bold text-gray-800 mb-4">Mis Notas</h1>
-                        <p class="text-xl text-gray-600">Crea y organiza tus notas y recordatorios personales</p>
+                        <h1 class="text-4xl font-bold text-cyan-800 mb-4">Notas Clínicas</h1>
+                        <p class="text-xl text-cyan-600">Registre y organice sus notas médicas y seguimiento de pacientes</p>
                     </div>
 
                     @guest
                     <!-- Warning for non-authenticated users -->
-                    <div class="bg-amber-100 border-l-4 border-amber-500 text-amber-700 p-4 mb-6 rounded-md shadow-sm">
+                    <div class="bg-cyan-100 border-l-4 border-cyan-500 text-cyan-700 p-4 mb-6 rounded-md shadow-sm">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
-                                <i class="fas fa-exclamation-triangle text-amber-500 mr-2"></i>
+                                <i class="fas fa-user-md text-cyan-500 mr-2"></i>
                             </div>
                             <div>
-                                <p class="font-medium">Estas son notas de ejemplo</p>
-                                <p class="text-sm">Inicia sesión para crear y gestionar tus propias notas.</p>
+                                <p class="font-medium">Estas son notas clínicas de ejemplo</p>
+                                <p class="text-sm">Inicie sesión para registrar y gestionar sus propias notas médicas.</p>
                             </div>
                         </div>
                     </div>
                     @endguest
 
                     <!-- Search and Filter Bar -->
-                    <div class="bg-white rounded-xl shadow-md p-4 mb-8">
+                    <div class="medical-gradient rounded-xl shadow-md p-4 mb-8">
                         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                             <!-- Search Bar -->
                             <div class="relative flex-grow">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-search text-gray-400"></i>
+                                    <i class="fas fa-search text-cyan-500"></i>
                                 </div>
-                                <input type="text" x-model="searchQuery" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Buscar notas...">
+                                <input type="text" x-model="searchQuery" class="w-full pl-10 pr-4 py-2 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="Buscar notas clínicas...">
                             </div>
                             
                             <!-- Category Filter -->
                             <div class="flex items-center space-x-2">
-                                <label class="text-sm font-medium text-gray-700">Categoría:</label>
-                                <select x-model="activeFilter" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                    <option value="all">Todas</option>
-                                    <template x-for="category in categories">
-                                        <option :value="category" x-text="category.charAt(0).toUpperCase() + category.slice(1)"></option>
-                                    </template>
+                                <label class="text-sm font-medium text-cyan-700">Tipo:</label>
+                                <select x-model="activeFilter" class="px-3 py-2 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500">
+                                    <option value="all">Todos</option>
+                                    <option value="historial_clinico">Historial Clínico</option>
+                                    <option value="seguimiento">Seguimiento</option>
+                                    <option value="medicacion">Medicación</option>
+                                    <option value="procedimientos">Procedimientos</option>
+                                    <option value="laboratorio">Laboratorio</option>
+                                    <option value="otros">Otros</option>
                                 </select>
                             </div>
                             
                             <!-- Archive Toggle -->
                             <div class="flex items-center">
-                                <button @click="showArchived = !showArchived" class="flex items-center px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200">
-                                    <i class="fas" :class="showArchived ? 'fa-box-open text-purple-500' : 'fa-archive text-gray-600'"></i>
+                                <button @click="showArchived = !showArchived" class="flex items-center px-3 py-2 bg-white hover:bg-cyan-100 rounded-lg transition-colors duration-200 border border-cyan-200">
+                                    <i class="fas" :class="showArchived ? 'fa-folder-open text-cyan-600' : 'fa-folder text-cyan-500'"></i>
                                     <span class="ml-2" x-text="showArchived ? 'Ver Notas Activas' : 'Ver Archivadas'"></span>
                                 </button>
                             </div>
@@ -215,10 +277,15 @@
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <!-- Add New Note Form -->
                         <div class="lg:col-span-1">
-                            <div class="bg-white rounded-xl shadow-md p-6 sticky top-6">
-                                <h2 class="text-xl font-semibold mb-4 flex items-center">
-                                    <i class="fas fa-plus-circle text-blue-500 mr-2"></i> Nueva Nota
+                            <div class="medical-card bg-white rounded-xl shadow-md p-6 sticky top-6 border-t-4 border-cyan-500">
+                                <h2 class="text-xl font-semibold mb-4 flex items-center text-cyan-700">
+                                    <div class="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center mr-3 shadow-sm">
+                                        <i class="fas fa-notes-medical text-cyan-600 text-lg"></i>
+                                    </div>
+                                    Nueva Nota Clínica
                                 </h2>
+                                <!-- Decoración médica -->
+                                <div class="h-0.5 w-full bg-gradient-to-r from-transparent via-cyan-300 to-transparent mb-4"></div>
                                 <form @submit.prevent="@auth fetch('/notas', { 
                                 method: 'POST', 
                                 headers: { 
@@ -257,54 +324,102 @@
                                 $store.notification.showNotification('Error al crear la nota: ' + error.message, 'error');
                                 }); @else notes.push({id: Date.now(), title: newNote.title, content: newNote.content, category: newNote.category, color: newNote.color, date: new Date().toLocaleDateString('es-ES', {day: '2-digit', month: 'short', year: 'numeric'}), isPinned: newNote.isPinned, isArchived: false}); @endauth newNote.title = ''; newNote.content = '';" class="space-y-4">
                                     <div>
-                                        <label for="note-title" class="block text-sm font-medium text-gray-700 mb-1">Título</label>
-                                        <input type="text" id="note-title" x-model="newNote.title" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Título de la nota" required>
+                                        <label for="note-title" class="block text-sm font-medium text-cyan-700 mb-1">Título / Diagnóstico</label>
+                                        <input type="text" id="note-title" x-model="newNote.title" class="w-full px-4 py-2 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="Ej: Control hipertensión, Seguimiento post-quirúrgico..." required>
                                     </div>
                                     <div>
-                                        <label for="note-content" class="block text-sm font-medium text-gray-700 mb-1">Contenido</label>
-                                        <textarea id="note-content" x-model="newNote.content" rows="5" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Escribe tu nota aquí..." required></textarea>
+                                        <label for="note-content" class="block text-sm font-medium text-cyan-700 mb-1">Observaciones clínicas</label>
+                                        <textarea id="note-content" x-model="newNote.content" rows="5" class="w-full px-4 py-2 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="Registre aquí sus observaciones, síntomas, tratamientos o indicaciones..." required></textarea>
                                     </div>
                                     
                                     <!-- Category Selection -->
                                     <div>
-                                        <label for="note-category" class="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
-                                        <select id="note-category" x-model="newNote.category" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                            <template x-for="category in categories">
-                                                <option :value="category" x-text="category.charAt(0).toUpperCase() + category.slice(1)"></option>
-                                            </template>
-                                        </select>
+                                        <label for="note-category" class="block text-sm font-medium text-cyan-700 mb-2">Tipo de nota clínica</label>
+                                        <div class="grid grid-cols-3 gap-2">
+                                            <div @click="newNote.category = 'historial_clinico'" class="cursor-pointer p-2 rounded-lg transition-all duration-200 flex flex-col items-center" :class="newNote.category === 'historial_clinico' ? 'bg-blue-100 ring-2 ring-blue-300' : 'bg-white hover:bg-blue-50 border border-gray-200'">
+                                                <div class="w-8 h-8 rounded-full bg-blue-200 flex items-center justify-center mb-1">
+                                                    <i class="fas fa-file-medical-alt text-blue-600"></i>
+                                                </div>
+                                                <span class="text-xs font-medium text-center">Historial Clínico</span>
+                                            </div>
+                                            <div @click="newNote.category = 'seguimiento'" class="cursor-pointer p-2 rounded-lg transition-all duration-200 flex flex-col items-center" :class="newNote.category === 'seguimiento' ? 'bg-green-100 ring-2 ring-green-300' : 'bg-white hover:bg-green-50 border border-gray-200'">
+                                                <div class="w-8 h-8 rounded-full bg-green-200 flex items-center justify-center mb-1">
+                                                    <i class="fas fa-user-md text-green-600"></i>
+                                                </div>
+                                                <span class="text-xs font-medium text-center">Seguimiento</span>
+                                            </div>
+                                            <div @click="newNote.category = 'medicacion'" class="cursor-pointer p-2 rounded-lg transition-all duration-200 flex flex-col items-center" :class="newNote.category === 'medicacion' ? 'bg-red-100 ring-2 ring-red-300' : 'bg-white hover:bg-red-50 border border-gray-200'">
+                                                <div class="w-8 h-8 rounded-full bg-red-200 flex items-center justify-center mb-1">
+                                                    <i class="fas fa-pills text-red-600"></i>
+                                                </div>
+                                                <span class="text-xs font-medium text-center">Medicación</span>
+                                            </div>
+                                            <div @click="newNote.category = 'procedimientos'" class="cursor-pointer p-2 rounded-lg transition-all duration-200 flex flex-col items-center" :class="newNote.category === 'procedimientos' ? 'bg-purple-100 ring-2 ring-purple-300' : 'bg-white hover:bg-purple-50 border border-gray-200'">
+                                                <div class="w-8 h-8 rounded-full bg-purple-200 flex items-center justify-center mb-1">
+                                                    <i class="fas fa-procedures text-purple-600"></i>
+                                                </div>
+                                                <span class="text-xs font-medium text-center">Procedimientos</span>
+                                            </div>
+                                            <div @click="newNote.category = 'laboratorio'" class="cursor-pointer p-2 rounded-lg transition-all duration-200 flex flex-col items-center" :class="newNote.category === 'laboratorio' ? 'bg-teal-100 ring-2 ring-teal-300' : 'bg-white hover:bg-teal-50 border border-gray-200'">
+                                                <div class="w-8 h-8 rounded-full bg-teal-200 flex items-center justify-center mb-1">
+                                                    <i class="fas fa-flask text-teal-600"></i>
+                                                </div>
+                                                <span class="text-xs font-medium text-center">Laboratorio</span>
+                                            </div>
+                                            <div @click="newNote.category = 'otros'" class="cursor-pointer p-2 rounded-lg transition-all duration-200 flex flex-col items-center" :class="newNote.category === 'otros' ? 'bg-gray-100 ring-2 ring-gray-300' : 'bg-white hover:bg-gray-50 border border-gray-200'">
+                                                <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mb-1">
+                                                    <i class="fas fa-notes-medical text-gray-600"></i>
+                                                </div>
+                                                <span class="text-xs font-medium text-center">Otros</span>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" id="note-category" x-model="newNote.category">
                                     </div>
                                     
-                                    <!-- Color Selection -->
+                                    <!-- Color Selection - Prioridad clínica -->
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Color</label>
-                                        <div class="flex flex-wrap gap-2">
-                                            <template x-for="color in colors">
-                                                <button type="button" @click="newNote.color = color" 
-                                                    class="w-8 h-8 rounded-full border-2 transition-all duration-200" 
-                                                    :class="{
-                                                        'border-blue-500 bg-blue-500': color === 'blue',
-                                                        'border-green-500 bg-green-500': color === 'green',
-                                                        'border-red-500 bg-red-500': color === 'red',
-                                                        'border-purple-500 bg-purple-500': color === 'purple',
-                                                        'border-yellow-500 bg-yellow-500': color === 'yellow',
-                                                        'border-teal-500 bg-teal-500': color === 'teal',
-                                                        'border-orange-500 bg-orange-500': color === 'orange',
-                                                        'border-pink-500 bg-pink-500': color === 'pink',
-                                                        'ring-4 ring-offset-2': newNote.color === color
-                                                    }"></button>
-                                            </template>
+                                        <label class="block text-sm font-medium text-cyan-700 mb-2">Prioridad / Clasificación</label>
+                                        <div class="flex flex-wrap gap-3">
+                                            <div class="flex flex-col items-center">
+                                                <button type="button" @click="newNote.color = 'blue'" 
+                                                    class="w-8 h-8 rounded-full border-2 border-blue-500 bg-blue-500 transition-all duration-200" 
+                                                    :class="{'ring-4 ring-offset-2': newNote.color === 'blue'}"
+                                                    title="Normal"></button>
+                                                <span class="text-xs text-cyan-700 mt-1">Normal</span>
+                                            </div>
+                                            <div class="flex flex-col items-center">
+                                                <button type="button" @click="newNote.color = 'green'" 
+                                                    class="w-8 h-8 rounded-full border-2 border-green-500 bg-green-500 transition-all duration-200" 
+                                                    :class="{'ring-4 ring-offset-2': newNote.color === 'green'}"
+                                                    title="Estable"></button>
+                                                <span class="text-xs text-cyan-700 mt-1">Estable</span>
+                                            </div>
+                                            <div class="flex flex-col items-center">
+                                                <button type="button" @click="newNote.color = 'red'" 
+                                                    class="w-8 h-8 rounded-full border-2 border-red-500 bg-red-500 transition-all duration-200" 
+                                                    :class="{'ring-4 ring-offset-2': newNote.color === 'red'}"
+                                                    title="Urgente"></button>
+                                                <span class="text-xs text-cyan-700 mt-1">Urgente</span>
+                                            </div>
+                                            <div class="flex flex-col items-center">
+                                                <button type="button" @click="newNote.color = 'purple'" 
+                                                    class="w-8 h-8 rounded-full border-2 border-purple-500 bg-purple-500 transition-all duration-200" 
+                                                    :class="{'ring-4 ring-offset-2': newNote.color === 'purple'}"
+                                                    title="Crónico"></button>
+                                                <span class="text-xs text-cyan-700 mt-1">Crónico</span>
+                                            </div>
+                                            
                                         </div>
                                     </div>
                                     
                                     <!-- Pin Option -->
                                     <div class="flex items-center">
-                                        <input id="pin-note" type="checkbox" x-model="newNote.isPinned" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                                        <label for="pin-note" class="ml-2 text-sm font-medium text-gray-700">Fijar nota</label>
+                                        <input id="pin-note" type="checkbox" x-model="newNote.isPinned" class="w-4 h-4 text-cyan-600 border-cyan-300 rounded focus:ring-cyan-500">
+                                        <label for="pin-note" class="ml-2 text-sm font-medium text-cyan-700">Marcar como importante</label>
                                     </div>
                                     
-                                    <button type="submit" class="w-full px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 focus:ring-4 focus:ring-blue-300/50 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300 ease-out active:scale-95">
-                                        <i class="fas fa-save mr-2"></i> Guardar Nota
+                                    <button type="submit" class="w-full px-4 py-2 bg-gradient-to-r from-cyan-500 to-teal-600 text-white font-medium rounded-lg hover:from-cyan-600 hover:to-teal-700 focus:ring-4 focus:ring-cyan-300/50 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300 ease-out active:scale-95">
+                                        <i class="fas fa-stethoscope mr-2"></i> Guardar Nota Clínica
                                     </button>
                                 </form>
                             </div>
@@ -315,13 +430,13 @@
                             @auth
                                 @if(count($notas ?? []) === 0)
                                     <!-- Empty state for authenticated users with no notes -->
-                                    <div class="flex flex-col items-center justify-center h-64 bg-white rounded-xl shadow-md p-6 text-center">
-                                        <div class="text-gray-400 mb-4">
-                                            <i class="fas fa-sticky-note text-5xl"></i>
+                                    <div class="flex flex-col items-center justify-center h-64 bg-white rounded-xl shadow-md p-6 text-center medical-card">
+                                        <div class="text-cyan-400 mb-4 animate-pulse-medical">
+                                            <i class="fas fa-notes-medical text-6xl"></i>
                                         </div>
-                                        <h3 class="text-xl font-semibold text-gray-700 mb-2">No tienes notas todavía</h3>
-                                        <p class="text-gray-500 mb-4">Crea tu primera nota utilizando el formulario de la izquierda</p>
-                                        <div class="text-blue-500">
+                                        <h3 class="text-xl font-semibold text-cyan-700 mb-2">No tienes notas clínicas todavía</h3>
+                                        <p class="text-cyan-600 mb-4">Crea tu primera nota médica utilizando el formulario de la izquierda</p>
+                                        <div class="text-cyan-500">
                                             <i class="fas fa-arrow-left animate-pulse text-xl"></i>
                                         </div>
                                     </div>
@@ -381,7 +496,7 @@
                                 
                                 <div x-show="filteredNotes().length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <template x-for="note in filteredNotes()" :key="note.id">
-                                        <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 border-t-4" :class="{
+                                        <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 border-t-4 relative" :class="{
                                             'border-blue-500': note.color === 'blue',
                                             'border-green-500': note.color === 'green',
                                             'border-red-500': note.color === 'red',
@@ -392,6 +507,22 @@
                                             'border-pink-500': note.color === 'pink',
                                             'ring-4 ring-blue-300': note.isPinned
                                         }">
+                                            <!-- Patrón médico de fondo para las notas -->
+                                            <div class="absolute inset-0 opacity-5 pointer-events-none" :class="{
+                                                'bg-blue-100': note.color === 'blue',
+                                                'bg-green-100': note.color === 'green',
+                                                'bg-red-100': note.color === 'red',
+                                                'bg-purple-100': note.color === 'purple',
+                                                'bg-yellow-100': note.color === 'yellow',
+                                                'bg-teal-100': note.color === 'teal',
+                                                'bg-orange-100': note.color === 'orange',
+                                                'bg-pink-100': note.color === 'pink'
+                                            }">
+                                                <!-- Patrón de ECG para notas médicas -->
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 20" preserveAspectRatio="none">
+                                                    <path d="M0,10 L10,10 L15,0 L20,20 L25,10 L30,10 L35,0 L40,20 L45,10 L50,10 L55,0 L60,20 L65,10 L70,10 L75,0 L80,20 L85,10 L90,10 L95,0 L100,10" fill="none" stroke="currentColor" stroke-width="0.5" vector-effect="non-scaling-stroke"/>
+                                                </svg>
+                                            </div>
                             @endauth
                                         <!-- Only show note content if we're in the notes loop -->
                                         <template x-if="note">
@@ -400,14 +531,34 @@
                                                     <div>
                                                         <h3 class="font-bold text-lg text-gray-800" x-text="note.title"></h3>
                                                         <div class="flex items-center mt-1 space-x-2">
-                                                            <span class="px-2 py-1 text-xs font-medium rounded-full" 
+                                                            <span class="px-3 py-1.5 text-xs font-medium rounded-full flex items-center shadow-sm" 
                                                                 :class="{
-                                                                    'bg-blue-100 text-blue-800': note.category === 'personal',
-                                                                    'bg-green-100 text-green-800': note.category === 'trabajo',
-                                                                    'bg-red-100 text-red-800': note.category === 'finanzas',
-                                                                    'bg-purple-100 text-purple-800': note.category === 'ideas',
-                                                                    'bg-gray-100 text-gray-800': note.category === 'otros'
-                                                                }" x-text="note.category.charAt(0).toUpperCase() + note.category.slice(1)"></span>
+                                                                    'bg-blue-100 text-blue-800 border border-blue-200': note.category === 'historial_clinico',
+                                                                    'bg-green-100 text-green-800 border border-green-200': note.category === 'seguimiento',
+                                                                    'bg-red-100 text-red-800 border border-red-200': note.category === 'medicacion',
+                                                                    'bg-purple-100 text-purple-800 border border-purple-200': note.category === 'procedimientos',
+                                                                    'bg-teal-100 text-teal-800 border border-teal-200': note.category === 'laboratorio',
+                                                                    'bg-gray-100 text-gray-800 border border-gray-200': note.category === 'otros'
+                                                                }">
+                                                                <span class="category-icon" :class="{
+                                                                    'bg-blue-200': note.category === 'historial_clinico',
+                                                                    'bg-green-200': note.category === 'seguimiento',
+                                                                    'bg-red-200': note.category === 'medicacion',
+                                                                    'bg-purple-200': note.category === 'procedimientos',
+                                                                    'bg-teal-200': note.category === 'laboratorio',
+                                                                    'bg-gray-200': note.category === 'otros'
+                                                                }">
+                                                                    <i class="fas text-xs" :class="{
+                                                                        'fa-file-medical-alt': note.category === 'historial_clinico',
+                                                                        'fa-user-md': note.category === 'seguimiento',
+                                                                        'fa-pills': note.category === 'medicacion',
+                                                                        'fa-procedures': note.category === 'procedimientos',
+                                                                        'fa-flask': note.category === 'laboratorio',
+                                                                        'fa-notes-medical': note.category === 'otros'
+                                                                    }"></i>
+                                                                </span>
+                                                                <span x-text="note.category.charAt(0).toUpperCase() + note.category.slice(1).replace('_', ' ')"></span>
+                                                            </span>
                                                             <span x-show="note.isPinned" class="flex items-center text-xs text-blue-600">
                                                                 <i class="fas fa-thumbtack mr-1"></i> Fijada
                                                             </span>
@@ -525,7 +676,7 @@
                                                         </button>
                                                     </div>
                                                 </div>
-                                                <p class="text-gray-600 mb-4" x-text="note.content"></p>
+                                                <p class="text-gray-600 mb-4 whitespace-pre-line" x-text="note.content"></p>
                                                 <div class="flex justify-between items-center text-sm text-gray-500">
                                                     <span><span x-text="note.date"></span></span>
                                                 </div>
@@ -578,12 +729,23 @@
                                         <div class="flex items-center space-x-2 mb-4">
                                             <span class="px-2 py-1 text-xs font-medium rounded-full" 
                                                 :class="{
-                                                    'bg-blue-100 text-blue-800': currentNote?.category === 'personal',
-                                                    'bg-green-100 text-green-800': currentNote?.category === 'trabajo',
-                                                    'bg-red-100 text-red-800': currentNote?.category === 'finanzas',
-                                                    'bg-purple-100 text-purple-800': currentNote?.category === 'ideas',
+                                                    'bg-blue-100 text-blue-800': currentNote?.category === 'historial_clinico',
+                                                    'bg-green-100 text-green-800': currentNote?.category === 'seguimiento',
+                                                    'bg-red-100 text-red-800': currentNote?.category === 'medicacion',
+                                                    'bg-purple-100 text-purple-800': currentNote?.category === 'procedimientos',
+                                                    'bg-teal-100 text-teal-800': currentNote?.category === 'laboratorio',
                                                     'bg-gray-100 text-gray-800': currentNote?.category === 'otros'
-                                                }" x-text="currentNote?.category?.charAt(0).toUpperCase() + currentNote?.category?.slice(1)"></span>
+                                                }">
+                                                <i class="fas mr-1" :class="{
+                                                    'fa-file-medical-alt': currentNote?.category === 'historial_clinico',
+                                                    'fa-user-md': currentNote?.category === 'seguimiento',
+                                                    'fa-pills': currentNote?.category === 'medicacion',
+                                                    'fa-procedures': currentNote?.category === 'procedimientos',
+                                                    'fa-flask': currentNote?.category === 'laboratorio',
+                                                    'fa-notes-medical': currentNote?.category === 'otros'
+                                                }"></i>
+                                                <span x-text="currentNote?.category?.charAt(0).toUpperCase() + currentNote?.category?.slice(1).replace('_', ' ')"></span>
+                                            </span>
                                             <span class="text-sm text-gray-500"><i class="far fa-calendar-alt mr-1"></i> <span x-text="currentNote?.date"></span></span>
                                         </div>
                                         <p class="text-gray-600 whitespace-pre-line" x-text="currentNote?.content"></p>
@@ -812,22 +974,31 @@
                                         <!-- Color Selection -->
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-2">Color</label>
-                                            <div class="flex flex-wrap gap-2">
-                                                <template x-for="color in colors">
-                                                    <button type="button" @click="$store.editModal.note.color = color" 
-                                                        class="w-8 h-8 rounded-full border-2 transition-all duration-200" 
-                                                        :class="{
-                                                            'border-blue-500 bg-blue-500': color === 'blue',
-                                                            'border-green-500 bg-green-500': color === 'green',
-                                                            'border-red-500 bg-red-500': color === 'red',
-                                                            'border-purple-500 bg-purple-500': color === 'purple',
-                                                            'border-yellow-500 bg-yellow-500': color === 'yellow',
-                                                            'border-teal-500 bg-teal-500': color === 'teal',
-                                                            'border-orange-500 bg-orange-500': color === 'orange',
-                                                            'border-pink-500 bg-pink-500': color === 'pink',
-                                                            'ring-4 ring-offset-2': $store.editModal.note.color === color
-                                                        }"></button>
-                                                </template>
+                                            <div class="flex gap-2">
+                                                <button type="button" @click="$store.editModal.note.color = 'blue'" 
+                                                    class="w-8 h-8 rounded-full border-2 transition-all duration-200" 
+                                                    :class="{
+                                                        'border-blue-500 bg-blue-500': true,
+                                                        'ring-4 ring-offset-2': $store.editModal.note.color === 'blue'
+                                                    }"></button>
+                                                <button type="button" @click="$store.editModal.note.color = 'green'" 
+                                                    class="w-8 h-8 rounded-full border-2 transition-all duration-200" 
+                                                    :class="{
+                                                        'border-green-500 bg-green-500': true,
+                                                        'ring-4 ring-offset-2': $store.editModal.note.color === 'green'
+                                                    }"></button>
+                                                <button type="button" @click="$store.editModal.note.color = 'red'" 
+                                                    class="w-8 h-8 rounded-full border-2 transition-all duration-200" 
+                                                    :class="{
+                                                        'border-red-500 bg-red-500': true,
+                                                        'ring-4 ring-offset-2': $store.editModal.note.color === 'red'
+                                                    }"></button>
+                                                <button type="button" @click="$store.editModal.note.color = 'purple'" 
+                                                    class="w-8 h-8 rounded-full border-2 transition-all duration-200" 
+                                                    :class="{
+                                                        'border-purple-500 bg-purple-500': true,
+                                                        'ring-4 ring-offset-2': $store.editModal.note.color === 'purple'
+                                                    }"></button>
                                             </div>
                                         </div>
                                         
