@@ -83,6 +83,9 @@ Route::middleware('paciente')->group(function () {
     Route::post('/pacientes', [\App\Http\Controllers\PacienteController::class, 'store'])->name('pacientes.store');
     Route::post('/pacientes/asociar', [\App\Http\Controllers\PacienteController::class, 'asociarUsuario'])->name('pacientes.asociar');
     
+    // Ruta para consultar la API de RENIEC desde el backend
+    Route::post('/reniec/consultar-dni', [\App\Http\Controllers\ReniecController::class, 'consultarDni'])->name('reniec.consultar-dni');
+    
     Route::get('/citas', function () {
         return view('citas');
     })->name('citas.index');

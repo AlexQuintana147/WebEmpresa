@@ -12,7 +12,7 @@
     @endif
     <title>Atención Médica - Clínica Ricardo Palma</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/alpinejs@3.12.3/dist/cdn.min.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         [x-cloak] { display: none !important; }
@@ -87,6 +87,10 @@
         },
         errors: {},
         loading: false,
+        init() {
+            // Aseguramos que step comience en 1 y no cambie automáticamente
+            this.step = 1;
+        },
         verificarDni() {
             if (this.dni.length !== 8) {
                 this.errors = { dni: 'El DNI debe tener 8 dígitos' };
@@ -96,13 +100,43 @@
             this.loading = true;
             this.errors = {};
             
-            fetch('/pacientes/verificar-dni', {
+            // Validación adicional para asegurar que el DNI solo contenga números
+            if (!/^\d+$/.test(this.dni)) {
+                this.errors = { dni: 'El DNI debe contener solo números' };
+                this.loading = false;
+                return;
+            }
+            
+            // Consultamos la API de RENIEC a través de nuestro backend para evitar problemas de CORS
+            fetch('/reniec/consultar-dni', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name=\'csrf-token\']').getAttribute('content')
                 },
                 body: JSON.stringify({ dni: this.dni })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    const reniecData = result.data;
+                    // Guardamos los datos de RENIEC para usarlos si el paciente no existe
+                    if (reniecData.nombres && reniecData.apellidoPaterno && reniecData.apellidoMaterno) {
+                        this.formData.nombre = reniecData.nombres;
+                        this.formData.apellido_paterno = reniecData.apellidoPaterno;
+                        this.formData.apellido_materno = reniecData.apellidoMaterno;
+                    }
+                }
+                
+                // Ahora verificamos si el paciente existe en nuestra base de datos
+                return fetch('/pacientes/verificar-dni', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=\'csrf-token\']').getAttribute('content')
+                    },
+                    body: JSON.stringify({ dni: this.dni })
+                });
             })
             .then(response => response.json())
             .then(data => {
@@ -126,7 +160,7 @@
                 console.error('Error:', error);
             });
         }
-    }" x-cloak>
+    }">
         <!-- Sidebar -->
         <x-sidebar />
 
@@ -186,25 +220,33 @@
                         <p class="text-gray-600 mb-8">Para brindarle una atención personalizada, necesitamos verificar su identidad mediante su DNI.</p>
                         
                         <div class="max-w-md mx-auto">
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-id-card text-gray-400"></i>
+                            <div class="mb-4">
+                                <label for="dni_input" class="block text-sm font-medium text-gray-700 mb-2 text-left">Documento Nacional de Identidad (DNI)</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-id-card text-cyan-500"></i>
+                                    </div>
+                                    <input 
+                                        id="dni_input"
+                                        type="text" 
+                                        x-model="dni" 
+                                        class="block w-full pl-10 pr-3 py-3 border-2 border-cyan-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500" 
+                                        placeholder="Ingrese su DNI (8 dígitos)" 
+                                        maxlength="8"
+                                        @keyup.enter="verificarDni"
+                                        autocomplete="off"
+                                        required
+                                    >
                                 </div>
-                                <input 
-                                    type="text" 
-                                    x-model="dni" 
-                                    class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500" 
-                                    placeholder="Ingrese su DNI (8 dígitos)" 
-                                    maxlength="8"
-                                    @keyup.enter="verificarDni"
-                                >
+                                <p class="text-xs text-gray-500 mt-1 text-left">El DNI debe contener exactamente 8 dígitos numéricos</p>
                             </div>
-                            <div x-show="errors.dni" class="text-red-500 text-sm mt-2" x-text="errors.dni"></div>
+                            <div x-show="errors.dni" class="text-red-500 text-sm mt-2 bg-red-50 p-2 rounded-md" x-text="errors.dni"></div>
                             
                             <button 
                                 @click="verificarDni" 
-                                class="mt-6 w-full bg-gradient-to-r from-cyan-500 to-teal-500 text-white py-3 px-6 rounded-lg font-medium hover:from-cyan-600 hover:to-teal-600 transition-all duration-300 flex items-center justify-center"
-                                :disabled="loading"
+                                class="mt-6 w-full bg-gradient-to-r from-cyan-500 to-teal-500 text-white py-3 px-6 rounded-lg font-medium hover:from-cyan-600 hover:to-teal-600 transition-all duration-300 flex items-center justify-center shadow-md"
+                                :disabled="loading || dni.length !== 8 || !/^\d+$/.test(dni)"
+                                :class="{'opacity-70 cursor-not-allowed': dni.length !== 8 || !/^\d+$/.test(dni)}"
                             >
                                 <span x-show="!loading">Verificar DNI</span>
                                 <span x-show="loading" class="flex items-center">
@@ -219,7 +261,7 @@
                     </div>
                     
                     <!-- Paso 2: Formulario de registro de paciente -->
-                    <div x-show="step === 2" class="medical-card bg-white p-8">
+                    <div x-show="step === 2" class="medical-card bg-white p-8" x-cloak>
                         <h2 class="text-2xl font-semibold text-cyan-800 mb-6 text-center">Complete sus datos personales</h2>
                         <p class="text-gray-600 mb-8 text-center">No encontramos su DNI en nuestro sistema. Por favor, complete el siguiente formulario para registrarse.</p>
                         
@@ -230,17 +272,17 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                                    <input type="text" id="nombre" name="nombre" class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500" required>
+                                    <input type="text" id="nombre" name="nombre" x-model="formData.nombre" class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500" required>
                                 </div>
                                 
                                 <div>
                                     <label for="apellido_paterno" class="block text-sm font-medium text-gray-700 mb-1">Apellido Paterno</label>
-                                    <input type="text" id="apellido_paterno" name="apellido_paterno" class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500" required>
+                                    <input type="text" id="apellido_paterno" name="apellido_paterno" x-model="formData.apellido_paterno" class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500" required>
                                 </div>
                                 
                                 <div>
                                     <label for="apellido_materno" class="block text-sm font-medium text-gray-700 mb-1">Apellido Materno</label>
-                                    <input type="text" id="apellido_materno" name="apellido_materno" class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500" required>
+                                    <input type="text" id="apellido_materno" name="apellido_materno" x-model="formData.apellido_materno" class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500" required>
                                 </div>
                                 
                                 <div>
@@ -267,7 +309,7 @@
                     </div>
                     
                     <!-- Paso 3: Asociar paciente existente -->
-                    <div x-show="step === 3" class="medical-card bg-white p-8 text-center">
+                    <div x-show="step === 3" class="medical-card bg-white p-8 text-center" x-cloak>
                         <div class="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6 animate-pulse-medical">
                             <i class="fas fa-user-check text-green-600 text-3xl"></i>
                         </div>
@@ -356,7 +398,7 @@
                 setTimeout(() => this.showNotification = false, 5000);
             }
         }
-    }" x-cloak>
+    }">
         <div 
             x-show="showNotification" 
             x-transition:enter="transform ease-out duration-300 transition"
