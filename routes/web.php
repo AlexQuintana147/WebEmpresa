@@ -78,9 +78,10 @@ Route::middleware('paciente')->group(function () {
         return view('historial');
     })->name('historial.index');
     
-    Route::get('/atencionmedica', function () {
-        return view('atencionmedica');
-    })->name('atencionmedica.index');
+    Route::get('/atencionmedica', [\App\Http\Controllers\PacienteController::class, 'index'])->name('atencionmedica.index');
+    Route::post('/pacientes/verificar-dni', [\App\Http\Controllers\PacienteController::class, 'verificarDni'])->name('pacientes.verificar-dni');
+    Route::post('/pacientes', [\App\Http\Controllers\PacienteController::class, 'store'])->name('pacientes.store');
+    Route::post('/pacientes/asociar', [\App\Http\Controllers\PacienteController::class, 'asociarUsuario'])->name('pacientes.asociar');
     
     Route::get('/citas', function () {
         return view('citas');
