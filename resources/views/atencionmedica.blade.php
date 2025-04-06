@@ -15,8 +15,6 @@
     <script src="https://unpkg.com/alpinejs@3.12.3/dist/cdn.min.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        [x-cloak] { display: none !important; }
-        
         /* Estilos médicos personalizados */
         .medical-gradient {
             background: linear-gradient(135deg, #e6f7ff 0%, #cce7f8 100%);
