@@ -50,13 +50,7 @@
             box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
             transform: translateY(-2px);
         }
-        @keyframes pulse-medical {
-            0%, 100% { opacity: 0.8; }
-            50% { opacity: 0.4; }
-        }
-        .animate-pulse-medical {
-            animation: pulse-medical 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
+        
         @keyframes float-medical {
             0% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
@@ -261,33 +255,6 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        <div id="asociar_container" class="hidden">
-                            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
-                                <div class="flex items-center">
-                                    <i class="fas fa-exclamation-triangle text-yellow-500 mr-3"></i>
-                                    <p class="text-yellow-700">Para continuar con el agendamiento de citas, primero debe asociar este perfil a su cuenta.</p>
-                                </div>
-                            </div>
-                            
-                            <form action="{{ route('pacientes.asociar') }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="paciente_id" id="paciente_id_asociar">
-                                
-                                <button type="submit" class="bg-gradient-to-r from-cyan-500 to-teal-500 text-white py-3 px-6 rounded-lg font-medium hover:from-cyan-600 hover:to-teal-600 transition-all duration-300">
-                                    Asociar a mi cuenta
-                                </button>
-                            </form>
-                        </div>
-                        
-                        <div id="usuario_asociado_container" class="mt-8 hidden">
-                            <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
-                                <div class="flex items-center">
-                                    <i class="fas fa-check-circle text-green-500 mr-3"></i>
-                                    <p class="text-green-700">Este perfil ya está asociado a una cuenta de usuario.</p>
-                                </div>
-                            </div>
-                            
                             <div class="bg-cyan-50 p-6 rounded-lg mb-6">
                                 <h3 class="text-xl font-semibold text-cyan-800 mb-2"><i class="fas fa-calendar-alt mr-2"></i>Continúe para agendar su cita médica</h3>
                                 <p class="text-gray-600 mb-4">Ya puede proceder a agendar una cita médica con nuestros especialistas o revisar su historial de atenciones.</p>
@@ -304,11 +271,7 @@
                             </div>
                         </div>
                         
-                        <div class="mt-6">
-                            <button type="button" id="verificar_otro_dni" class="text-cyan-600 hover:text-cyan-800 font-medium">
-                                <i class="fas fa-redo mr-2"></i> Verificar otro DNI
-                            </button>
-                        </div>
+
                     </div>
                 </div>
             </main>
