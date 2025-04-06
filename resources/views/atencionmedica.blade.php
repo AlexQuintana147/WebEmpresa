@@ -12,7 +12,6 @@
     @endif
     <title>Atención Médica - Clínica Ricardo Palma</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/alpinejs@3.12.3/dist/cdn.min.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         /* Estilos médicos personalizados */
@@ -66,99 +65,19 @@
         .animate-float-medical {
             animation: float-medical 4s ease-in-out infinite;
         }
+        
+        /* Clases de utilidad para mostrar/ocultar elementos */
+        .hidden {
+            display: none !important;
+        }
+        .disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body class="bg-blue-50">
-    <div class="min-h-screen flex" x-data="{ 
-        modalOpen: false,
-        step: 1,
-        dni: '',
-        pacienteExiste: false,
-        pacienteData: null,
-        formData: {
-            dni: '',
-            nombre: '',
-            apellido_paterno: '',
-            apellido_materno: '',
-            correo: '',
-            telefono: ''
-        },
-        errors: {},
-        loading: false,
-        init() {
-            // Aseguramos que step comience en 1 y no cambie automáticamente
-            this.step = 1;
-        },
-        verificarDni() {
-            if (this.dni.length !== 8) {
-                this.errors = { dni: 'El DNI debe tener 8 dígitos' };
-                return;
-            }
-            
-            this.loading = true;
-            this.errors = {};
-            
-            // Validación adicional para asegurar que el DNI solo contenga números
-            if (!/^\d+$/.test(this.dni)) {
-                this.errors = { dni: 'El DNI debe contener solo números' };
-                this.loading = false;
-                return;
-            }
-            
-            // Consultamos la API de RENIEC a través de nuestro backend para evitar problemas de CORS
-            fetch('/reniec/consultar-dni', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name=\'csrf-token\']').getAttribute('content')
-                },
-                body: JSON.stringify({ dni: this.dni })
-            })
-            .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    const reniecData = result.data;
-                    // Guardamos los datos de RENIEC para usarlos si el paciente no existe
-                    if (reniecData.nombres && reniecData.apellidoPaterno && reniecData.apellidoMaterno) {
-                        this.formData.nombre = reniecData.nombres;
-                        this.formData.apellido_paterno = reniecData.apellidoPaterno;
-                        this.formData.apellido_materno = reniecData.apellidoMaterno;
-                    }
-                }
-                
-                // Ahora verificamos si el paciente existe en nuestra base de datos
-                return fetch('/pacientes/verificar-dni', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name=\'csrf-token\']').getAttribute('content')
-                    },
-                    body: JSON.stringify({ dni: this.dni })
-                });
-            })
-            .then(response => response.json())
-            .then(data => {
-                this.loading = false;
-                if (data.success) {
-                    if (data.exists) {
-                        this.pacienteExiste = true;
-                        this.pacienteData = data.paciente;
-                        this.step = 3; // Saltar al paso de asociación
-                    } else {
-                        this.formData.dni = this.dni;
-                        this.step = 2; // Ir al formulario de registro
-                    }
-                } else {
-                    this.errors = data.errors || { dni: data.message };
-                }
-            })
-            .catch(error => {
-                this.loading = false;
-                this.errors = { general: 'Ocurrió un error al verificar el DNI' };
-                console.error('Error:', error);
-            });
-        }
-    }">
+    <div class="min-h-screen flex" id="app">
         <!-- Sidebar -->
         <x-sidebar />
 
@@ -213,7 +132,7 @@
                 <!-- Contenedor principal del formulario -->
                 <div class="max-w-3xl mx-auto">
                     <!-- Paso 1: Verificación de DNI -->
-                    <div x-show="step === 1" class="medical-card bg-white p-8 text-center">
+                    <div id="paso1" class="medical-card bg-white p-8 text-center">
                         <h2 class="text-2xl font-semibold text-cyan-800 mb-6">Ingrese su DNI para comenzar</h2>
                         <p class="text-gray-600 mb-8">Para brindarle una atención personalizada, necesitamos verificar su identidad mediante su DNI.</p>
                         
@@ -227,27 +146,23 @@
                                     <input 
                                         id="dni_input"
                                         type="text" 
-                                        x-model="dni" 
                                         class="block w-full pl-10 pr-3 py-3 border-2 border-cyan-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500" 
                                         placeholder="Ingrese su DNI (8 dígitos)" 
                                         maxlength="8"
-                                        @keyup.enter="verificarDni"
                                         autocomplete="off"
                                         required
                                     >
                                 </div>
                                 <p class="text-xs text-gray-500 mt-1 text-left">El DNI debe contener exactamente 8 dígitos numéricos</p>
                             </div>
-                            <div x-show="errors.dni" class="text-red-500 text-sm mt-2 bg-red-50 p-2 rounded-md" x-text="errors.dni"></div>
+                            <div id="error_dni" class="text-red-500 text-sm mt-2 bg-red-50 p-2 rounded-md hidden"></div>
                             
                             <button 
-                                @click="verificarDni" 
+                                id="verificar_dni_btn"
                                 class="mt-6 w-full bg-gradient-to-r from-cyan-500 to-teal-500 text-white py-3 px-6 rounded-lg font-medium hover:from-cyan-600 hover:to-teal-600 transition-all duration-300 flex items-center justify-center shadow-md"
-                                :disabled="loading || dni.length !== 8 || !/^\d+$/.test(dni)"
-                                :class="{'opacity-70 cursor-not-allowed': dni.length !== 8 || !/^\d+$/.test(dni)}"
                             >
-                                <span x-show="!loading">Verificar DNI</span>
-                                <span x-show="loading" class="flex items-center">
+                                <span id="btn_text">Verificar DNI</span>
+                                <span id="loading_indicator" class="hidden flex items-center">
                                     <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -259,28 +174,28 @@
                     </div>
                     
                     <!-- Paso 2: Formulario de registro de paciente -->
-                    <div x-show="step === 2" class="medical-card bg-white p-8" x-cloak>
+                    <div id="paso2" class="medical-card bg-white p-8 hidden">
                         <h2 class="text-2xl font-semibold text-cyan-800 mb-6 text-center">Complete sus datos personales</h2>
                         <p class="text-gray-600 mb-8 text-center">No encontramos su DNI en nuestro sistema. Por favor, complete el siguiente formulario para registrarse.</p>
                         
                         <form action="{{ route('pacientes.store') }}" method="POST" class="space-y-6">
                             @csrf
-                            <input type="hidden" name="dni" x-model="formData.dni">
+                            <input type="hidden" name="dni" id="form_dni">
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                                    <input type="text" id="nombre" name="nombre" x-model="formData.nombre" class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500" required>
+                                    <input type="text" id="nombre" name="nombre" class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500" required>
                                 </div>
                                 
                                 <div>
                                     <label for="apellido_paterno" class="block text-sm font-medium text-gray-700 mb-1">Apellido Paterno</label>
-                                    <input type="text" id="apellido_paterno" name="apellido_paterno" x-model="formData.apellido_paterno" class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500" required>
+                                    <input type="text" id="apellido_paterno" name="apellido_paterno" class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500" required>
                                 </div>
                                 
                                 <div>
                                     <label for="apellido_materno" class="block text-sm font-medium text-gray-700 mb-1">Apellido Materno</label>
-                                    <input type="text" id="apellido_materno" name="apellido_materno" x-model="formData.apellido_materno" class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500" required>
+                                    <input type="text" id="apellido_materno" name="apellido_materno" class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-cyan-500 focus:border-cyan-500" required>
                                 </div>
                                 
                                 <div>
@@ -295,7 +210,7 @@
                             </div>
                             
                             <div class="flex items-center justify-between pt-4">
-                                <button type="button" @click="step = 1" class="text-cyan-600 hover:text-cyan-800 font-medium flex items-center">
+                                <button type="button" id="volver_paso1" class="text-cyan-600 hover:text-cyan-800 font-medium flex items-center">
                                     <i class="fas fa-arrow-left mr-2"></i> Volver
                                 </button>
                                 
@@ -307,42 +222,57 @@
                     </div>
                     
                     <!-- Paso 3: Asociar paciente existente -->
-                    <div x-show="step === 3" class="medical-card bg-white p-8 text-center" x-cloak>
+                    <div id="paso3" class="medical-card bg-white p-8 text-center hidden">
                         <div class="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6 animate-pulse-medical">
                             <i class="fas fa-user-check text-green-600 text-3xl"></i>
                         </div>
                         
                         <h2 class="text-2xl font-semibold text-cyan-800 mb-4">¡Bienvenido de nuevo!</h2>
-                        <p class="text-gray-600 mb-6">Hemos encontrado sus datos en nuestro sistema.</p>
+                        <p class="text-gray-600 mb-6">Hemos encontrado sus datos en nuestro sistema. A continuación puede ver su información registrada.</p>
                         
                         <div class="bg-blue-50 rounded-lg p-6 mb-8 text-left">
-                            <h3 class="text-lg font-medium text-blue-800 mb-4">Información del Paciente</h3>
+                            <h3 class="text-lg font-medium text-blue-800 mb-4"><i class="fas fa-user-md mr-2"></i>Información Completa del Paciente</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <p class="text-sm text-gray-500">Nombre completo:</p>
-                                    <p class="font-medium text-gray-800" x-text="pacienteData?.nombre + ' ' + pacienteData?.apellido_paterno + ' ' + pacienteData?.apellido_materno"></p>
+                                    <p class="font-medium text-gray-800" id="paciente_nombre_completo"></p>
                                 </div>
                                 <div>
                                     <p class="text-sm text-gray-500">DNI:</p>
-                                    <p class="font-medium text-gray-800" x-text="pacienteData?.dni"></p>
+                                    <p class="font-medium text-gray-800" id="paciente_dni"></p>
                                 </div>
-                                <div x-show="pacienteData?.telefono">
+                                <div id="paciente_telefono_container" class="hidden">
                                     <p class="text-sm text-gray-500">Teléfono:</p>
-                                    <p class="font-medium text-gray-800" x-text="pacienteData?.telefono"></p>
+                                    <p class="font-medium text-gray-800" id="paciente_telefono"></p>
                                 </div>
-                                <div x-show="pacienteData?.correo">
+                                <div id="paciente_correo_container" class="hidden">
                                     <p class="text-sm text-gray-500">Correo:</p>
-                                    <p class="font-medium text-gray-800" x-text="pacienteData?.correo"></p>
+                                    <p class="font-medium text-gray-800" id="paciente_correo"></p>
+                                </div>
+                                <!-- Mostrar fecha de registro si existe -->
+                                <div id="paciente_registro_container" class="hidden">
+                                    <p class="text-sm text-gray-500">Fecha de registro:</p>
+                                    <p class="font-medium text-gray-800" id="paciente_registro"></p>
+                                </div>
+                                <!-- Mostrar última actualización si existe -->
+                                <div id="paciente_actualizacion_container" class="hidden">
+                                    <p class="text-sm text-gray-500">Última actualización:</p>
+                                    <p class="font-medium text-gray-800" id="paciente_actualizacion"></p>
                                 </div>
                             </div>
                         </div>
                         
-                        <div x-show="!pacienteData?.usuario_id">
-                            <p class="text-gray-600 mb-6">¿Desea asociar este perfil a su cuenta de usuario?</p>
+                        <div id="asociar_container" class="hidden">
+                            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
+                                <div class="flex items-center">
+                                    <i class="fas fa-exclamation-triangle text-yellow-500 mr-3"></i>
+                                    <p class="text-yellow-700">Para continuar con el agendamiento de citas, primero debe asociar este perfil a su cuenta.</p>
+                                </div>
+                            </div>
                             
                             <form action="{{ route('pacientes.asociar') }}" method="POST">
                                 @csrf
-                                <input type="hidden" name="paciente_id" :value="pacienteData?.id">
+                                <input type="hidden" name="paciente_id" id="paciente_id_asociar">
                                 
                                 <button type="submit" class="bg-gradient-to-r from-cyan-500 to-teal-500 text-white py-3 px-6 rounded-lg font-medium hover:from-cyan-600 hover:to-teal-600 transition-all duration-300">
                                     Asociar a mi cuenta
@@ -350,7 +280,7 @@
                             </form>
                         </div>
                         
-                        <div x-show="pacienteData?.usuario_id" class="mt-8">
+                        <div id="usuario_asociado_container" class="mt-8 hidden">
                             <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
                                 <div class="flex items-center">
                                     <i class="fas fa-check-circle text-green-500 mr-3"></i>
@@ -358,13 +288,24 @@
                                 </div>
                             </div>
                             
-                            <a href="{{ route('citas.index') }}" class="bg-gradient-to-r from-cyan-500 to-teal-500 text-white py-3 px-6 rounded-lg font-medium hover:from-cyan-600 hover:to-teal-600 transition-all duration-300 inline-block">
-                                Continuar a Citas Médicas
-                            </a>
+                            <div class="bg-cyan-50 p-6 rounded-lg mb-6">
+                                <h3 class="text-xl font-semibold text-cyan-800 mb-2"><i class="fas fa-calendar-alt mr-2"></i>Continúe para agendar su cita médica</h3>
+                                <p class="text-gray-600 mb-4">Ya puede proceder a agendar una cita médica con nuestros especialistas o revisar su historial de atenciones.</p>
+                                
+                                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                                    <a href="{{ route('citas.index') }}" class="bg-gradient-to-r from-cyan-500 to-teal-500 text-white py-4 px-8 rounded-lg font-medium hover:from-cyan-600 hover:to-teal-600 transition-all duration-300 inline-flex items-center justify-center shadow-lg transform hover:-translate-y-1">
+                                        <i class="fas fa-calendar-plus mr-2 text-lg"></i> Agendar Cita Médica
+                                    </a>
+                                    
+                                    <a href="{{ route('historial.index') }}" class="bg-gradient-to-r from-blue-500 to-indigo-500 text-white py-4 px-8 rounded-lg font-medium hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 inline-flex items-center justify-center">
+                                        <i class="fas fa-history mr-2"></i> Ver Historial
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                         
                         <div class="mt-6">
-                            <button type="button" @click="step = 1; dni = ''; pacienteData = null;" class="text-cyan-600 hover:text-cyan-800 font-medium">
+                            <button type="button" id="verificar_otro_dni" class="text-cyan-600 hover:text-cyan-800 font-medium">
                                 <i class="fas fa-redo mr-2"></i> Verificar otro DNI
                             </button>
                         </div>
@@ -375,69 +316,370 @@
     </div>
     
     <!-- Notificaciones -->
-    <div x-data="{
-        showNotification: false,
-        message: '',
-        type: 'success',
-        init() {
-            // Verificar si hay mensajes de éxito o error en las meta tags
-            const successMsg = document.querySelector('meta[name="success-message"]');
-            const errorMsg = document.querySelector('meta[name="error-message"]');
-            
-            if (successMsg) {
-                this.message = successMsg.getAttribute('content');
-                this.type = 'success';
-                this.showNotification = true;
-                setTimeout(() => this.showNotification = false, 5000);
-            } else if (errorMsg) {
-                this.message = errorMsg.getAttribute('content');
-                this.type = 'error';
-                this.showNotification = true;
-                setTimeout(() => this.showNotification = false, 5000);
-            }
-        }
-    }">
-        <div 
-            x-show="showNotification" 
-            x-transition:enter="transform ease-out duration-300 transition"
-            x-transition:enter-start="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
-            x-transition:enter-end="translate-y-0 opacity-100 sm:translate-x-0"
-            x-transition:leave="transition ease-in duration-200"
-            x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0"
-            class="fixed bottom-0 right-0 m-6 w-full max-w-sm overflow-hidden rounded-lg shadow-lg"
-        >
-            <div :class="{
-                'bg-green-50 border-l-4 border-green-500': type === 'success',
-                'bg-red-50 border-l-4 border-red-500': type === 'error'
-            }" class="p-4">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <i :class="{
-                            'fas fa-check-circle text-green-500': type === 'success',
-                            'fas fa-exclamation-circle text-red-500': type === 'error'
-                        }"></i>
-                    </div>
-                    <div class="ml-3">
-                        <p :class="{
-                            'text-green-700': type === 'success',
-                            'text-red-700': type === 'error'
-                        }" class="text-sm font-medium" x-text="message"></p>
-                    </div>
-                    <div class="ml-auto pl-3">
-                        <div class="-mx-1.5 -my-1.5">
-                            <button @click="showNotification = false" class="inline-flex rounded-md p-1.5" :class="{
-                                'bg-green-50 text-green-500 hover:bg-green-100': type === 'success',
-                                'bg-red-50 text-red-500 hover:bg-red-100': type === 'error'
-                            }">
-                                <span class="sr-only">Cerrar</span>
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
+    <div id="notification_container" class="fixed bottom-0 right-0 m-6 w-full max-w-sm overflow-hidden rounded-lg shadow-lg hidden">
+        <div id="notification" class="p-4">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i id="notification_icon"></i>
+                </div>
+                <div class="ml-3">
+                    <p id="notification_message" class="text-sm font-medium"></p>
+                </div>
+                <div class="ml-auto pl-3">
+                    <div class="-mx-1.5 -my-1.5">
+                        <button id="close_notification" class="inline-flex rounded-md p-1.5">
+                            <span class="sr-only">Cerrar</span>
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
+    
+    
 </body>
 </html>
+
+<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Variables para almacenar el estado
+            let currentStep = 1;
+            let pacienteData = null;
+            let pacienteExiste = false;
+            let formData = {
+                dni: '',
+                nombre: '',
+                apellido_paterno: '',
+                apellido_materno: '',
+                correo: '',
+                telefono: ''
+            };
+            let loading = false;
+            let errors = {};
+
+            // Referencias a elementos del DOM
+            const paso1 = document.getElementById('paso1');
+            const paso2 = document.getElementById('paso2');
+            const paso3 = document.getElementById('paso3');
+            const dniInput = document.getElementById('dni_input');
+            const errorDni = document.getElementById('error_dni');
+            const verificarDniBtn = document.getElementById('verificar_dni_btn');
+            const btnText = document.getElementById('btn_text');
+            const loadingIndicator = document.getElementById('loading_indicator');
+            const volverPaso1 = document.getElementById('volver_paso1');
+            const verificarOtroDni = document.getElementById('verificar_otro_dni');
+            const formDni = document.getElementById('form_dni');
+            const nombreInput = document.getElementById('nombre');
+            const apellidoPaternoInput = document.getElementById('apellido_paterno');
+            const apellidoMaternoInput = document.getElementById('apellido_materno');
+
+            // Inicialización
+            @if(Auth::check() && isset($paciente))
+                // Si el usuario está autenticado y tiene un paciente asociado
+                pacienteExiste = true;
+                pacienteData = @json($paciente);
+                currentStep = 3;
+                mostrarPaso(3);
+                actualizarDatosPaciente();
+            @else
+                // Si no está autenticado o no tiene paciente asociado
+                currentStep = 1;
+                mostrarPaso(1);
+            @endif
+
+            // Verificar si hay mensajes de notificación
+            const successMsg = document.querySelector('meta[name="success-message"]');
+            const errorMsg = document.querySelector('meta[name="error-message"]');
+            
+            if (successMsg) {
+                mostrarNotificacion(successMsg.getAttribute('content'), 'success');
+            } else if (errorMsg) {
+                mostrarNotificacion(errorMsg.getAttribute('content'), 'error');
+            }
+            
+            // Función para mostrar notificaciones
+            function mostrarNotificacion(mensaje, tipo) {
+                // Crear el contenedor de notificación si no existe
+                let notificationContainer = document.getElementById('notification_container');
+                
+                if (!notificationContainer) {
+                    notificationContainer = document.createElement('div');
+                    notificationContainer.id = 'notification_container';
+                    notificationContainer.className = 'fixed top-4 right-4 z-50 max-w-md';
+                    document.body.appendChild(notificationContainer);
+                }
+                
+                // Crear la notificación
+                const notification = document.createElement('div');
+                notification.className = `rounded-lg shadow-lg p-4 mb-4 flex items-center justify-between ${
+                    tipo === 'success' ? 'bg-green-100 border-l-4 border-green-500 text-green-700' : 
+                    'bg-red-100 border-l-4 border-red-500 text-red-700'
+                }`;
+                
+                // Icono según el tipo
+                const icon = tipo === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+                
+                // Contenido de la notificación
+                notification.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas ${icon} mr-3 text-xl"></i>
+                        <p>${mensaje}</p>
+                    </div>
+                    <button class="ml-4 text-gray-500 hover:text-gray-700" onclick="this.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                
+                // Agregar la notificación al contenedor
+                notificationContainer.appendChild(notification);
+                
+                // Eliminar la notificación después de 5 segundos
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 5000);
+            }
+
+            // Event Listeners
+            verificarDniBtn.addEventListener('click', verificarDni);
+            dniInput.addEventListener('keyup', function(event) {
+                if (event.key === 'Enter') {
+                    verificarDni();
+                }
+                // Validar que solo se ingresen números
+                if (!/^\d*$/.test(this.value)) {
+                    this.value = this.value.replace(/\D/g, '');
+                }
+                // Habilitar/deshabilitar botón según longitud del DNI
+                if (this.value.length === 8 && /^\d+$/.test(this.value)) {
+                    verificarDniBtn.classList.remove('disabled');
+                } else {
+                    verificarDniBtn.classList.add('disabled');
+                }
+            });
+            volverPaso1.addEventListener('click', function() {
+                mostrarPaso(1);
+            });
+            verificarOtroDni.addEventListener('click', function() {
+                dniInput.value = '';
+                pacienteData = null;
+                mostrarPaso(1);
+            });
+            document.getElementById('close_notification').addEventListener('click', function() {
+                document.getElementById('notification_container').classList.add('hidden');
+            });
+
+            // Funciones
+            function mostrarPaso(paso) {
+                currentStep = paso;
+                paso1.classList.add('hidden');
+                paso2.classList.add('hidden');
+                paso3.classList.add('hidden');
+
+                if (paso === 1) {
+                    paso1.classList.remove('hidden');
+                } else if (paso === 2) {
+                    paso2.classList.remove('hidden');
+                } else if (paso === 3) {
+                    paso3.classList.remove('hidden');
+                }
+            }
+
+            function verificarDni() {
+                const dni = dniInput.value;
+                
+                if (dni.length !== 8) {
+                    mostrarError('El DNI debe tener 8 dígitos');
+                    return;
+                }
+                
+                if (!/^\d+$/.test(dni)) {
+                    mostrarError('El DNI debe contener solo números');
+                    return;
+                }
+                
+                setLoading(true);
+                errorDni.classList.add('hidden');
+                
+                // Consultamos la API de RENIEC a través de nuestro backend
+                fetch('/reniec/consultar-dni', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({ dni: dni })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        const reniecData = result.data;
+                        // Guardamos los datos de RENIEC para usarlos si el paciente no existe
+                        if (reniecData.nombres && reniecData.apellidoPaterno && reniecData.apellidoMaterno) {
+                            formData.nombre = reniecData.nombres;
+                            formData.apellido_paterno = reniecData.apellidoPaterno;
+                            formData.apellido_materno = reniecData.apellidoMaterno;
+                        }
+                    }
+                    
+                    // Ahora verificamos si el paciente existe en nuestra base de datos
+                    return fetch('/pacientes/verificar-dni', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ dni: dni })
+                    });
+                })
+                .then(response => response.json())
+                .then(data => {
+                    setLoading(false);
+                    if (data.success) {
+                        if (data.exists) {
+                            pacienteExiste = true;
+                            pacienteData = data.paciente;
+                            actualizarDatosPaciente();
+                            mostrarPaso(3);
+                        } else {
+                            // Si el paciente no existe, mostramos el formulario de registro
+                            // y autocompletamos con datos de RENIEC si están disponibles
+                            document.getElementById('form_dni').value = dni;
+                            
+                            if (formData.nombre) {
+                                document.getElementById('nombre').value = formData.nombre;
+                                document.getElementById('apellido_paterno').value = formData.apellido_paterno;
+                                document.getElementById('apellido_materno').value = formData.apellido_materno;
+                            }
+                            
+                            mostrarPaso(2);
+                        }
+                    } else {
+                        mostrarError(data.message || 'Error al verificar el DNI');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    setLoading(false);
+                    mostrarError('Ocurrió un error al procesar la solicitud');
+                });
+            }
+            
+            // Función para actualizar los datos del paciente en el paso 3
+            function actualizarDatosPaciente() {
+                if (!pacienteData) return;
+                
+                // Actualizamos los datos básicos
+                document.getElementById('paciente_nombre_completo').textContent = `${pacienteData.nombre} ${pacienteData.apellido_paterno} ${pacienteData.apellido_materno}`;
+                document.getElementById('paciente_dni').textContent = pacienteData.dni;
+                
+                // Actualizamos teléfono si existe
+                if (pacienteData.telefono) {
+                    document.getElementById('paciente_telefono').textContent = pacienteData.telefono;
+                    document.getElementById('paciente_telefono_container').classList.remove('hidden');
+                } else {
+                    document.getElementById('paciente_telefono_container').classList.add('hidden');
+                }
+                
+                // Actualizamos correo si existe
+                if (pacienteData.correo) {
+                    document.getElementById('paciente_correo').textContent = pacienteData.correo;
+                    document.getElementById('paciente_correo_container').classList.remove('hidden');
+                } else {
+                    document.getElementById('paciente_correo_container').classList.add('hidden');
+                }
+                
+                // Actualizamos fecha de registro si existe
+                if (pacienteData.created_at) {
+                    document.getElementById('paciente_registro').textContent = formatearFecha(pacienteData.created_at);
+                    document.getElementById('paciente_registro_container').classList.remove('hidden');
+                } else {
+                    document.getElementById('paciente_registro_container').classList.add('hidden');
+                }
+                
+                // Actualizamos fecha de actualización si existe
+                if (pacienteData.updated_at) {
+                    document.getElementById('paciente_actualizacion').textContent = formatearFecha(pacienteData.updated_at);
+                    document.getElementById('paciente_actualizacion_container').classList.remove('hidden');
+                } else {
+                    document.getElementById('paciente_actualizacion_container').classList.add('hidden');
+                }
+                
+                // Verificamos si el paciente está asociado a un usuario
+                if (pacienteData.user_id) {
+                    document.getElementById('usuario_asociado_container').classList.remove('hidden');
+                    document.getElementById('asociar_container').classList.add('hidden');
+                } else {
+                    document.getElementById('usuario_asociado_container').classList.add('hidden');
+                    document.getElementById('asociar_container').classList.remove('hidden');
+                    document.getElementById('paciente_id_asociar').value = pacienteData.id;
+                }
+            }
+            
+            // Función para formatear fechas
+            function formatearFecha(fechaStr) {
+                const fecha = new Date(fechaStr);
+                return fecha.toLocaleDateString('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+            
+            // Función para mostrar errores
+            function mostrarError(mensaje) {
+                const errorDni = document.getElementById('error_dni');
+                errorDni.textContent = mensaje;
+                errorDni.classList.remove('hidden');
+            }
+            
+            // Función para mostrar/ocultar el indicador de carga
+            function setLoading(isLoading) {
+                const btnText = document.getElementById('btn_text');
+                const loadingIndicator = document.getElementById('loading_indicator');
+                const verificarBtn = document.getElementById('verificar_dni_btn');
+                
+                if (isLoading) {
+                    btnText.classList.add('hidden');
+                    loadingIndicator.classList.remove('hidden');
+                    verificarBtn.classList.add('disabled');
+                    verificarBtn.disabled = true;
+                } else {
+                    btnText.classList.remove('hidden');
+                    loadingIndicator.classList.add('hidden');
+                    verificarBtn.classList.remove('disabled');
+                    verificarBtn.disabled = false;
+                }
+            }
+            
+            // Función para mostrar el paso 1 (verificación DNI)
+            function mostrarPaso1() {
+                document.getElementById('paso1').classList.remove('hidden');
+                document.getElementById('paso2').classList.add('hidden');
+                document.getElementById('paso3').classList.add('hidden');
+            }
+            
+            // Función para mostrar el paso 2 (registro de paciente)
+            function mostrarPaso2() {
+                document.getElementById('paso1').classList.add('hidden');
+                document.getElementById('paso2').classList.remove('hidden');
+                document.getElementById('paso3').classList.add('hidden');
+            }
+            
+            // Función para mostrar el paso 3 (paciente existente)
+            function mostrarPaso3() {
+                document.getElementById('paso1').classList.add('hidden');
+                document.getElementById('paso2').classList.add('hidden');
+                document.getElementById('paso3').classList.remove('hidden');
+            }
+            
+            // Eliminamos la duplicación de event listeners, ya que estos ya están definidos arriba
+            // y la duplicación podría causar comportamientos inesperados
+        }); 
+    </script>
