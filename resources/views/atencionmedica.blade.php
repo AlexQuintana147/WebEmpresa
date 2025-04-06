@@ -13,70 +13,15 @@
     <title>Atención Médica - Clínica Ricardo Palma</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <style>
-        /* Estilos médicos personalizados */
-        .medical-gradient {
-            background: linear-gradient(135deg, #e6f7ff 0%, #cce7f8 100%);
-            position: relative;
-            overflow: hidden;
-        }
-        .medical-gradient::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            opacity: 0.5;
-            pointer-events: none;
-        }
-        .medical-card {
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        .medical-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #0ea5e9, #0891b2);
-        }
-        .medical-card:hover {
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-            transform: translateY(-2px);
-        }
-        
-        @keyframes float-medical {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
-        .animate-float-medical {
-            animation: float-medical 4s ease-in-out infinite;
-        }
-        
-        /* Clases de utilidad para mostrar/ocultar elementos */
-        .hidden {
-            display: none !important;
-        }
-        .disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-    </style>
+    
 </head>
 <body class="bg-blue-50">
-    <div class="min-h-screen flex" id="app">
+    <div class="min-h-screen flex">
         <!-- Sidebar -->
         <x-sidebar />
 
         <!-- Main Content -->
-        <div class="flex-1 overflow-auto">
+        <div class="flex-1">
             <!-- Header -->
             <x-header />
             
@@ -264,7 +209,7 @@
                                         <i class="fas fa-calendar-plus mr-2 text-lg"></i> Agendar Cita Médica
                                     </a>
                                     
-                                    <a href="{{ route('historial.index') }}" class="bg-gradient-to-r from-blue-500 to-indigo-500 text-white py-4 px-8 rounded-lg font-medium hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 inline-flex items-center justify-center">
+                                    <a href="{{ route('historial.index') }}" class="bg-gradient-to-r from-blue-500 to-indigo-500 text-white py-4 px-8 rounded-lg font-medium hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 inline-flex items-center justify-center shadow-lg transform hover:-translate-y-1">
                                         <i class="fas fa-history mr-2"></i> Ver Historial
                                     </a>
                                 </div>
