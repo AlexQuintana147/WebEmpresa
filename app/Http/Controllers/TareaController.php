@@ -23,7 +23,8 @@ class TareaController extends Controller
      */
     public function create()
     {
-        return view('calendario');
+        $tareas = Auth::user()->tareas;
+        return view('calendario', compact('tareas'));
     }
 
     /**
@@ -46,6 +47,12 @@ class TareaController extends Controller
         $horaFin = $request->hora_fin;
         
         if (strtotime($horaInicio) < strtotime('08:00') || strtotime($horaFin) > strtotime('18:00')) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El horario de citas debe estar entre las 8:00 y las 18:00 horas'
+                ], 422);
+            }
             return redirect()->back()->with('error', 'El horario de citas debe estar entre las 8:00 y las 18:00 horas')->withInput();
         }
         
@@ -69,6 +76,12 @@ class TareaController extends Controller
             });
         
         if ($tareasExistentes->count() > 0) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ya existe una cita programada en ese horario'
+                ], 422);
+            }
             return redirect()->back()->with('error', 'Ya existe una cita programada en ese horario')->withInput();
         }
 
@@ -76,7 +89,14 @@ class TareaController extends Controller
         $tarea->usuario_id = Auth::id();
         $tarea->save();
 
-        return redirect()->route('calendario')->with('success', 'Tarea creada correctamente');
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Horario guardado correctamente',
+                'tarea' => $tarea
+            ]);
+        }
+        return redirect()->route('calendario')->with('success', 'Horario guardado correctamente');
     }
 
     /**
@@ -112,6 +132,12 @@ class TareaController extends Controller
     {
         // Verificar que la tarea pertenece al usuario autenticado
         if ($tarea->usuario_id !== Auth::id()) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No autorizado'
+                ], 403);
+            }
             abort(403, 'No autorizado');
         }
 
@@ -130,6 +156,12 @@ class TareaController extends Controller
         $horaFin = $request->hora_fin;
         
         if (strtotime($horaInicio) < strtotime('08:00') || strtotime($horaFin) > strtotime('18:00')) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El horario de citas debe estar entre las 8:00 y las 18:00 horas'
+                ], 422);
+            }
             return redirect()->back()->with('error', 'El horario de citas debe estar entre las 8:00 y las 18:00 horas')->withInput();
         }
         
@@ -154,12 +186,25 @@ class TareaController extends Controller
             });
         
         if ($tareasExistentes->count() > 0) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ya existe una cita programada en ese horario'
+                ], 422);
+            }
             return redirect()->back()->with('error', 'Ya existe una cita programada en ese horario')->withInput();
         }
 
         $tarea->update($request->all());
 
-        return redirect()->route('calendario')->with('success', 'Tarea actualizada correctamente');
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Horario actualizado correctamente',
+                'tarea' => $tarea
+            ]);
+        }
+        return redirect()->route('calendario')->with('success', 'Horario actualizado correctamente');
     }
     
     /**
@@ -174,15 +219,28 @@ class TareaController extends Controller
     /**
      * Remove the specified task from storage.
      */
-    public function destroy(Tarea $tarea)
+    public function destroy(Request $request, Tarea $tarea)
     {
         // Verificar que la tarea pertenece al usuario autenticado
         if ($tarea->usuario_id !== Auth::id()) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No autorizado'
+                ], 403);
+            }
             abort(403, 'No autorizado');
         }
 
         $tarea->delete();
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Horario eliminado correctamente'
+            ]);
+        }
+        
         return redirect()->route('calendario')->with('success', 'Tarea eliminada correctamente');
     }
 }
