@@ -4,31 +4,27 @@ namespace App\Http\Controllers;
 
 use App\Models\Tarea;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
 
 class TareaController extends Controller
 {
     /**
-     * Display a listing of the tasks.
-     */
-    public function index()
-    {
-        $tareas = Auth::user()->tareas;
-        return view('actividades', compact('tareas'));
-    }
-
-    /**
-     * Show the form for creating a new task.
+     * Muestra la vista del calendario con las tareas del usuario autenticado.
+     *
+     * @return \Illuminate\View\View
      */
     public function create()
     {
-        $tareas = Auth::user()->tareas;
+        $tareas = Tarea::where('usuario_id', Auth::id())->get();
         return view('calendario', compact('tareas'));
     }
 
     /**
-     * Store a newly created task in storage.
+     * Almacena una nueva tarea en la base de datos.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
@@ -36,211 +32,131 @@ class TareaController extends Controller
             'titulo' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'dia_semana' => 'required|integer|min:1|max:7',
-            'hora_inicio' => 'required|date_format:H:i',
-            'hora_fin' => 'required|date_format:H:i|after:hora_inicio',
-            'color' => 'nullable|string',
-            'icono' => 'nullable|string',
+            'hora_inicio' => 'required',
+            'hora_fin' => 'required',
+            'color' => 'required|string|max:255',
+            'icono' => 'required|string|max:255',
         ]);
-        
-        // Validar que las horas estén dentro del rango permitido (8:00 - 18:00)
-        $horaInicio = $request->hora_inicio;
-        $horaFin = $request->hora_fin;
-        
-        if (strtotime($horaInicio) < strtotime('08:00') || strtotime($horaFin) > strtotime('18:00')) {
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'El horario de citas debe estar entre las 8:00 y las 18:00 horas'
-                ], 422);
-            }
-            return redirect()->back()->with('error', 'El horario de citas debe estar entre las 8:00 y las 18:00 horas')->withInput();
-        }
-        
-        // Verificar si hay conflictos de horario
-        $diaSemana = $request->dia_semana;
-        $tareasExistentes = Auth::user()->tareas
-            ->where('dia_semana', $diaSemana)
-            ->filter(function($tarea) use ($horaInicio, $horaFin) {
-                // Verificar si hay solapamiento de horarios
-                return (
-                    // Nueva cita comienza durante una existente
-                    (strtotime($horaInicio) >= strtotime($tarea->hora_inicio) && 
-                     strtotime($horaInicio) < strtotime($tarea->hora_fin)) ||
-                    // Nueva cita termina durante una existente
-                    (strtotime($horaFin) > strtotime($tarea->hora_inicio) && 
-                     strtotime($horaFin) <= strtotime($tarea->hora_fin)) ||
-                    // Nueva cita abarca completamente una existente
-                    (strtotime($horaInicio) <= strtotime($tarea->hora_inicio) && 
-                     strtotime($horaFin) >= strtotime($tarea->hora_fin))
-                );
-            });
-        
-        if ($tareasExistentes->count() > 0) {
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Ya existe una cita programada en ese horario'
-                ], 422);
-            }
-            return redirect()->back()->with('error', 'Ya existe una cita programada en ese horario')->withInput();
-        }
 
-        $tarea = new Tarea($request->all());
+        $tarea = new Tarea();
         $tarea->usuario_id = Auth::id();
+        $tarea->titulo = $request->titulo;
+        $tarea->descripcion = $request->descripcion;
+        $tarea->dia_semana = $request->dia_semana;
+        $tarea->hora_inicio = $request->hora_inicio;
+        $tarea->hora_fin = $request->hora_fin;
+        $tarea->color = $request->color;
+        $tarea->icono = $request->icono;
         $tarea->save();
 
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Horario guardado correctamente',
-                'tarea' => $tarea
-            ]);
-        }
-        return redirect()->route('calendario')->with('success', 'Horario guardado correctamente');
+        return response()->json([
+            'success' => true,
+            'message' => 'Tarea creada correctamente',
+            'tarea' => $tarea
+        ]);
     }
 
     /**
-     * Display the specified task.
+     * Muestra una tarea específica.
+     *
+     * @param  \App\Models\Tarea  $tarea
+     * @return \Illuminate\Http\JsonResponse
      */
     public function show(Tarea $tarea)
     {
-        // Verificar que la tarea pertenece al usuario autenticado
+        // Verificar que la tarea pertenezca al usuario autenticado
         if ($tarea->usuario_id !== Auth::id()) {
-            abort(403, 'No autorizado');
+            return response()->json(['error' => 'No autorizado'], 403);
         }
 
-        return view('tarea.show', compact('tarea'));
+        return response()->json(['tarea' => $tarea]);
     }
 
     /**
-     * Show the form for editing the specified task.
+     * Muestra el formulario para editar una tarea.
+     *
+     * @param  \App\Models\Tarea  $tarea
+     * @return \Illuminate\Http\JsonResponse
      */
     public function edit(Tarea $tarea)
     {
-        // Verificar que la tarea pertenece al usuario autenticado
+        // Verificar que la tarea pertenezca al usuario autenticado
         if ($tarea->usuario_id !== Auth::id()) {
-            abort(403, 'No autorizado');
+            return response()->json(['error' => 'No autorizado'], 403);
         }
 
-        return view('tarea.edit', compact('tarea'));
+        return response()->json(['tarea' => $tarea]);
     }
 
     /**
-     * Update the specified task in storage.
+     * Actualiza una tarea específica en la base de datos.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Tarea  $tarea
+     * @return \Illuminate\Http\JsonResponse
      */
     public function update(Request $request, Tarea $tarea)
     {
-        // Verificar que la tarea pertenece al usuario autenticado
+        // Verificar que la tarea pertenezca al usuario autenticado
         if ($tarea->usuario_id !== Auth::id()) {
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No autorizado'
-                ], 403);
-            }
-            abort(403, 'No autorizado');
+            return response()->json(['error' => 'No autorizado'], 403);
         }
 
         $request->validate([
             'titulo' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'dia_semana' => 'required|integer|min:1|max:7',
-            'hora_inicio' => 'required|date_format:H:i',
-            'hora_fin' => 'required|date_format:H:i|after:hora_inicio',
-            'color' => 'nullable|string',
-            'icono' => 'nullable|string',
+            'hora_inicio' => 'required',
+            'hora_fin' => 'required',
+            'color' => 'required|string|max:255',
+            'icono' => 'required|string|max:255',
         ]);
-        
-        // Validar que las horas estén dentro del rango permitido (8:00 - 18:00)
-        $horaInicio = $request->hora_inicio;
-        $horaFin = $request->hora_fin;
-        
-        if (strtotime($horaInicio) < strtotime('08:00') || strtotime($horaFin) > strtotime('18:00')) {
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'El horario de citas debe estar entre las 8:00 y las 18:00 horas'
-                ], 422);
-            }
-            return redirect()->back()->with('error', 'El horario de citas debe estar entre las 8:00 y las 18:00 horas')->withInput();
-        }
-        
-        // Verificar si hay conflictos de horario con otras tareas (excluyendo la tarea actual)
-        $diaSemana = $request->dia_semana;
-        $tareasExistentes = Auth::user()->tareas
-            ->where('dia_semana', $diaSemana)
-            ->where('id', '!=', $tarea->id) // Excluir la tarea que se está editando
-            ->filter(function($t) use ($horaInicio, $horaFin) {
-                // Verificar si hay solapamiento de horarios
-                return (
-                    // Nueva cita comienza durante una existente
-                    (strtotime($horaInicio) >= strtotime($t->hora_inicio) && 
-                     strtotime($horaInicio) < strtotime($t->hora_fin)) ||
-                    // Nueva cita termina durante una existente
-                    (strtotime($horaFin) > strtotime($t->hora_inicio) && 
-                     strtotime($horaFin) <= strtotime($t->hora_fin)) ||
-                    // Nueva cita abarca completamente una existente
-                    (strtotime($horaInicio) <= strtotime($t->hora_inicio) && 
-                     strtotime($horaFin) >= strtotime($t->hora_fin))
-                );
-            });
-        
-        if ($tareasExistentes->count() > 0) {
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Ya existe una cita programada en ese horario'
-                ], 422);
-            }
-            return redirect()->back()->with('error', 'Ya existe una cita programada en ese horario')->withInput();
-        }
 
-        $tarea->update($request->all());
+        $tarea->titulo = $request->titulo;
+        $tarea->descripcion = $request->descripcion;
+        $tarea->dia_semana = $request->dia_semana;
+        $tarea->hora_inicio = $request->hora_inicio;
+        $tarea->hora_fin = $request->hora_fin;
+        $tarea->color = $request->color;
+        $tarea->icono = $request->icono;
+        $tarea->save();
 
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Horario actualizado correctamente',
-                'tarea' => $tarea
-            ]);
-        }
-        return redirect()->route('calendario')->with('success', 'Horario actualizado correctamente');
-    }
-    
-    /**
-     * Get tasks in JSON format for the calendar view.
-     */
-    public function getTareasJson()
-    {
-        $tareas = Auth::user()->tareas;
-        return response()->json($tareas);
+        return response()->json([
+            'success' => true,
+            'message' => 'Tarea actualizada correctamente',
+            'tarea' => $tarea
+        ]);
     }
 
     /**
-     * Remove the specified task from storage.
+     * Elimina una tarea específica de la base de datos.
+     *
+     * @param  \App\Models\Tarea  $tarea
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(Request $request, Tarea $tarea)
+    public function destroy(Tarea $tarea)
     {
-        // Verificar que la tarea pertenece al usuario autenticado
+        // Verificar que la tarea pertenezca al usuario autenticado
         if ($tarea->usuario_id !== Auth::id()) {
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No autorizado'
-                ], 403);
-            }
-            abort(403, 'No autorizado');
+            return response()->json(['error' => 'No autorizado'], 403);
         }
 
         $tarea->delete();
 
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Horario eliminado correctamente'
-            ]);
-        }
-        
-        return redirect()->route('calendario')->with('success', 'Tarea eliminada correctamente');
+        return response()->json([
+            'success' => true,
+            'message' => 'Tarea eliminada correctamente'
+        ]);
+    }
+
+    /**
+     * Obtiene todas las tareas del usuario autenticado en formato JSON.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getTareasJson()
+    {
+        $tareas = Tarea::where('usuario_id', Auth::id())->get();
+        return response()->json(['tareas' => $tareas]);
     }
 }

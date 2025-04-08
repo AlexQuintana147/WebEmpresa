@@ -1,244 +1,196 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Referencias a elementos del DOM
-    const btnAgregarHorario = document.getElementById('btn-agregar-horario');
     const modalHorario = document.getElementById('modal-horario');
-    const modalTitle = document.getElementById('modal-title');
+    const modalConfirmar = document.getElementById('modal-confirmar');
+    const formHorario = document.getElementById('form-horario');
     const btnCerrarModal = document.getElementById('btn-cerrar-modal');
     const btnCancelar = document.getElementById('btn-cancelar');
-    const formHorario = document.getElementById('form-horario');
-    const modalConfirmar = document.getElementById('modal-confirmar');
     const btnCancelarEliminar = document.getElementById('btn-cancelar-eliminar');
     const btnConfirmarEliminar = document.getElementById('btn-confirmar-eliminar');
+    const modalTitle = document.getElementById('modal-title');
+    const notificationContainer = document.getElementById('notification_container');
     
-    // Variables para almacenar el estado
-    let modoEdicion = false;
-    let tareaIdEliminar = null;
+    // Variables globales
+    let tareaIdToDelete = null;
+    let isEditing = false;
     
-    // Verificar si hay mensajes de notificación
-    const successMsg = document.querySelector('meta[name="success-message"]');
-    const errorMsg = document.querySelector('meta[name="error-message"]');
-    
-    if (successMsg) {
-        mostrarNotificacion(successMsg.getAttribute('content'), 'success');
-    } else if (errorMsg) {
-        mostrarNotificacion(errorMsg.getAttribute('content'), 'error');
+    // Función para mostrar notificaciones
+    function showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type} p-4 mb-4 rounded-lg shadow-md`;
+        notification.style.backgroundColor = type === 'success' ? '#10B981' : '#EF4444';
+        notification.style.color = 'white';
+        notification.innerHTML = message;
+        
+        notificationContainer.appendChild(notification);
+        
+        // Eliminar la notificación después de 3 segundos
+        setTimeout(() => {
+            notification.classList.add('fade-out');
+            setTimeout(() => {
+                notificationContainer.removeChild(notification);
+            }, 300);
+        }, 3000);
     }
     
-    // Event Listeners
-    btnAgregarHorario.addEventListener('click', abrirModalAgregar);
-    btnCerrarModal.addEventListener('click', cerrarModal);
-    btnCancelar.addEventListener('click', cerrarModal);
-    formHorario.addEventListener('submit', guardarHorario);
-    btnCancelarEliminar.addEventListener('click', cerrarModalConfirmar);
-    btnConfirmarEliminar.addEventListener('click', eliminarHorario);
-    
-    // Agregar event listeners a los horarios existentes
-    document.querySelectorAll('.time-slot').forEach(slot => {
-        slot.addEventListener('click', function(e) {
-            e.stopPropagation();
-            abrirModalEditar(this);
-        });
-    });
-    
-    // Funciones
-    function abrirModalAgregar() {
-        modoEdicion = false;
+    // Función para abrir el modal de agregar horario
+    function openAddModal(dayNumber) {
+        isEditing = false;
         modalTitle.textContent = 'Agregar Horario';
         formHorario.reset();
         document.getElementById('tarea-id').value = '';
+        document.getElementById('dia_semana').value = dayNumber;
         modalHorario.classList.remove('hidden');
     }
     
-    function abrirModalEditar(elemento) {
-        modoEdicion = true;
+    // Función para abrir el modal de editar horario
+    function openEditModal(tareaId) {
+        isEditing = true;
         modalTitle.textContent = 'Editar Horario';
         
-        // Obtener datos del horario
-        const id = elemento.dataset.id;
-        const titulo = elemento.dataset.titulo;
-        const descripcion = elemento.dataset.descripcion;
-        const dia = elemento.dataset.dia;
-        const inicio = elemento.dataset.inicio;
-        const fin = elemento.dataset.fin;
-        const color = elemento.dataset.color;
-        const icono = elemento.dataset.icono;
+        // Obtener los datos de la tarea desde el elemento HTML
+        const tareaElement = document.querySelector(`.time-slot[data-id="${tareaId}"]`);
+        if (!tareaElement) return;
         
-        // Llenar el formulario
-        document.getElementById('tarea-id').value = id;
-        document.getElementById('titulo').value = titulo;
-        document.getElementById('descripcion').value = descripcion;
-        document.getElementById('dia_semana').value = dia;
-        document.getElementById('hora_inicio').value = inicio;
-        document.getElementById('hora_fin').value = fin;
-        document.getElementById('color').value = color;
-        document.getElementById('icono').value = icono;
-        
-        // Mostrar botón de eliminar
-        const btnEliminar = document.getElementById('btn-eliminar');
-        if (!btnEliminar) {
-            const btnGuardar = document.getElementById('btn-guardar');
-            btnGuardar.insertAdjacentHTML('beforebegin', `
-                <button type="button" id="btn-eliminar" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
-                    Eliminar
-                </button>
-            `);
-            
-            document.getElementById('btn-eliminar').addEventListener('click', function() {
-                tareaIdEliminar = id;
-                cerrarModal();
-                abrirModalConfirmar();
-            });
-        }
+        document.getElementById('tarea-id').value = tareaId;
+        document.getElementById('titulo').value = tareaElement.getAttribute('data-titulo');
+        document.getElementById('descripcion').value = tareaElement.getAttribute('data-descripcion');
+        document.getElementById('dia_semana').value = tareaElement.getAttribute('data-dia');
+        document.getElementById('hora_inicio').value = tareaElement.getAttribute('data-inicio');
+        document.getElementById('hora_fin').value = tareaElement.getAttribute('data-fin');
+        document.getElementById('color').value = tareaElement.getAttribute('data-color');
+        document.getElementById('icono').value = tareaElement.getAttribute('data-icono');
         
         modalHorario.classList.remove('hidden');
     }
     
-    function cerrarModal() {
-        modalHorario.classList.add('hidden');
-        const btnEliminar = document.getElementById('btn-eliminar');
-        if (btnEliminar) {
-            btnEliminar.remove();
-        }
-    }
-    
-    function abrirModalConfirmar() {
+    // Función para abrir el modal de confirmación de eliminación
+    function openDeleteConfirmModal(tareaId) {
+        tareaIdToDelete = tareaId;
         modalConfirmar.classList.remove('hidden');
     }
     
-    function cerrarModalConfirmar() {
+    // Función para cerrar los modales
+    function closeModals() {
+        modalHorario.classList.add('hidden');
         modalConfirmar.classList.add('hidden');
     }
     
-    function guardarHorario(e) {
+    // Event Listeners para abrir modales
+    document.querySelectorAll('.day-column').forEach(column => {
+        column.addEventListener('dblclick', function(e) {
+            // Solo abrir el modal si se hace doble clic directamente en la columna, no en una tarea
+            if (e.target === this || e.target.classList.contains('day-column')) {
+                const dayNumber = this.getAttribute('data-day');
+                openAddModal(dayNumber);
+            }
+        });
+    });
+    
+    // Event Listeners para las tareas existentes
+    document.querySelectorAll('.time-slot').forEach(slot => {
+        // Abrir modal de edición al hacer clic en una tarea
+        slot.addEventListener('click', function() {
+            const tareaId = this.getAttribute('data-id');
+            openEditModal(tareaId);
+        });
+        
+        // Agregar opción para eliminar (podría ser con clic derecho o un botón específico)
+        slot.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            const tareaId = this.getAttribute('data-id');
+            openDeleteConfirmModal(tareaId);
+        });
+    });
+    
+    // Event Listeners para cerrar modales
+    btnCerrarModal.addEventListener('click', closeModals);
+    btnCancelar.addEventListener('click', closeModals);
+    btnCancelarEliminar.addEventListener('click', closeModals);
+    
+    // Event Listener para el formulario de guardar/editar tarea
+    formHorario.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        const formData = new FormData(formHorario);
         const tareaId = document.getElementById('tarea-id').value;
+        const formData = new FormData(formHorario);
         
-        let url, method;
-        if (modoEdicion && tareaId) {
+        // URL y método según si estamos creando o editando
+        let url = '/tareas';
+        let method = 'POST';
+        
+        if (isEditing && tareaId) {
             url = `/tareas/${tareaId}`;
-            method = 'POST';
-            // Agregar método PUT para Laravel
-            formData.append('_method', 'PUT');
-        } else {
-            url = '/tareas';
-            method = 'POST';
+            formData.append('_method', 'PUT'); // Laravel method spoofing
         }
         
-        // Asegurarse de que el token CSRF esté incluido en el FormData
-        if (!formData.has('_token')) {
-            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-        }
-        
+        // Enviar solicitud AJAX
         fetch(url, {
             method: method,
             body: formData,
             headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-                // No incluir Content-Type cuando se usa FormData
-                // El navegador lo configurará automáticamente
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             }
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                mostrarNotificacion(data.message || 'Horario guardado correctamente', 'success');
-                cerrarModal();
+                showNotification(data.message, 'success');
+                closeModals();
                 // Recargar la página para mostrar los cambios
                 setTimeout(() => {
                     window.location.reload();
                 }, 1000);
             } else {
-                mostrarNotificacion(data.message || 'Error al guardar el horario', 'error');
+                showNotification(data.error || 'Ha ocurrido un error', 'error');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            mostrarNotificacion('Ocurrió un error al procesar la solicitud', 'error');
+            showNotification('Ha ocurrido un error en la solicitud', 'error');
         });
-    }
+    });
     
-    function eliminarHorario() {
-        if (!tareaIdEliminar) return;
+    // Event Listener para eliminar tarea
+    btnConfirmarEliminar.addEventListener('click', function() {
+        if (!tareaIdToDelete) return;
         
-        const formData = new FormData();
-        formData.append('_method', 'DELETE');
-        
-        fetch(`/tareas/${tareaIdEliminar}`, {
-            method: 'POST',
+        fetch(`/tareas/${tareaIdToDelete}`, {
+            method: 'DELETE',
             headers: {
-                'Content-Type': 'application/json',
-            },
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-                // No incluir Content-Type cuando se usa FormData
-                // El token CSRF ya está incluido en el formData con @csrf en el formulario
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             }
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                mostrarNotificacion(data.message || 'Horario eliminado correctamente', 'success');
-                cerrarModalConfirmar();
+                showNotification(data.message, 'success');
+                closeModals();
                 // Recargar la página para mostrar los cambios
                 setTimeout(() => {
                     window.location.reload();
                 }, 1000);
             } else {
-                mostrarNotificacion(data.message || 'Error al eliminar el horario', 'error');
-                cerrarModalConfirmar();
+                showNotification(data.error || 'Ha ocurrido un error', 'error');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            mostrarNotificacion('Ocurrió un error al procesar la solicitud', 'error');
-            cerrarModalConfirmar();
+            showNotification('Ha ocurrido un error en la solicitud', 'error');
         });
-    }
+    });
     
-    // Función para mostrar notificaciones
-    function mostrarNotificacion(mensaje, tipo) {
-        // Crear el contenedor de notificación si no existe
-        let notificationContainer = document.getElementById('notification_container');
-        
-        if (!notificationContainer) {
-            notificationContainer = document.createElement('div');
-            notificationContainer.id = 'notification_container';
-            notificationContainer.className = 'fixed top-4 right-4 z-50 max-w-md';
-            document.body.appendChild(notificationContainer);
+    // Estilos CSS para las notificaciones
+    const style = document.createElement('style');
+    style.textContent = `
+        .notification {
+            transition: opacity 0.3s ease-in-out;
         }
-        
-        // Crear la notificación
-        const notification = document.createElement('div');
-        notification.className = `rounded-lg shadow-lg p-4 mb-4 flex items-center justify-between ${
-            tipo === 'success' ? 'bg-green-100 border-l-4 border-green-500 text-green-700' : 
-            'bg-red-100 border-l-4 border-red-500 text-red-700'
-        }`;
-        
-        // Icono según el tipo
-        const icon = tipo === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
-        
-        // Contenido de la notificación
-        notification.innerHTML = `
-            <div class="flex items-center">
-                <i class="fas ${icon} mr-3 text-xl"></i>
-                <p>${mensaje}</p>
-            </div>
-            <button class="ml-4 text-gray-500 hover:text-gray-700" onclick="this.parentElement.remove()">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
-        
-        // Agregar la notificación al contenedor
-        notificationContainer.appendChild(notification);
-        
-        // Eliminar la notificación después de 5 segundos
-        setTimeout(() => {
-            if (notification.parentElement) {
-                notification.remove();
-            }
-        }, 5000);
-    }
+        .fade-out {
+            opacity: 0;
+        }
+    `;
+    document.head.appendChild(style);
 });
