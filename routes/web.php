@@ -53,13 +53,14 @@ Route::middleware('doctor')->group(function () {
     Route::delete('/actividades/{actividad}', [App\Http\Controllers\ActividadController::class, 'destroy'])->name('actividades.destroy');
     Route::put('/actividades/{actividad}/cambiar-estado', [App\Http\Controllers\ActividadController::class, 'cambiarEstado'])->name('actividades.cambiar-estado');
 
-    Route::get('/calendario', [TareaController::class, 'create'])->name('calendario');
+    Route::get('/tareas', [TareaController::class, 'index'])->name('tareas.index');
     Route::post('/tareas', [TareaController::class, 'store'])->name('tareas.store');
     Route::get('/tareas/{tarea}', [TareaController::class, 'show'])->name('tareas.show');
     Route::get('/tareas/{tarea}/edit', [TareaController::class, 'edit'])->name('tareas.edit');
     Route::put('/tareas/{tarea}', [TareaController::class, 'update'])->name('tareas.update');
     Route::delete('/tareas/{tarea}', [TareaController::class, 'destroy'])->name('tareas.destroy');
     Route::get('/tareas-json', [TareaController::class, 'getTareasJson'])->name('tareas.json');
+    
 
     Route::get('/notas', [NotaController::class, 'index'])->name('notas.index');
     Route::post('/notas', [NotaController::class, 'store'])->name('notas.store');
@@ -69,8 +70,6 @@ Route::middleware('doctor')->group(function () {
     Route::post('/notas/{nota}/toggle-archive', [NotaController::class, 'toggleArchive'])->name('notas.archive');
 });
 
-// Redirect from /tareas to /calendario
-Route::redirect('/tareas', '/calendario');
 
 // Rutas para pacientes (rol_id = 2)
 Route::middleware('paciente')->group(function () {

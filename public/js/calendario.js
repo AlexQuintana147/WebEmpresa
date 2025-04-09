@@ -1,196 +1,107 @@
+/**
+ * Calendario.js - Gestión de horarios médicos
+ * Este archivo maneja la lógica del calendario de horarios para los doctores
+ */
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Referencias a elementos del DOM
-    const modalHorario = document.getElementById('modal-horario');
-    const modalConfirmar = document.getElementById('modal-confirmar');
-    const formHorario = document.getElementById('form-horario');
-    const btnCerrarModal = document.getElementById('btn-cerrar-modal');
-    const btnCancelar = document.getElementById('btn-cancelar');
-    const btnCancelarEliminar = document.getElementById('btn-cancelar-eliminar');
-    const btnConfirmarEliminar = document.getElementById('btn-confirmar-eliminar');
-    const modalTitle = document.getElementById('modal-title');
-    const notificationContainer = document.getElementById('notification_container');
-    
-    // Variables globales
-    let tareaIdToDelete = null;
-    let isEditing = false;
-    
-    // Función para mostrar notificaciones
-    function showNotification(message, type = 'success') {
-        const notification = document.createElement('div');
-        notification.className = `notification ${type} p-4 mb-4 rounded-lg shadow-md`;
-        notification.style.backgroundColor = type === 'success' ? '#10B981' : '#EF4444';
-        notification.style.color = 'white';
-        notification.innerHTML = message;
-        
-        notificationContainer.appendChild(notification);
-        
-        // Eliminar la notificación después de 3 segundos
-        setTimeout(() => {
-            notification.classList.add('fade-out');
-            setTimeout(() => {
-                notificationContainer.removeChild(notification);
-            }, 300);
-        }, 3000);
+    // Inicializar Alpine.js si no está ya inicializado
+    if (typeof Alpine === 'undefined') {
+        console.error('Alpine.js no está cargado. Asegúrate de incluir la biblioteca.');
+        return;
     }
-    
-    // Función para abrir el modal de agregar horario
-    function openAddModal(dayNumber) {
-        isEditing = false;
-        modalTitle.textContent = 'Agregar Horario';
-        formHorario.reset();
-        document.getElementById('tarea-id').value = '';
-        document.getElementById('dia_semana').value = dayNumber;
-        modalHorario.classList.remove('hidden');
-    }
-    
-    // Función para abrir el modal de editar horario
-    function openEditModal(tareaId) {
-        isEditing = true;
-        modalTitle.textContent = 'Editar Horario';
-        
-        // Obtener los datos de la tarea desde el elemento HTML
-        const tareaElement = document.querySelector(`.time-slot[data-id="${tareaId}"]`);
-        if (!tareaElement) return;
-        
-        document.getElementById('tarea-id').value = tareaId;
-        document.getElementById('titulo').value = tareaElement.getAttribute('data-titulo');
-        document.getElementById('descripcion').value = tareaElement.getAttribute('data-descripcion');
-        document.getElementById('dia_semana').value = tareaElement.getAttribute('data-dia');
-        document.getElementById('hora_inicio').value = tareaElement.getAttribute('data-inicio');
-        document.getElementById('hora_fin').value = tareaElement.getAttribute('data-fin');
-        document.getElementById('color').value = tareaElement.getAttribute('data-color');
-        document.getElementById('icono').value = tareaElement.getAttribute('data-icono');
-        
-        modalHorario.classList.remove('hidden');
-    }
-    
-    // Función para abrir el modal de confirmación de eliminación
-    function openDeleteConfirmModal(tareaId) {
-        tareaIdToDelete = tareaId;
-        modalConfirmar.classList.remove('hidden');
-    }
-    
-    // Función para cerrar los modales
-    function closeModals() {
-        modalHorario.classList.add('hidden');
-        modalConfirmar.classList.add('hidden');
-    }
-    
-    // Event Listeners para abrir modales
-    document.querySelectorAll('.day-column').forEach(column => {
-        column.addEventListener('dblclick', function(e) {
-            // Solo abrir el modal si se hace doble clic directamente en la columna, no en una tarea
-            if (e.target === this || e.target.classList.contains('day-column')) {
-                const dayNumber = this.getAttribute('data-day');
-                openAddModal(dayNumber);
+
+    // Inicializar notificaciones
+    Alpine.store('notification', {
+        show: false,
+        message: '',
+        type: 'success', // success, error, warning, info
+        timeout: null,
+
+        notify(message, type = 'success', duration = 3000) {
+            this.message = message;
+            this.type = type;
+            this.show = true;
+
+            // Limpiar cualquier timeout existente
+            if (this.timeout) {
+                clearTimeout(this.timeout);
             }
-        });
-    });
-    
-    // Event Listeners para las tareas existentes
-    document.querySelectorAll('.time-slot').forEach(slot => {
-        // Abrir modal de edición al hacer clic en una tarea
-        slot.addEventListener('click', function() {
-            const tareaId = this.getAttribute('data-id');
-            openEditModal(tareaId);
-        });
-        
-        // Agregar opción para eliminar (podría ser con clic derecho o un botón específico)
-        slot.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            const tareaId = this.getAttribute('data-id');
-            openDeleteConfirmModal(tareaId);
-        });
-    });
-    
-    // Event Listeners para cerrar modales
-    btnCerrarModal.addEventListener('click', closeModals);
-    btnCancelar.addEventListener('click', closeModals);
-    btnCancelarEliminar.addEventListener('click', closeModals);
-    
-    // Event Listener para el formulario de guardar/editar tarea
-    formHorario.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const tareaId = document.getElementById('tarea-id').value;
-        const formData = new FormData(formHorario);
-        
-        // URL y método según si estamos creando o editando
-        let url = '/tareas';
-        let method = 'POST';
-        
-        if (isEditing && tareaId) {
-            url = `/tareas/${tareaId}`;
-            formData.append('_method', 'PUT'); // Laravel method spoofing
+
+            // Configurar un nuevo timeout para ocultar la notificación
+            this.timeout = setTimeout(() => {
+                this.show = false;
+            }, duration);
         }
-        
-        // Enviar solicitud AJAX
-        fetch(url, {
-            method: method,
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    });
+
+    // Funciones de utilidad para el calendario
+    window.calendarUtils = {
+        // Convertir hora en formato HH:MM a minutos desde medianoche
+        timeToMinutes(timeString) {
+            if (!timeString) return 0;
+            const [hours, minutes] = timeString.split(':').map(Number);
+            return hours * 60 + minutes;
+        },
+
+        // Calcular duración en minutos entre dos horas
+        getDuration(startTime, endTime) {
+            return this.timeToMinutes(endTime) - this.timeToMinutes(startTime);
+        },
+
+        // Calcular altura en píxeles basada en la duración
+        getHeightFromDuration(duration) {
+            // Cada hora representa 60px de altura
+            return (duration / 60) * 60;
+        },
+
+        // Formatear hora para mostrar
+        formatTime(timeString) {
+            if (!timeString) return '';
+            const [hours, minutes] = timeString.split(':');
+            return `${hours}:${minutes}`;
+        },
+
+        // Obtener nombre del día a partir del número
+        getDayName(dayNumber) {
+            const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+            return days[dayNumber - 1] || '';
+        }
+    };
+
+    // Manejar respuestas de la API
+    window.handleApiResponse = function(response, successCallback, errorCallback) {
+        if (response.success) {
+            if (typeof successCallback === 'function') {
+                successCallback(response);
             }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showNotification(data.message, 'success');
-                closeModals();
-                // Recargar la página para mostrar los cambios
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
+            if (response.message) {
+                Alpine.store('notification').notify(response.message, 'success');
+            }
+        } else {
+            if (typeof errorCallback === 'function') {
+                errorCallback(response);
+            }
+            if (response.message) {
+                Alpine.store('notification').notify(response.message, 'error');
             } else {
-                showNotification(data.error || 'Ha ocurrido un error', 'error');
+                Alpine.store('notification').notify('Ha ocurrido un error inesperado', 'error');
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showNotification('Ha ocurrido un error en la solicitud', 'error');
-        });
-    });
-    
-    // Event Listener para eliminar tarea
-    btnConfirmarEliminar.addEventListener('click', function() {
-        if (!tareaIdToDelete) return;
+        }
+    };
+
+    // Validación de formularios
+    window.formValidation = {
+        validateTimeRange(startTime, endTime) {
+            if (!startTime || !endTime) return false;
+            
+            const start = new Date(`2000-01-01T${startTime}`);
+            const end = new Date(`2000-01-01T${endTime}`);
+            
+            return start < end;
+        },
         
-        fetch(`/tareas/${tareaIdToDelete}`, {
-            method: 'DELETE',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showNotification(data.message, 'success');
-                closeModals();
-                // Recargar la página para mostrar los cambios
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
-            } else {
-                showNotification(data.error || 'Ha ocurrido un error', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showNotification('Ha ocurrido un error en la solicitud', 'error');
-        });
-    });
-    
-    // Estilos CSS para las notificaciones
-    const style = document.createElement('style');
-    style.textContent = `
-        .notification {
-            transition: opacity 0.3s ease-in-out;
+        validateRequired(value) {
+            return value !== null && value !== undefined && value.toString().trim() !== '';
         }
-        .fade-out {
-            opacity: 0;
-        }
-    `;
-    document.head.appendChild(style);
+    };
 });
