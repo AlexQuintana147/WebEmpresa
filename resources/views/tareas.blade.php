@@ -474,7 +474,15 @@
                             this.loading = true;
                             
                             const url = this.drawer.mode === 'edit' ? `/tareas/${this.newEvent.id}` : '/tareas';
-                            const method = this.drawer.mode === 'edit' ? 'PUT' : 'POST';
+                            const method = 'POST'; // Siempre usamos POST
+                            
+                            // Preparar los datos a enviar
+                            let eventData = {...this.newEvent};
+                            
+                            // Si estamos editando, añadir el campo _method para el spoofing de método HTTP
+                            if (this.drawer.mode === 'edit') {
+                                eventData._method = 'PUT';
+                            }
                             
                             fetch(url, {
                                 method: method,
@@ -482,7 +490,7 @@
                                     'Content-Type': 'application/json',
                                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                                 },
-                                body: JSON.stringify(this.newEvent)
+                                body: JSON.stringify(eventData)
                             })
                             .then(response => {
                                 // Verificar si la respuesta es exitosa

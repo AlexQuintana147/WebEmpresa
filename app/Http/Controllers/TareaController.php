@@ -39,7 +39,11 @@ class TareaController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        // Forzar que todas las respuestas sean JSON
+        $request->headers->set('Accept', 'application/json');
+        
+        // Validar manualmente para poder capturar errores y devolverlos como JSON
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'titulo' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
             'dia_semana' => 'required|integer|min:1|max:7',
@@ -48,6 +52,14 @@ class TareaController extends Controller
             'color' => 'nullable|string|max:255',
             'icono' => 'nullable|string|max:255',
         ]);
+        
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $validator->errors()
+            ], 422, ['Content-Type' => 'application/json']);
+        }
 
         try {
             $tarea = new Tarea();
@@ -118,6 +130,9 @@ class TareaController extends Controller
      */
     public function update(Request $request, Tarea $tarea)
     {
+        // Forzar que todas las respuestas sean JSON
+        $request->headers->set('Accept', 'application/json');
+        
         // Verificar que la tarea pertenezca al usuario autenticado
         if ($tarea->usuario_id !== Auth::id()) {
             return response()->json([
@@ -126,17 +141,26 @@ class TareaController extends Controller
             ], 403, ['Content-Type' => 'application/json']);
         }
 
-        $request->validate([
-            'titulo' => 'required|string|max:255',
-            'descripcion' => 'nullable|string',
-            'dia_semana' => 'required|integer|min:1|max:7',
-            'hora_inicio' => 'required|date_format:H:i',
-            'hora_fin' => 'required|date_format:H:i|after:hora_inicio',
-            'color' => 'nullable|string|max:255',
-            'icono' => 'nullable|string|max:255',
-        ]);
-
         try {
+            // Validar manualmente para poder capturar errores y devolverlos como JSON
+            $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+                'titulo' => 'required|string|max:255',
+                'descripcion' => 'nullable|string',
+                'dia_semana' => 'required|integer|min:1|max:7',
+                'hora_inicio' => 'required|date_format:H:i',
+                'hora_fin' => 'required|date_format:H:i|after:hora_inicio',
+                'color' => 'nullable|string|max:255',
+                'icono' => 'nullable|string|max:255',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error de validación',
+                    'errors' => $validator->errors()
+                ], 422, ['Content-Type' => 'application/json']);
+            }
+            
             $tarea->titulo = $request->titulo;
             $tarea->descripcion = $request->descripcion;
             $tarea->dia_semana = $request->dia_semana;
