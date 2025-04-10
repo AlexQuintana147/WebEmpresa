@@ -134,8 +134,9 @@
                                         type="text" 
                                         id="nombre" 
                                         x-model="formData.nombre" 
-                                        class="mt-1 focus:ring-cyan-500 focus:border-cyan-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" 
+                                        class="mt-1 focus:ring-cyan-500 focus:border-cyan-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md bg-gray-50" 
                                         required
+                                        readonly
                                     >
                                 </div>
                                 
@@ -145,8 +146,9 @@
                                         type="text" 
                                         id="apellido_paterno" 
                                         x-model="formData.apellido_paterno" 
-                                        class="mt-1 focus:ring-cyan-500 focus:border-cyan-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" 
+                                        class="mt-1 focus:ring-cyan-500 focus:border-cyan-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md bg-gray-50" 
                                         required
+                                        readonly
                                     >
                                 </div>
                                 
@@ -156,19 +158,61 @@
                                         type="text" 
                                         id="apellido_materno" 
                                         x-model="formData.apellido_materno" 
+                                        class="mt-1 focus:ring-cyan-500 focus:border-cyan-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md bg-gray-50" 
+                                        required
+                                        readonly
+                                    >
+                                </div>
+
+                                <div>
+                                    <label for="telefono" class="block text-sm font-medium text-gray-700">Teléfono</label>
+                                    <input 
+                                        type="tel" 
+                                        id="telefono" 
+                                        x-model="formData.telefono" 
                                         class="mt-1 focus:ring-cyan-500 focus:border-cyan-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" 
                                         required
+                                        pattern="[0-9]{9}"
+                                        placeholder="Ingrese su número de teléfono"
+                                    >
+                                </div>
+
+                                <div>
+                                    <label for="correo" class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
+                                    <input 
+                                        type="email" 
+                                        id="correo" 
+                                        x-model="formData.correo" 
+                                        class="mt-1 focus:ring-cyan-500 focus:border-cyan-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" 
+                                        required
+                                        placeholder="ejemplo@correo.com"
                                     >
                                 </div>
                                 
                                 <div>
                                     <label for="especialidad" class="block text-sm font-medium text-gray-700">Especialidad</label>
-                                    <input 
-                                        type="text" 
+                                    <select
                                         id="especialidad" 
                                         x-model="formData.especialidad" 
                                         class="mt-1 focus:ring-cyan-500 focus:border-cyan-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                        required
                                     >
+                                        <option value="">Seleccione una especialidad</option>
+                                        <option value="Cardiología">Cardiología</option>
+                                        <option value="Dermatología">Dermatología</option>
+                                        <option value="Endocrinología">Endocrinología</option>
+                                        <option value="Gastroenterología">Gastroenterología</option>
+                                        <option value="Ginecología">Ginecología</option>
+                                        <option value="Medicina General">Medicina General</option>
+                                        <option value="Medicina Interna">Medicina Interna</option>
+                                        <option value="Neurología">Neurología</option>
+                                        <option value="Oftalmología">Oftalmología</option>
+                                        <option value="Oncología">Oncología</option>
+                                        <option value="Pediatría">Pediatría</option>
+                                        <option value="Psiquiatría">Psiquiatría</option>
+                                        <option value="Traumatología">Traumatología</option>
+                                        <option value="Urología">Urología</option>
+                                    </select>
                                 </div>
                             </div>
                             
@@ -266,7 +310,9 @@
                 nombre: '',
                 apellido_paterno: '',
                 apellido_materno: '',
-                especialidad: ''
+                especialidad: '',
+                telefono: '',
+                correo: ''
             },
             
             init() {
