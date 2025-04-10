@@ -188,7 +188,6 @@
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Día</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hora Inicio</th>
@@ -200,7 +199,6 @@
                                 <tbody class="bg-white divide-y divide-gray-200">
                                     <template x-for="event in events" :key="event.id">
                                         <tr>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="event.id"></td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="flex items-center">
                                                     <div class="flex-shrink-0 h-8 w-8 flex items-center justify-center rounded-full" :style="`background-color: ${event.color || '#4A90E2'}`">
@@ -315,6 +313,7 @@
                                     console.log('Tareas recibidas:', data);
                                     // Asegurarse de que data sea un array
                                     this.events = Array.isArray(data) ? data : [];
+                                    this.events.sort((a, b) => a.id - b.id);
                                     // Mostrar mensaje si hay tareas
                                     if (this.events.length > 0) {
                                         this.message = {
@@ -385,11 +384,6 @@
                                 const startDate = new Date(`2000-01-01T${startStr}`);
                                 const endDate = new Date(`2000-01-01T${endStr}`);
                                 
-                                // Verificar si hay superposición entre el rango de la celda y el evento
-                                // Un evento se muestra si:
-                                // 1. Comienza durante esta hora, o
-                                // 2. Termina durante esta hora, o
-                                // 3. Comienza antes y termina después de esta hora (abarca toda la hora)
                                 return (startDate >= timeDate && startDate < nextHourDate) || // Comienza en esta hora
                                        (endDate > timeDate && endDate <= nextHourDate) || // Termina en esta hora
                                        (startDate <= timeDate && endDate >= nextHourDate); // Abarca toda la hora
