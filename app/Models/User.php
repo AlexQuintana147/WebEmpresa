@@ -8,6 +8,7 @@ use Illuminate\Notifications\Notifiable;
 use App\Models\Transaccion;
 use App\Models\Tarea;
 use App\Models\CategoriaPresupuesto;
+use App\Models\Doctor;
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
@@ -83,5 +84,13 @@ class User extends Authenticatable
     public function actividades()
     {
         return $this->hasMany(Actividad::class, 'usuario_id');
+    }
+    
+    /**
+     * Get the doctor profile for the user.
+     */
+    public function doctor()
+    {
+        return $this->hasOne(Doctor::class, 'usuario_id');
     }
 }
