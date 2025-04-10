@@ -68,9 +68,9 @@ Route::middleware('doctor')->group(function () {
     Route::post('/notas/{nota}/toggle-pin', [NotaController::class, 'togglePin'])->name('notas.pin');
     Route::post('/notas/{nota}/toggle-archive', [NotaController::class, 'toggleArchive'])->name('notas.archive');
 
-    Route::get('/pacientes', function () {
-        return view('pacientes');
-    });
+    Route::get('/pacientes', [\App\Http\Controllers\DoctorController::class, 'index'])->name('pacientes.index');
+    Route::post('/doctores/verificar-dni', [\App\Http\Controllers\ReniecController::class, 'consultarDni'])->name('doctores.verificar-dni');
+    Route::post('/doctores/guardar-dni', [\App\Http\Controllers\DoctorController::class, 'guardarDni'])->name('doctores.guardar-dni');
 });
 
 

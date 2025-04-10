@@ -24,8 +24,10 @@ class DoctorController extends Controller
         // Si el doctor está registrado, obtener sus pacientes
         if ($doctor) {
             $pacientes = Paciente::where('doctor_id', $doctor->id)->get();
+            return view('pacientes', compact('doctor', 'pacientes'));
         }
         
+        // Si el doctor no está registrado, mostrar formulario para ingresar DNI
         return view('pacientes', compact('doctor', 'pacientes'));
     }
     
@@ -59,6 +61,56 @@ class DoctorController extends Controller
         return response()->json([
             'success' => true,
             'exists' => false
+        ]);
+    }
+    
+    /**
+     * Guarda el DNI del doctor después de verificarlo con RENIEC
+     */
+    public function guardarDni(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'dni' => 'required|string|size:8',
+            'nombre' => 'required|string|max:255',
+            'apellido_paterno' => 'required|string|max:255',
+            'apellido_materno' => 'required|string|max:255'
+        ]);
+        
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error en la validación',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+        
+        // Verificar si ya existe un doctor con este DNI
+        $existingDoctor = Doctor::where('dni', $request->dni)->first();
+        if ($existingDoctor && $existingDoctor->usuario_id != Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ya existe un doctor registrado con este DNI'
+            ], 422);
+        }
+        
+        // Crear o actualizar el doctor
+        $doctor = Doctor::updateOrCreate(
+            ['usuario_id' => Auth::id()],
+            [
+                'dni' => $request->dni,
+                'nombre' => $request->nombre,
+                'apellido_paterno' => $request->apellido_paterno,
+                'apellido_materno' => $request->apellido_materno,
+                'correo' => $request->correo ?? null,
+                'telefono' => $request->telefono ?? null,
+                'especialidad' => $request->especialidad ?? null
+            ]
+        );
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'DNI registrado correctamente',
+            'doctor' => $doctor
         ]);
     }
     
