@@ -177,6 +177,19 @@
                             <i class="fas fa-chevron-right text-gray-400 text-sm ml-2 group-hover:text-fuchsia-300 transition-colors duration-300"></i>
                         </a>
 
+                        <!-- Pacientes -->
+                        <a href="/pacientes" class="group flex items-center p-3 rounded-lg transition-all duration-300 hover:bg-green-900/20 hover:translate-x-2 hover:shadow-lg hover:shadow-green-500/10 {{ request()->is('pacientes') ? 'bg-gradient-to-r from-green-500/20 to-green-500/10 border-r-4 border-green-400' : '' }}">
+                            <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-green-400/20 to-green-500/20 group-hover:from-green-400/30 group-hover:to-green-500/30 transition-all duration-300 mr-3">
+                                <i class="fas fa-stethoscope text-green-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <div class="flex-1">
+                                <span class="font-medium tracking-wide group-hover:text-green-300 transition-colors duration-300">Pacientes</span>
+                                <p class="text-xs text-gray-400 mt-1">Listado de Pacientes</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400 text-sm ml-2 group-hover:text-green-300 transition-colors duration-300"></i>
+                        </a>
+
+
                         <!-- Notas -->
                         <a href="/notas" class="group flex items-center p-3 rounded-lg transition-all duration-300 hover:bg-indigo-900/20 hover:translate-x-2 hover:shadow-lg hover:shadow-teal-500/10 {{ request()->is('notas') ? 'bg-gradient-to-r from-teal-500/20 to-teal-500/10 border-r-4 border-teal-400' : '' }}">
                             <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-teal-400/20 to-teal-500/20 group-hover:from-teal-400/30 group-hover:to-teal-500/30 transition-all duration-300 mr-3">

@@ -60,12 +60,6 @@ Route::middleware('doctor')->group(function () {
     Route::put('/tareas/{tarea}', [TareaController::class, 'update'])->name('tareas.update');
     Route::delete('/tareas/{tarea}', [TareaController::class, 'destroy'])->name('tareas.destroy');
     Route::get('/tareas-json', [TareaController::class, 'getTareasJson'])->name('tareas.json');
-    
-    // Nueva ruta para la vista de tabla de tareas
-    Route::get('/tareas-tabla', function () {
-        return view('tareas-tabla');
-    })->name('tareas.tabla');
-    
 
     Route::get('/notas', [NotaController::class, 'index'])->name('notas.index');
     Route::post('/notas', [NotaController::class, 'store'])->name('notas.store');
@@ -73,6 +67,10 @@ Route::middleware('doctor')->group(function () {
     Route::delete('/notas/{nota}', [NotaController::class, 'destroy'])->name('notas.destroy');
     Route::post('/notas/{nota}/toggle-pin', [NotaController::class, 'togglePin'])->name('notas.pin');
     Route::post('/notas/{nota}/toggle-archive', [NotaController::class, 'toggleArchive'])->name('notas.archive');
+
+    Route::get('/pacientes', function () {
+        return view('pacientes');
+    });
 });
 
 
