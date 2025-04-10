@@ -695,13 +695,13 @@
                                 <!-- Título -->
                                 <div>
                                     <label for="titulo" class="block text-sm font-medium text-gray-700 mb-1">Título</label>
-                                    <input 
-                                        type="text" 
-                                        id="titulo" 
-                                        x-model="newEvent.titulo" 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
-                                        placeholder="Título del horario"
-                                    >
+                                    <select id="titulo" x-model="newEvent.titulo" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500">
+                                        <option value="">Seleccione una opción</option>
+                                        <option value="Consulta General">Consulta General</option>
+                                        <option value="Atención Médica">Atención Médica</option>
+                                        <option value="Consulta de Especialidad">Consulta de Especialidad</option>
+                                        <option value="Revisión de Resultados">Revisión de Resultados</option>
+                                    </select>
                                     <p x-show="errors.titulo" x-text="errors.titulo" class="mt-1 text-sm text-red-600"></p>
                                 </div>
                                 
