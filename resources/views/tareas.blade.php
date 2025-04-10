@@ -180,29 +180,34 @@
                         </div>
                         
                         <div x-show="!loading && events.length === 0" class="mb-4 p-3 bg-yellow-50 text-yellow-700 rounded">
-                            <p>No se encontraron tareas. Puede crear una nueva tarea usando el botón "Nuevo Horario".</p>
+                            <p>No se encontraron tareas. Puede crear una nueva tarea usando el botón \"Nuevo Horario\".</p>
                         </div>
                         
                         <!-- Diseño de Tarjetas -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <template x-for="event in events" :key="event.id">
-                                <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                                    <div class="px-4 py-3 border-b border-gray-200 flex items-center space-x-3">
-                                        <div class="flex-shrink-0 h-8 w-8 flex items-center justify-center rounded-full" :style="`background-color: ${event.color || '#4A90E2'}`">
-                                            <i :class="`text-white fas ${event.icono || 'fa-user-doctor'}`"></i>
+                        <div class="grid grid-cols-7 gap-4">
+                            <template x-for="dayIndex in [1, 2, 3, 4, 5, 6, 7]" :key="dayIndex">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-2" x-text="days[dayIndex - 1]"></h3>
+                                    <template x-for="event in events.filter(e => e.dia_semana === dayIndex)" :key="event.id">
+                                        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-2">
+                                            <div class="px-4 py-3 border-b border-gray-200 flex items-center space-x-3">
+                                                <div class="flex-shrink-0 h-8 w-8 flex items-center justify-center rounded-full" :style="`background-color: ${event.color || '#4A90E2'}`">
+                                                    <i :class="`text-white fas ${event.icono || 'fa-user-doctor'}`"></i>
+                                                </div>
+                                                <h3 class="text-lg font-semibold text-gray-900" x-text="event.titulo"></h3>
+                                            </div>
+                                            <div class="p-4">
+                                                <p class="text-sm text-gray-500 mb-2"><i class="fas fa-clock mr-2"></i> Hora: <span x-text="event.hora_inicio"></span> - <span x-text="event.hora_fin"></span></p>
+                                                <p class="text-sm text-gray-500 truncate"><i class="fas fa-file-alt mr-2"></i> Descripción: <span x-text="event.descripcion || 'Sin descripción'"></span></p>
+                                            </div>
+                                            <div class="px-4 py-2 bg-gray-50 border-t border-gray-200 text-right">
+                                                <button @click.stop="openViewDrawer(event)" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-cyan-700 bg-cyan-100 hover:bg-cyan-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500">
+                                                    <i class="fas fa-eye mr-2"></i> Ver Detalles
+                                                </button>
+                                            </div>
                                         </div>
-                                        <h3 class="text-lg font-semibold text-gray-900" x-text="event.titulo"></h3>
-                                    </div>
-                                    <div class="p-4">
-                                        <p class="text-sm text-gray-500 mb-2"><i class="fas fa-calendar-day mr-2"></i> Día: <span x-text="getDayName(event.dia_semana)"></span></p>
-                                        <p class="text-sm text-gray-500 mb-2"><i class="fas fa-clock mr-2"></i> Hora: <span x-text="event.hora_inicio"></span> - <span x-text="event.hora_fin"></span></p>
-                                        <p class="text-sm text-gray-500 truncate"><i class="fas fa-file-alt mr-2"></i> Descripción: <span x-text="event.descripcion || 'Sin descripción'"></span></p>
-                                    </div>
-                                    <div class="px-4 py-2 bg-gray-50 border-t border-gray-200 text-right">
-                                        <button @click.stop="openViewDrawer(event)" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-cyan-700 bg-cyan-100 hover:bg-cyan-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500">
-                                            <i class="fas fa-eye mr-2"></i> Ver Detalles
-                                        </button>
-                                    </div>
+                                    </template>
+                                    <div x-show="!events.filter(e => e.dia_semana === dayIndex).length" class="text-gray-500 text-sm mt-2">No hay tareas para este día.</div>
                                 </div>
                             </template>
                         </div>
