@@ -12,6 +12,14 @@ class TareaController extends Controller
 {
     public function index()
     {
+        // Si el usuario está autenticado, obtener sus tareas
+        if (Auth::check()) {
+            $usuario_id = Auth::id();
+            $tareas = Tarea::where('usuario_id', $usuario_id)->get();
+            return view('tareas', compact('tareas'));
+        }
+        
+        // Si no está autenticado, mostrar la vista sin datos
         return view('tareas');
     }
 

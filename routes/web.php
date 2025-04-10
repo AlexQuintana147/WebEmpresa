@@ -61,6 +61,11 @@ Route::middleware('doctor')->group(function () {
     Route::delete('/tareas/{tarea}', [TareaController::class, 'destroy'])->name('tareas.destroy');
     Route::get('/tareas-json', [TareaController::class, 'getTareasJson'])->name('tareas.json');
     
+    // Nueva ruta para la vista de tabla de tareas
+    Route::get('/tareas-tabla', function () {
+        return view('tareas-tabla');
+    })->name('tareas.tabla');
+    
 
     Route::get('/notas', [NotaController::class, 'index'])->name('notas.index');
     Route::post('/notas', [NotaController::class, 'store'])->name('notas.store');

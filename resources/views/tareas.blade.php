@@ -128,6 +128,105 @@
             
             <!-- Contenido Principal -->
             <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="calendario">
+                <!-- Título y botón de nuevo horario -->
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-2xl font-semibold text-gray-900">Horario Semanal</h1>
+                    <button 
+                        @click="openCreateDrawer(1, '08:00')"
+                        class="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center space-x-2"
+                    >
+                        <i class="fas fa-plus"></i>
+                        <span>Nuevo Horario</span>
+                    </button>
+                </div>
+
+                <!-- Mensaje de estado -->
+                <div 
+                    x-show="message" 
+                    x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 transform -translate-y-2"
+                    x-transition:enter-end="opacity-100 transform translate-y-0"
+                    x-transition:leave="transition ease-in duration-300"
+                    x-transition:leave-start="opacity-100 transform translate-y-0"
+                    x-transition:leave-end="opacity-0 transform -translate-y-2"
+                    :class="{
+                        'bg-green-100 border-green-400 text-green-700': message?.type === 'success',
+                        'bg-red-100 border-red-400 text-red-700': message?.type === 'error'
+                    }"
+                    class="border-l-4 p-4 mb-6"
+                    @click="message = null"
+                >
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i :class="{
+                                'fas fa-check-circle': message?.type === 'success',
+                                'fas fa-exclamation-circle': message?.type === 'error'
+                            }"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p x-text="message?.text"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de Tareas -->
+                <div class="medical-card bg-white overflow-hidden">
+                    <div class="p-4">
+                        <h2 class="text-xl font-semibold text-gray-800 mb-4">Listado de Tareas</h2>
+                        
+                        <!-- Información de carga -->
+                        <div x-show="loading" class="mb-4 p-3 bg-blue-50 text-blue-700 rounded">
+                            <p>Cargando tareas...</p>
+                        </div>
+                        
+                        <div x-show="!loading && events.length === 0" class="mb-4 p-3 bg-yellow-50 text-yellow-700 rounded">
+                            <p>No se encontraron tareas. Puede crear una nueva tarea usando el botón "Nuevo Horario".</p>
+                        </div>
+                        
+                        <!-- Tabla -->
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Día</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hora Inicio</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hora Fin</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <template x-for="event in events" :key="event.id">
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="event.id"></td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    <div class="flex-shrink-0 h-8 w-8 flex items-center justify-center rounded-full" :style="`background-color: ${event.color || '#4A90E2'}`">
+                                                        <i :class="`text-white fas ${event.icono || 'fa-user-doctor'}`"></i>
+                                                    </div>
+                                                    <div class="ml-4">
+                                                        <div class="text-sm font-medium text-gray-900" x-text="event.titulo"></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getDayName(event.dia_semana)"></td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="event.hora_inicio"></td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="event.hora_fin"></td>
+                                            <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" x-text="event.descripcion || 'Sin descripción'"></td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                <button @click.stop="openViewDrawer(event)" class="text-cyan-600 hover:text-cyan-900 mr-3">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
                 <script type="text/javascript">
                 document.addEventListener('alpine:init', () => {
                     Alpine.data('calendario', () => ({
@@ -178,6 +277,7 @@
                         
                         fetchEvents() {
                             this.loading = true;
+                            console.log('Obteniendo tareas...');
                             fetch('/tareas-json')
                                 .then(response => {
                                     // Verificar si la respuesta es exitosa
@@ -202,328 +302,324 @@
                                     }
                                     // Verificar el tipo de contenido para asegurarse de que es JSON
                                     const contentType = response.headers.get('content-type');
-                                 if (!contentType || !contentType.includes('application/json')) {
-                                     // Intentar obtener el texto de la respuesta para diagnóstico
-                                     return response.text().then(text => {
-                                         console.error('Respuesta no JSON recibida:', text.substring(0, 150) + '...');
-                                         throw new Error('La respuesta no es JSON válido. Posiblemente la sesión ha expirado.');
-                                     });
-                                 }
-                                 return response.json();
-                             })
-                             .then(data => {
-                                 this.events = data;
-                                 this.loading = false;
-                             })
-                             .catch(error => {
-                                 console.error('Error:', error);
-                                 // Si no es un error de sesión expirada, mostrar mensaje genérico
-                                 if (!this.message || this.message.type !== 'error') {
-                                     this.message = {
-                                         type: 'error',
-                                         text: 'Ha ocurrido un error en el servidor. Por favor, recargue la página o inicie sesión nuevamente.'
-                                     };
-                                 }
-                                 this.loading = false;
-                             });
-                         },
-                         
-                         getEventsForCell(day, time) {
-                             return this.events.filter(event => {
-                                 return event.dia_semana === day && 
-                                        this.isTimeInRange(time, event.hora_inicio, event.hora_fin);
-                             });
-                         },
-                         
-                         isTimeInRange(time, start, end) {
-                             const timeDate = new Date(`2000-01-01T${time}:00`);
-                             const startDate = new Date(`2000-01-01T${start}`);
-                             const endDate = new Date(`2000-01-01T${end}`);
-                             
-                             return timeDate >= startDate && timeDate < endDate;
-                         },
-                         
-                         getDayName(day) {
-                             return this.days[day - 1];
-                         },
-                         
-                         openCreateDrawer(day, time) {
-                             this.drawer.mode = 'create';
-                             this.drawer.currentEvent = null;
-                             this.newEvent = {
-                                 titulo: '',
-                                 descripcion: '',
-                                 dia_semana: day,
-                                 hora_inicio: time,
-                                 hora_fin: this.getNextHour(time),
-                                 color: '#4A90E2',
-                                 icono: 'fa-user-doctor'
-                             };
-                             this.drawer.open = true;
-                         },
-                         
-                         openViewDrawer(event) {
-                             this.drawer.mode = 'view';
-                             this.drawer.currentEvent = event;
-                             this.newEvent = { ...event };
-                             this.drawer.open = true;
-                         },
-                         
-                         closeDrawer() {
-                             this.drawer.open = false;
-                         },
-                         
-                         getNextHour(time) {
-                             const [hours, minutes] = time.split(':').map(Number);
-                             let nextHour = hours + 1;
-                             if (nextHour > 23) nextHour = 23;
-                             return `${nextHour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-                         },
-                         
-                         resetForm() {
-                             this.newEvent = {
-                                 titulo: '',
-                                 descripcion: '',
-                                 dia_semana: 1,
-                                 hora_inicio: '',
-                                 hora_fin: '',
-                                 color: '#4A90E2',
-                                 icono: 'fa-user-doctor'
-                             };
-                             this.errors = {};
-                         },
-                         
-                         saveEvent() {
-                             // Validación básica
-                             this.errors = {};
-                             
-                             if (!this.newEvent.titulo) {
-                                 this.errors.titulo = 'El título es obligatorio';
-                             }
-                             
-                             if (!this.newEvent.hora_inicio) {
-                                 this.errors.hora_inicio = 'La hora de inicio es obligatoria';
-                             }
-                             
-                             if (!this.newEvent.hora_fin) {
-                                 this.errors.hora_fin = 'La hora de fin es obligatoria';
-                             } else if (this.newEvent.hora_inicio >= this.newEvent.hora_fin) {
-                                 this.errors.hora_fin = 'La hora de fin debe ser posterior a la hora de inicio';
-                             }
-                             
-                             if (Object.keys(this.errors).length > 0) {
-                                 return;
-                             }
-                             
-                             this.loading = true;
-                             
-                             const url = this.drawer.mode === 'edit' ? `/tareas/${this.newEvent.id}` : '/tareas';
-                             const method = this.drawer.mode === 'edit' ? 'PUT' : 'POST';
-                             
-                             fetch(url, {
-                                 method: method,
-                                 headers: {
-                                     'Content-Type': 'application/json',
-                                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                                 },
-                                 body: JSON.stringify(this.newEvent)
-                             })
-                             .then(response => {
-                                 // Verificar si la respuesta es exitosa
-                                 if (!response.ok) {
-                                     // Si el estado es 401, probablemente la sesión expiró
-                                     if (response.status === 401) {
-                                         throw new Error('Sesión expirada');
-                                     }
-                                     throw new Error(`Error de red: ${response.status}`);
-                                 }
-                                 // Verificar el tipo de contenido para asegurarse de que es JSON
-                                 const contentType = response.headers.get('content-type');
-                                 if (!contentType || !contentType.includes('application/json')) {
-                                     // Intentar obtener el texto de la respuesta para diagnóstico
-                                     return response.text().then(text => {
-                                         console.error('Respuesta no JSON recibida:', text.substring(0, 150) + '...');
-                                         throw new Error('La respuesta no es JSON válido. Posiblemente la sesión ha expirado.');
-                                     });
-                                 }
-                                 return response.json();
-                             })
-                             .then(data => {
-                                 if (data.success) {
-                                     this.message = {
-                                         type: 'success',
-                                         text: data.message || 'Horario guardado correctamente'
-                                     };
-                                     this.fetchEvents();
-                                     this.closeDrawer();
-                                 } else {
-                                     this.message = {
-                                         type: 'error',
-                                         text: data.message || 'Error al guardar el horario'
-                                     };
-                                     if (data.errors) {
-                                         this.errors = data.errors;
-                                     }
-                                 }
-                                 this.loading = false;
-                             })
-                             .catch(error => {
-                                 console.error('Error:', error);
-                                 // Si no es un error de sesión expirada, mostrar mensaje genérico
-                                 if (error.message === 'Sesión expirada') {
-                                     this.message = {
-                                         type: 'error',
-                                         text: 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.'
-                                     };
-                                     // Redirigir al login después de 2 segundos
-                                     setTimeout(() => {
-                                         window.location.href = '/';
-                                     }, 2000);
-                                 } else {
-                                     this.message = {
-                                         type: 'error',
-                                         text: 'Ha ocurrido un error en el servidor. Por favor, recargue la página o inicie sesión nuevamente.'
-                                     };
-                                 }
-                                 this.loading = false;
-                             });
-                         },
-                         
-                         deleteEvent() {
-                             if (!confirm('¿Está seguro de eliminar este horario?')) {
-                                 return;
-                             }
-                             
-                             this.loading = true;
-                             
-                             fetch(`/tareas/${this.drawer.currentEvent.id}`, {
-                                 method: 'DELETE',
-                                 headers: {
-                                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                                 }
-                             })
-                             .then(response => {
-                                 // Verificar si la respuesta es exitosa
-                                 if (!response.ok) {
-                                     // Si el estado es 401, probablemente la sesión expiró
-                                     if (response.status === 401) {
-                                         throw new Error('Sesión expirada');
-                                     }
-                                     throw new Error(`Error de red: ${response.status}`);
-                                 }
-                                 // Verificar el tipo de contenido para asegurarse de que es JSON
-                                 const contentType = response.headers.get('content-type');
-                                 if (!contentType || !contentType.includes('application/json')) {
-                                     // Intentar obtener el texto de la respuesta para diagnóstico
-                                     return response.text().then(text => {
-                                         console.error('Respuesta no JSON recibida:', text.substring(0, 150) + '...');
-                                         throw new Error('La respuesta no es JSON válido. Posiblemente la sesión ha expirado.');
-                                     });
-                                 }
-                                 return response.json();
-                             })
-                             .then(data => {
-                                 if (data.success) {
-                                     this.message = {
-                                         type: 'success',
-                                         text: data.message || 'Horario eliminado correctamente'
-                                     };
-                                     this.fetchEvents();
-                                     this.closeDrawer();
-                                 } else {
-                                     this.message = {
-                                         type: 'error',
-                                         text: data.message || 'Error al eliminar el horario'
-                                     };
-                                 }
-                                 this.loading = false;
-                             })
-                             .catch(error => {
-                                 console.error('Error:', error);
-                                 // Si no es un error de sesión expirada, mostrar mensaje genérico
-                                 if (error.message === 'Sesión expirada') {
-                                     this.message = {
-                                         type: 'error',
-                                         text: 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.'
-                                     };
-                                     // Redirigir al login después de 2 segundos
-                                     setTimeout(() => {
-                                         window.location.href = '/';
-                                     }, 2000);
-                                 } else {
-                                     this.message = {
-                                         type: 'error',
-                                         text: 'Ha ocurrido un error en el servidor. Por favor, recargue la página o inicie sesión nuevamente.'
-                                     };
-                                 }
-                                 this.loading = false;
-                             });
-                         }
-                     }));
-                 });
-                 </script>
-                                    
-                <!-- Título de la página con decoración médica -->
-                <div class="mb-10 text-center relative">
-                    <div class="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
-                        <div class="absolute top-10 left-10 w-8 h-8 border-2 border-cyan-200 rounded-full opacity-20 animate-float-medical" style="animation-delay: 0s;"></div>
-                        <div class="absolute bottom-5 right-10 w-6 h-6 border-2 border-cyan-200 rounded-full opacity-20 animate-float-medical" style="animation-delay: 0.5s;"></div>
-                        <div class="absolute top-5 right-20 w-10 h-10 border-2 border-cyan-200 rounded-full opacity-20 animate-float-medical" style="animation-delay: 1s;"></div>
-                    </div>
-                    <h1 class="text-3xl font-bold text-cyan-800 relative z-10">
-                        <i class="fas fa-calendar-alt mr-2 text-cyan-600"></i> Calendario Médico
-                    </h1>
-                    <p class="text-cyan-600 mt-2">Gestione sus horarios de atención semanal</p>
-                </div>
-                
-                <!-- Tarjeta del Calendario -->
-                <div class="medical-card bg-white p-6 mb-8">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-semibold text-cyan-800">
-                            <i class="fas fa-calendar-week mr-2 text-cyan-600"></i> Horario Semanal
-                        </h2>
-                        <button @click="openCreateDrawer(1, '08:00')" class="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-4 py-2 rounded-lg shadow transition-all duration-300 flex items-center">
-                            <i class="fas fa-plus mr-2"></i> Nuevo Horario
-                        </button>
-                    </div>
-                    
-                    <!-- Calendario -->
-                    <div class="overflow-x-auto">
-                        <div class="calendar-grid min-w-[900px]">
-                            <!-- Encabezados -->
-                            <div class="calendar-header">Hora</div>
-                            <template x-for="day in [1, 2, 3, 4, 5, 6, 7]" :key="day">
-                                <div class="calendar-header" x-text="getDayName(day)"></div>
-                            </template>
+                                    if (!contentType || !contentType.includes('application/json')) {
+                                        // Intentar obtener el texto de la respuesta para diagnóstico
+                                        return response.text().then(text => {
+                                            console.error('Respuesta no JSON recibida:', text.substring(0, 150) + '...');
+                                            throw new Error('La respuesta no es JSON válido. Posiblemente la sesión ha expirado.');
+                                        });
+                                    }
+                                    return response.json();
+                                })
+                                .then(data => {
+                                    console.log('Tareas recibidas:', data);
+                                    // Asegurarse de que data sea un array
+                                    this.events = Array.isArray(data) ? data : [];
+                                    // Mostrar mensaje si hay tareas
+                                    if (this.events.length > 0) {
+                                        this.message = {
+                                            type: 'success',
+                                            text: `Se han cargado ${this.events.length} tareas correctamente.`
+                                        };
+                                        // Ocultar el mensaje después de 3 segundos
+                                        setTimeout(() => {
+                                            this.message = null;
+                                        }, 3000);
+                                    }
+                                    this.loading = false;
+                                })
+                                .catch(error => {
+                                    console.error('Error al obtener tareas:', error);
+                                    // Si no es un error de sesión expirada, mostrar mensaje genérico
+                                    if (!this.message || this.message.type !== 'error') {
+                                        this.message = {
+                                            type: 'error',
+                                            text: 'Ha ocurrido un error en el servidor. Por favor, recargue la página o inicie sesión nuevamente.'
+                                        };
+                                    }
+                                    this.loading = false;
+                                });
+                        },
+                        
+                        getEventsForCell(day, time) {
+                            // Convertir day a número para asegurar comparación correcta
+                            const dayNumber = parseInt(day);
                             
-                            <!-- Filas de horarios -->
-                            <template x-for="time in timeSlots" :key="time">
-                                <template>
-                                    <!-- Hora -->
-                                    <div class="time-slot" x-text="time"></div>
+                            // Si no hay eventos, devolver un array vacío
+                            if (!this.events || !Array.isArray(this.events)) {
+                                return [];
+                            }
+                            
+                            return this.events.filter(event => {
+                                // Verificar que el evento tenga todas las propiedades necesarias
+                                if (!event || !event.dia_semana || !event.hora_inicio || !event.hora_fin) {
+                                    return false;
+                                }
+                                
+                                // Convertir dia_semana del evento a número para comparación
+                                const eventDay = parseInt(event.dia_semana);
+                                
+                                // Verificar si el evento pertenece a este día y rango de tiempo
+                                return eventDay === dayNumber && 
+                                       this.isTimeInRange(time, event.hora_inicio, event.hora_fin);
+                            });
+                        },
+                        
+                        isTimeInRange(time, start, end) {
+                            // Validar que todos los parámetros sean strings válidos
+                            if (typeof time !== 'string' || typeof start !== 'string' || typeof end !== 'string') {
+                                return false;
+                            }
+                            
+                            // Asegurar que los formatos de hora sean consistentes
+                            const timeStr = time.includes(':') ? time : `${time}:00`;
+                            const startStr = start.includes(':') ? start : `${start}:00`;
+                            const endStr = end.includes(':') ? end : `${end}:00`;
+                            
+                            try {
+                                // Crear objetos Date para comparación
+                                const timeDate = new Date(`2000-01-01T${timeStr}`);
+                                const nextHourDate = new Date(`2000-01-01T${timeStr}`);
+                                nextHourDate.setHours(nextHourDate.getHours() + 1);
+                                
+                                const startDate = new Date(`2000-01-01T${startStr}`);
+                                const endDate = new Date(`2000-01-01T${endStr}`);
+                                
+                                // Verificar si hay superposición entre el rango de la celda y el evento
+                                // Un evento se muestra si:
+                                // 1. Comienza durante esta hora, o
+                                // 2. Termina durante esta hora, o
+                                // 3. Comienza antes y termina después de esta hora (abarca toda la hora)
+                                return (startDate >= timeDate && startDate < nextHourDate) || // Comienza en esta hora
+                                       (endDate > timeDate && endDate <= nextHourDate) || // Termina en esta hora
+                                       (startDate <= timeDate && endDate >= nextHourDate); // Abarca toda la hora
+                            } catch (error) {
+                                console.error('Error al comparar horas:', error);
+                                return false;
+                            }
+                        },
+                        
+                        getDayName(day) {
+                            return this.days[day - 1];
+                        },
+                        
+                        openCreateDrawer(day, time) {
+                            this.drawer.mode = 'create';
+                            this.drawer.currentEvent = null;
+                            this.newEvent = {
+                                titulo: '',
+                                descripcion: '',
+                                dia_semana: day,
+                                hora_inicio: time,
+                                hora_fin: this.getNextHour(time),
+                                color: '#4A90E2',
+                                icono: 'fa-user-doctor'
+                            };
+                            this.drawer.open = true;
+                        },
+                        
+                        openViewDrawer(event) {
+                            this.drawer.mode = 'view';
+                            this.drawer.currentEvent = event;
+                            this.newEvent = { ...event };
+                            this.drawer.open = true;
+                        },
+                        
+                        closeDrawer() {
+                            this.drawer.open = false;
+                        },
+                        
+                        getNextHour(time) {
+                            const [hours, minutes] = time.split(':').map(Number);
+                            let nextHour = hours + 1;
+                            if (nextHour > 23) nextHour = 23;
+                            return `${nextHour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                        },
+                        
+                        resetForm() {
+                            this.newEvent = {
+                                titulo: '',
+                                descripcion: '',
+                                dia_semana: 1,
+                                hora_inicio: '',
+                                hora_fin: '',
+                                color: '#4A90E2',
+                                icono: 'fa-user-doctor'
+                            };
+                            this.errors = {};
+                        },
+                        
+                        saveEvent() {
+                            // Validación básica
+                            this.errors = {};
+                            
+                            if (!this.newEvent.titulo) {
+                                this.errors.titulo = 'El título es obligatorio';
+                            }
+                            
+                            if (!this.newEvent.hora_inicio) {
+                                this.errors.hora_inicio = 'La hora de inicio es obligatoria';
+                            }
+                            
+                            if (!this.newEvent.hora_fin) {
+                                this.errors.hora_fin = 'La hora de fin es obligatoria';
+                            } else if (this.newEvent.hora_inicio >= this.newEvent.hora_fin) {
+                                this.errors.hora_fin = 'La hora de fin debe ser posterior a la hora de inicio';
+                            }
+                            
+                            if (Object.keys(this.errors).length > 0) {
+                                return;
+                            }
+                            
+                            this.loading = true;
+                            
+                            const url = this.drawer.mode === 'edit' ? `/tareas/${this.newEvent.id}` : '/tareas';
+                            const method = this.drawer.mode === 'edit' ? 'PUT' : 'POST';
+                            
+                            fetch(url, {
+                                method: method,
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                },
+                                body: JSON.stringify(this.newEvent)
+                            })
+                            .then(response => {
+                                // Verificar si la respuesta es exitosa
+                                if (!response.ok) {
+                                    // Si el estado es 401, probablemente la sesión expiró
+                                    if (response.status === 401) {
+                                        throw new Error('Sesión expirada');
+                                    }
+                                    throw new Error(`Error de red: ${response.status}`);
+                                }
+                                // Verificar el tipo de contenido para asegurarse de que es JSON
+                                const contentType = response.headers.get('content-type');
+                                if (!contentType || !contentType.includes('application/json')) {
+                                    // Intentar obtener el texto de la respuesta para diagnóstico
+                                    return response.text().then(text => {
+                                        console.error('Respuesta no JSON recibida:', text.substring(0, 150) + '...');
+                                        throw new Error('La respuesta no es JSON válido. Posiblemente la sesión ha expirado.');
+                                    });
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                if (data.success) {
+                                    this.message = {
+                                        type: 'success',
+                                        text: data.message || 'Horario guardado correctamente'
+                                    };
+                                    this.fetchEvents();
+                                    this.closeDrawer();
+                                } else {
+                                    this.message = {
+                                        type: 'error',
+                                        text: data.message || 'Error al guardar el horario'
+                                    };
+                                    if (data.errors) {
+                                        this.errors = data.errors;
+                                    }
+                                }
+                                this.loading = false;
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                // Si no es un error de sesión expirada, mostrar mensaje genérico
+                                if (error.message === 'Sesión expirada') {
+                                    this.message = {
+                                        type: 'error',
+                                        text: 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.'
+                                    };
+                                    // Redirigir al login después de 2 segundos
+                                    setTimeout(() => {
+                                        window.location.href = '/';
+                                    }, 2000);
+                                } else {
+                                    this.message = {
+                                        type: 'error',
+                                        text: 'Ha ocurrido un error en el servidor. Por favor, recargue la página o inicie sesión nuevamente.'
+                                    };
+                                }
+                                this.loading = false;
+                            });
+                        },
+                        
+                        deleteEvent() {
+                            if (!confirm('¿Está seguro de eliminar este horario?')) {
+                                return;
+                            }
+                            
+                            this.loading = true;
+                            
+                            fetch(`/tareas/${this.drawer.currentEvent.id}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                }
+                            })
+                            .then(response => {
+                                // Verificar si la respuesta es exitosa
+                                if (!response.ok) {
+                                    // Si el estado es 401, probablemente la sesión expiró
+                                    if (response.status === 401) {
+                                        throw new Error('Sesión expirada');
+                                    }
+                                    throw new Error(`Error de red: ${response.status}`);
+                                }
+                                // Verificar el tipo de contenido para asegurarse de que es JSON
+                                const contentType = response.headers.get('content-type');
+                                if (!contentType || !contentType.includes('application/json')) {
+                                    // Intentar obtener el texto de la respuesta para diagnóstico
+                                    return response.text().then(text => {
+                                        console.error('Respuesta no JSON recibida:', text.substring(0, 150) + '...');
+                                        throw new Error('La respuesta no es JSON válido. Posiblemente la sesión ha expirado.');
+                                    });
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                if (data.success) {
+                                    this.message = {
+                                        type: 'success',
+                                        text: data.message || 'Horario eliminado correctamente'
+                                    };
+                                    this.fetchEvents();
+                                    this.closeDrawer();
+                                } else {
+                                    this.message = {
+                                        type: 'error',
+                                        text: data.message || 'Error al eliminar el horario'
+                                    };
+                                }
+                                this.loading = false;
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                // Si no es un error de sesión expirada, mostrar mensaje genérico
+                                if (error.message === 'Sesión expirada') {
+                                    this.message = {
+                                        type: 'error',
+                                        text: 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.'
+                                    };
+                                    // Redirigir al login después de 2 segundos
+                                    setTimeout(() => {
+                                        window.location.href = '/';
+                                    }, 2000);
+                                } else {
+                                    this.message = {
+                                        type: 'error',
+                                        text: 'Ha ocurrido un error en el servidor. Por favor, recargue la página o inicie sesión nuevamente.'
+                                    };
+                                }
+                                this.loading = false;
+                            });
+                        }
+                    }));
+                });
+                </script>
                                     
-                                    <!-- Celdas para cada día -->
-                                    <template x-for="day in [1, 2, 3, 4, 5, 6, 7]" :key="day">
-                                        <div class="calendar-cell" @click="openCreateDrawer(day, time)">
-                                            <template x-for="event in getEventsForCell(day, time)" :key="event.id">
-                                                <div 
-                                                    class="event" 
-                                                    :style="`background-color: ${event.color}`"
-                                                    @click.stop="openViewDrawer(event)"
-                                                >
-                                                    <div class="flex items-center">
-                                                        <i :class="`fas ${event.icono} mr-1`"></i>
-                                                        <span x-text="event.titulo"></span>
-                                                    </div>
-                                                </div>
-                                            </template>
-                                        </div>
-                                    </template>
-                                </template>
-                            </template>
-                        </div>
-                    </div>
-                </div>
+
                 
                 <!-- Drawer para crear/editar/ver eventos -->
                 <div class="drawer-overlay" :class="{'open': drawer.open}" @click="closeDrawer"></div>

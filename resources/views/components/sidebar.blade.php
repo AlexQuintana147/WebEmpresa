@@ -166,7 +166,7 @@
                         </a>
 
                         <!-- Tareas -->
-                        <a href="/tareas" class="group flex items-center p-3 rounded-lg transition-all duration-300 hover:bg-indigo-900/20 hover:translate-x-2 hover:shadow-lg hover:shadow-fuchsia-500/10 {{ request()->is('calendario') ? 'bg-gradient-to-r from-fuchsia-500/20 to-fuchsia-500/10 border-r-4 border-fuchsia-400' : '' }}">
+                        <a href="/tareas" class="group flex items-center p-3 rounded-lg transition-all duration-300 hover:bg-indigo-900/20 hover:translate-x-2 hover:shadow-lg hover:shadow-fuchsia-500/10 {{ request()->is('tareas') ? 'bg-gradient-to-r from-fuchsia-500/20 to-fuchsia-500/10 border-r-4 border-fuchsia-400' : '' }}">
                             <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-fuchsia-400/20 to-fuchsia-500/20 group-hover:from-fuchsia-400/30 group-hover:to-fuchsia-500/30 transition-all duration-300 mr-3">
                                 <i class="fas fa-calendar-plus text-fuchsia-400 text-lg group-hover:scale-110 transition-transform duration-300"></i>
                             </div>
