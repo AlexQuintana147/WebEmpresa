@@ -183,45 +183,28 @@
                             <p>No se encontraron tareas. Puede crear una nueva tarea usando el botón "Nuevo Horario".</p>
                         </div>
                         
-                        <!-- Tabla -->
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Día</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hora Inicio</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hora Fin</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    <template x-for="event in events" :key="event.id">
-                                        <tr>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="flex items-center">
-                                                    <div class="flex-shrink-0 h-8 w-8 flex items-center justify-center rounded-full" :style="`background-color: ${event.color || '#4A90E2'}`">
-                                                        <i :class="`text-white fas ${event.icono || 'fa-user-doctor'}`"></i>
-                                                    </div>
-                                                    <div class="ml-4">
-                                                        <div class="text-sm font-medium text-gray-900" x-text="event.titulo"></div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getDayName(event.dia_semana)"></td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="event.hora_inicio"></td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="event.hora_fin"></td>
-                                            <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" x-text="event.descripcion || 'Sin descripción'"></td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <button @click.stop="openViewDrawer(event)" class="text-cyan-600 hover:text-cyan-900 mr-3">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    </template>
-                                </tbody>
-                            </table>
+                        <!-- Diseño de Tarjetas -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <template x-for="event in events" :key="event.id">
+                                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                                    <div class="px-4 py-3 border-b border-gray-200 flex items-center space-x-3">
+                                        <div class="flex-shrink-0 h-8 w-8 flex items-center justify-center rounded-full" :style="`background-color: ${event.color || '#4A90E2'}`">
+                                            <i :class="`text-white fas ${event.icono || 'fa-user-doctor'}`"></i>
+                                        </div>
+                                        <h3 class="text-lg font-semibold text-gray-900" x-text="event.titulo"></h3>
+                                    </div>
+                                    <div class="p-4">
+                                        <p class="text-sm text-gray-500 mb-2"><i class="fas fa-calendar-day mr-2"></i> Día: <span x-text="getDayName(event.dia_semana)"></span></p>
+                                        <p class="text-sm text-gray-500 mb-2"><i class="fas fa-clock mr-2"></i> Hora: <span x-text="event.hora_inicio"></span> - <span x-text="event.hora_fin"></span></p>
+                                        <p class="text-sm text-gray-500 truncate"><i class="fas fa-file-alt mr-2"></i> Descripción: <span x-text="event.descripcion || 'Sin descripción'"></span></p>
+                                    </div>
+                                    <div class="px-4 py-2 bg-gray-50 border-t border-gray-200 text-right">
+                                        <button @click.stop="openViewDrawer(event)" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-cyan-700 bg-cyan-100 hover:bg-cyan-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500">
+                                            <i class="fas fa-eye mr-2"></i> Ver Detalles
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
                     </div>
                 </div>
