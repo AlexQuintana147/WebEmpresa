@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TareaController;
 use App\Http\Controllers\NotaController;
+use App\Http\Controllers\CitaController;
 
 Route::get('/', function () {
     return view('sobrenosotros');
@@ -88,9 +89,12 @@ Route::middleware('paciente')->group(function () {
     // Ruta para consultar la API de RENIEC desde el backend
     Route::post('/reniec/consultar-dni', [\App\Http\Controllers\ReniecController::class, 'consultarDni'])->name('reniec.consultar-dni');
     
-    Route::get('/citas', function () {
-        return view('citas');
-    })->name('citas.index');
+    Route::get('/citas', [CitaController::class, 'index'])->name('citas.index');
+    Route::post('/api/citas/agendar', [CitaController::class, 'agendarCita']);
+    Route::post('/api/citas/cancelar/{id}', [CitaController::class, 'cancelarCita']);
+    Route::get('/api/citas/horarios-disponibles/{doctorId}/{fecha}', [CitaController::class, 'getHorariosDisponibles']);
+    Route::get('/api/doctores/por-especialidad/{especialidad}', [CitaController::class, 'getDoctoresPorEspecialidad']);
+    Route::post('/api/pacientes/verificar-dni', [CitaController::class, 'verificarDni']);
 });
 
 Route::get('/opciones', function () {

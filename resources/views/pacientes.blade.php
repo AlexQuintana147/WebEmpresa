@@ -268,6 +268,14 @@
                                 </tbody>
                             </table>
                         </div>
+                        
+                        <!-- Botón para agendar citas -->
+                        <div class="mt-6 flex justify-center">
+                            <a href="{{ route('citas.index') }}" class="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-6 py-3 rounded-lg transition-all duration-300 flex items-center space-x-3">
+                                <i class="fas fa-calendar-check text-xl"></i>
+                                <span class="text-lg font-medium">Agendar Cita Médica</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </main>
@@ -380,71 +388,43 @@
         
         // Renderizar pacientes en la tabla
         function renderPacientes() {
-            // Limpiar tabla
-            pacientesTableBody.innerHTML = '';
-            
-            // Renderizar cada paciente
-            if (pacientes && pacientes.length > 0) {
-                pacientes.forEach(paciente => {
-                    const row = document.createElement('tr');
-                    
-                    // Columna DNI
-                    const dniCell = document.createElement('td');
-                    dniCell.className = 'px-6 py-4 whitespace-nowrap';
-                    const dniDiv = document.createElement('div');
-                    dniDiv.className = 'text-sm text-gray-900';
-                    dniDiv.textContent = paciente.dni;
-                    dniCell.appendChild(dniDiv);
-                    row.appendChild(dniCell);
-                    
-                    // Columna Nombre
-                    const nombreCell = document.createElement('td');
-                    nombreCell.className = 'px-6 py-4 whitespace-nowrap';
-                    const nombreDiv = document.createElement('div');
-                    nombreDiv.className = 'text-sm font-medium text-gray-900';
-                    nombreDiv.textContent = `${paciente.nombre} ${paciente.apellido_paterno} ${paciente.apellido_materno}`;
-                    nombreCell.appendChild(nombreDiv);
-                    row.appendChild(nombreCell);
-                    
-                    // Columna Contacto
-                    const contactoCell = document.createElement('td');
-                    contactoCell.className = 'px-6 py-4 whitespace-nowrap';
-                    
-                    const telefonoDiv = document.createElement('div');
-                    telefonoDiv.className = 'text-sm text-gray-500';
-                    telefonoDiv.textContent = paciente.telefono || 'No registrado';
-                    contactoCell.appendChild(telefonoDiv);
-                    
-                    const correoDiv = document.createElement('div');
-                    correoDiv.className = 'text-sm text-gray-500';
-                    correoDiv.textContent = paciente.correo || 'No registrado';
-                    contactoCell.appendChild(correoDiv);
-                    
-                    row.appendChild(contactoCell);
-                    
-                    // Columna Acciones
-                    const accionesCell = document.createElement('td');
-                    accionesCell.className = 'px-6 py-4 whitespace-nowrap text-right text-sm font-medium';
-                    
-                    const verBtn = document.createElement('button');
-                    verBtn.className = 'text-cyan-600 hover:text-cyan-900 mr-3';
-                    verBtn.innerHTML = '<i class="fas fa-eye"></i> Ver';
-                    verBtn.onclick = () => verPaciente(paciente.id);
-                    accionesCell.appendChild(verBtn);
-                    
-                    const editarBtn = document.createElement('button');
-                    editarBtn.className = 'text-indigo-600 hover:text-indigo-900';
-                    editarBtn.innerHTML = '<i class="fas fa-edit"></i> Editar';
-                    editarBtn.onclick = () => editarPaciente(paciente.id);
-                    accionesCell.appendChild(editarBtn);
-                    
-                    row.appendChild(accionesCell);
-                    
-                    pacientesTableBody.appendChild(row);
-                });
+            // Verificar inmediatamente si hay pacientes
+            if (!Array.isArray(pacientes) || pacientes.length === 0) {
+                loadingPacientes.classList.add('hidden');
+                noPacientes.classList.remove('hidden');
+                tablaPacientes.classList.add('hidden');
+                return;
             }
+
+            // Si hay pacientes, proceder con la renderización
+            const tbody = document.getElementById('pacientesTableBody');
+            tbody.innerHTML = '';
             
-            updateLoadingState();
+            pacientes.forEach(paciente => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${paciente.dni}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${paciente.nombre} ${paciente.apellido_paterno} ${paciente.apellido_materno}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <div>Tel: ${paciente.telefono}</div>
+                        <div>Email: ${paciente.correo}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editarPaciente(${paciente.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="text-red-600 hover:text-red-800" onclick="eliminarPaciente(${paciente.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Mostrar la tabla y ocultar los otros elementos
+            loadingPacientes.classList.add('hidden');
+            noPacientes.classList.add('hidden');
+            tablaPacientes.classList.remove('hidden');
         }
         
         // Verificar DNI
