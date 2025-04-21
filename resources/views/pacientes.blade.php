@@ -227,27 +227,36 @@
                     <div class="p-6">
                         <h2 class="text-xl font-semibold text-gray-800 mb-4">Lista de Pacientes</h2>
                         @if(count($pacientes) > 0)
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto rounded-lg shadow">
                             <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
+                                <thead class="bg-cyan-100">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DNI</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Apellido Paterno</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Apellido Materno</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correo</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teléfono</th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-cyan-700 uppercase tracking-wider">DNI</th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-cyan-700 uppercase tracking-wider">Nombre Completo</th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-cyan-700 uppercase tracking-wider">Correo</th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-cyan-700 uppercase tracking-wider">Teléfono</th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-cyan-700 uppercase tracking-wider">Fecha Registro</th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-cyan-700 uppercase tracking-wider">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
-                                    @foreach($pacientes as $paciente)
+                                    @foreach($pacientes as $index => $paciente)
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->dni }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->nombre }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->apellido_paterno }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->apellido_materno }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {{ $paciente->nombre }} {{ $paciente->apellido_paterno }} {{ $paciente->apellido_materno }}
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->correo }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->telefono }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->created_at ? $paciente->created_at->format('d/m/Y') : '-' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-cyan-700">
+                                            <button onclick="showHistorialModal('{{ $paciente->nombre }} {{ $paciente->apellido_paterno }} {{ $paciente->apellido_materno }}')" class="bg-cyan-100 hover:bg-cyan-200 text-cyan-700 font-semibold py-1 px-3 rounded mr-2" title="Ver historial">
+                                                <i class="fas fa-notes-medical"></i> Historial
+                                            </button>
+                                            <button onclick="showDetallesModal({{ $index }})" class="bg-cyan-100 hover:bg-cyan-200 text-cyan-700 font-semibold py-1 px-3 rounded" title="Más detalles">
+                                                <i class="fas fa-eye"></i> Detalles
+                                            </button>
+                                        </td>
                                     </tr>
                                     @endforeach
                                 </tbody>
@@ -259,16 +268,65 @@
                     </div>
                 </div>
 
-                
+                <!-- Modal para Detalles/Historial -->
+                <div id="modalPaciente" class="fixed z-50 inset-0 overflow-y-auto hidden">
+                  <div class="flex items-center justify-center min-h-screen px-4">
+                    <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                      <div class="absolute inset-0 bg-gray-900 opacity-50"></div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-xl transform transition-all max-w-lg w-full p-6 z-50">
+                      <div class="flex justify-between items-center mb-4">
+                        <h3 id="modalPacienteTitle" class="text-lg font-semibold text-gray-800"></h3>
+                        <button onclick="closeModalPaciente()" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                          <i class="fas fa-times"></i>
+                        </button>
+                      </div>
+                      <div id="modalPacienteContent" class="text-gray-700">
+                        <!-- Aquí el contenido dinámico -->
+                      </div>
+                      <div class="mt-6 flex justify-end">
+                        <button onclick="closeModalPaciente()" class="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-4 rounded">Cerrar</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
             </main>
         </div>
     </div>
-    
+
+    <!-- Script GLOBAL para modales y pacientes -->
+    <script>
+    // Hacer pacientes global para acceso desde botones
+    window.pacientes = @json($pacientes);
+
+    window.showDetallesModal = function(index) {
+        try {
+            const paciente = window.pacientes[index];
+            let descripcion = '-';
+            if (paciente.citas && paciente.citas.length > 0) {
+                let citaReciente = paciente.citas.reduce((a, b) => new Date(a.fecha) > new Date(b.fecha) ? a : b);
+                descripcion = citaReciente.descripcion_malestar ?? '-';
+            }
+            document.getElementById('modalPacienteTitle').innerText = 'Descripción del malestar';
+            document.getElementById('modalPacienteContent').innerHTML = `<p class='text-gray-700 whitespace-pre-line'>${descripcion ? descripcion : '-'}</p>`;
+            document.getElementById('modalPaciente').classList.remove('hidden');
+        } catch (e) {
+            document.getElementById('modalPacienteTitle').innerText = 'Error al mostrar detalles';
+            document.getElementById('modalPacienteContent').innerHTML = `<pre class='text-red-600'>${e.message}\n${e.stack}</pre>`;
+            document.getElementById('modalPaciente').classList.remove('hidden');
+        }
+    }
+
+    window.closeModalPaciente = function() {
+        document.getElementById('modalPaciente').classList.add('hidden');
+    }
+    </script>
+
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Variables globales
         let doctor = {{ $doctor ? json_encode($doctor) : 'null' }};
-        let pacientes = {{ isset($pacientes) ? json_encode($pacientes) : '[]' }};
+        let pacientes = window.pacientes;
         let initialized = false;
         let loading = false;
         let formData = {
@@ -400,12 +458,11 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${paciente.dni}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${paciente.nombres ?? paciente.nombre} ${paciente.apellido_paterno ?? ''} ${paciente.apellido_materno ?? ''}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div>Tel: ${paciente.telefono ?? ''}</div>
-                        <div>Email: ${paciente.correo ?? ''}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${paciente.nombre} ${paciente.apellido_paterno} ${paciente.apellido_materno}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${paciente.correo}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${paciente.telefono}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${paciente.created_at ? new Date(paciente.created_at).toLocaleDateString() : '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-cyan-700">
                         <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editarPaciente(${paciente.id})">
                             <i class="fas fa-edit"></i>
                         </button>
@@ -524,7 +581,7 @@
                     const errorData = contentType && contentType.includes('application/json') 
                         ? await response.json()
                         : { message: 'Error en la respuesta del servidor' };
-                    throw new Error(errorData.message || 'Error al guardar los datos');
+                    throw new Error(errorData.message);
                 }
                 
                 if (!contentType || !contentType.includes('application/json')) {
@@ -570,6 +627,13 @@
             // Implementar lógica para editar paciente
         }
         
+        // Modal lógica
+        window.showHistorialModal = function(nombreCompleto) {
+            document.getElementById('modalPacienteTitle').innerText = 'Historial médico';
+            document.getElementById('modalPacienteContent').innerHTML = `<p>El paciente <strong>${nombreCompleto}</strong> aún no tiene historial médico registrado.</p>`;
+            document.getElementById('modalPaciente').classList.remove('hidden');
+        }
+
         // Event listeners
         document.getElementById('verificarDniForm').addEventListener('submit', verificarDni);
         document.getElementById('guardarDatosMedicoForm').addEventListener('submit', guardarDatosMedico);

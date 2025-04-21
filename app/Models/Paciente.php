@@ -39,6 +39,14 @@ class Paciente extends Model
     }
 
     /**
+     * Relación: obtiene todas las citas asociadas a este paciente
+     */
+    public function citas()
+    {
+        return $this->hasMany(\App\Models\Cita::class, 'paciente_id');
+    }
+
+    /**
      * Obtiene el nombre completo del paciente
      */
     public function getNombreCompletoAttribute()

@@ -29,8 +29,12 @@ class DoctorController extends Controller
                 ->pluck('paciente_id')
                 ->unique();
 
-            // Obtener los pacientes
-            $pacientes = \App\Models\Paciente::whereIn('id', $pacienteIds)->get();
+            // Obtener los pacientes y sus citas con este doctor
+            $pacientes = \App\Models\Paciente::whereIn('id', $pacienteIds)
+                ->with(['citas' => function($query) use ($doctor) {
+                    $query->where('doctor_id', $doctor->id);
+                }])
+                ->get();
 
             return view('pacientes', compact('doctor', 'pacientes'));
         }
