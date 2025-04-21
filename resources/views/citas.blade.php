@@ -121,6 +121,49 @@
                     </h1>
                     <p class="text-gray-500">Reserva tu cita médica de manera rápida y sencilla</p>
                 </div>
+                <!-- MODAL NUEVO PARA AGENDAR CITA (SOLO CAMPO DE MALSTAR EDITABLE) -->
+                <div id="modal-cita" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+                    <form id="form-cita" class="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative space-y-4">
+                        <button type="button" id="close-modal-cita" class="absolute top-2 right-2 text-gray-400 hover:text-red-500"><i class="fa-solid fa-times"></i></button>
+                        <h2 class="text-xl font-bold text-cyan-700 mb-4 flex items-center gap-2"><i class="fa-solid fa-notes-medical"></i> Nueva Cita</h2>
+                        <div id="modal-error-msg" class="hidden"></div>
+                        <div>
+                            <label for="modal-doctor" class="block font-semibold mb-1">Doctor</label>
+                            <input id="modal-doctor" name="doctor_id" class="w-full border rounded px-3 py-2 bg-gray-100" value="" readonly required>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="modal-dia" class="block font-semibold mb-1">Día</label>
+                                <input id="modal-dia" name="dia_semana" class="w-full border rounded px-3 py-2 bg-gray-100" value="" readonly required>
+                            </div>
+                            <div>
+                                <label for="modal-hora-inicio" class="block font-semibold mb-1">Hora Inicio</label>
+                                <input type="time" id="modal-hora-inicio" name="hora_inicio" class="w-full border rounded px-3 py-2 bg-gray-100" value="" readonly required>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="modal-hora-fin" class="block font-semibold mb-1">Hora Fin</label>
+                                <input type="time" id="modal-hora-fin" name="hora_fin" class="w-full border rounded px-3 py-2 bg-gray-100" value="" readonly required>
+                            </div>
+                            <div></div>
+                        </div>
+                        <div>
+                            <label for="modal-motivo" class="block font-semibold mb-1">Motivo</label>
+                            <input type="text" id="modal-motivo" name="motivo" class="w-full border rounded px-3 py-2 bg-gray-100" value="" readonly required>
+                        </div>
+                        <div>
+                            <label for="modal-descripcion" class="block font-semibold mb-1">Descripción del malestar</label>
+                            <textarea id="modal-descripcion" name="descripcion_malestar" rows="3" class="w-full border rounded px-3 py-2" maxlength="1000" required></textarea>
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit" id="modal-submit-cita" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-6 rounded-lg shadow-md transition flex items-center gap-2">
+                                <i class="fa-solid fa-paper-plane"></i> Confirmar Cita
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <!-- FIN MODAL NUEVO -->
                 <!-- Card del formulario -->
                 <div class="medical-card bg-white p-8 medical-gradient shadow-lg rounded-xl border border-cyan-100">
                     <form action="{{ route('citas.store') }}" method="POST" class="space-y-7">
@@ -156,25 +199,11 @@
                         <input type="hidden" name="dia_semana" id="input-dia_semana">
                         <input type="hidden" name="hora_inicio" id="input-hora_inicio">
                         <input type="hidden" name="hora_fin" id="input-hora_fin">
-                        <input type="hidden" name="motivo" id="input-motivo">
                         <input type="hidden" name="descripcion_malestar" id="input-descripcion-malestar">
                         <div class="flex justify-end mt-6">
                             <button type="button" id="btn-agendar-cita" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-8 rounded-lg shadow-md transition flex items-center gap-2" disabled>
                                 <i class="fa-solid fa-paper-plane"></i> Agendar Cita
                             </button>
-                        </div>
-                        <!-- Modal para ingresar malestar (AHORA DENTRO DEL FORM) -->
-                        <div id="modal-malestar" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
-                            <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative">
-                                <button id="close-modal-malestar" class="absolute top-2 right-2 text-gray-400 hover:text-red-500"><i class="fa-solid fa-times"></i></button>
-                                <h2 class="text-xl font-bold text-cyan-700 mb-4 flex items-center gap-2"><i class="fa-solid fa-notes-medical"></i> Describa su malestar</h2>
-                                <textarea name="motivo" id="motivo" rows="4" class="w-full border border-cyan-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400 shadow-sm transition placeholder-gray-400 mb-4" placeholder="Ejemplo: Dolor de cabeza, fiebre..."></textarea>
-                                <div class="flex justify-end">
-                                    <button type="submit" id="submit-cita" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-6 rounded-lg shadow-md transition flex items-center gap-2">
-                                        <i class="fa-solid fa-paper-plane"></i> Confirmar Cita
-                                    </button>
-                                </div>
-                            </div>
                         </div>
                     </form>
                 </div>
@@ -184,167 +213,207 @@
     </div>
     <!-- Scripts -->
     <script>
-        document.getElementById('categoria').addEventListener('change', function() {
-            const categoria = this.value;
-            const doctorSelect = document.getElementById('doctor_id');
-            // Limpiar opciones actuales
-            doctorSelect.innerHTML = '<option value="">Cargando doctores...</option>';
-            if (categoria) {
-                fetch(`/api/doctores/${categoria}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        doctorSelect.innerHTML = '<option value="">Seleccione un doctor</option>';
-                        if (data && data.doctores && Array.isArray(data.doctores)) {
-                            for (const doctor of data.doctores) {
-                                const nombreCompleto = `${doctor.nombre} ${doctor.apellido_paterno || ''} ${doctor.apellido_materno || ''}`.trim();
-                                doctorSelect.innerHTML += `<option value="${doctor.id}">${nombreCompleto}</option>`;
-                            }
-                        } else {
-                            console.error('La respuesta no tiene el formato esperado:', data);
-                            doctorSelect.innerHTML = '<option value="">Error: formato de respuesta inválido</option>';
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        doctorSelect.innerHTML = '<option value="">Error al cargar doctores</option>';
-                    });
-            } else {
-                doctorSelect.innerHTML = '<option value="">Primero seleccione una especialidad</option>';
-            }
-        });
-
-        document.getElementById('doctor_id').addEventListener('change', function() {
-            const doctorId = this.value;
-            const scheduleDiv = document.getElementById('doctor-schedule');
-            const scheduleContent = document.getElementById('schedule-content');
-            scheduleDiv.classList.add('hidden');
-            scheduleContent.innerHTML = '';
-            document.getElementById('btn-agendar-cita').disabled = true;
-            document.getElementById('input-dia_semana').value = '';
-            document.getElementById('input-hora_inicio').value = '';
-            document.getElementById('input-hora_fin').value = '';
-            if (!doctorId) return;
-            fetch(`/doctores/${doctorId}/horario`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success && data.horario && data.horario.length > 0) {
-                        scheduleDiv.classList.remove('hidden');
-                        const dias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-                        data.horario.forEach((item, idx) => {
-                            const dia = dias[item.dia_semana-1] || 'Día';
-                            const card = document.createElement('button');
-                            card.type = 'button';
-                            card.className = 'select-horario bg-cyan-50 border-l-4 border-cyan-400 rounded-lg p-4 shadow flex flex-col gap-1 hover:bg-cyan-100 focus:ring-2 focus:ring-cyan-500 outline-none transition mb-2';
-                            card.dataset.diaSemana = item.dia_semana;
-                            card.dataset.horaInicio = item.hora_inicio;
-                            card.dataset.horaFin = item.hora_fin;
-                            card.innerHTML = `<div class='font-semibold text-cyan-700'><i class=\"fa-solid fa-calendar-day\"></i> ${dia}</div>
-                                <div class='text-gray-700'><i class=\"fa-solid fa-clock\"></i> ${item.hora_inicio} - ${item.hora_fin}</div>
-                                <div class='text-gray-500 text-sm'>${item.titulo || ''}</div>`;
-                            card.addEventListener('click', function() {
-                                // Marcar seleccionado
-                                document.querySelectorAll('.select-horario').forEach(btn => btn.classList.remove('ring-2', 'ring-cyan-500', 'bg-cyan-200'));
-                                card.classList.add('ring-2', 'ring-cyan-500', 'bg-cyan-200');
-                                // Guardar horario seleccionado
-                                document.getElementById('input-dia_semana').value = item.dia_semana;
-
-                                // Normaliza la hora a HH:MM:SS
-                                function normalizaHora(hora) {
-                                    // Si ya viene como HH:MM:SS, retorna igual
-                                    if (/^\d{2}:\d{2}:\d{2}$/.test(hora)) return hora;
-                                    // Si viene como HH:MM, agrega :00
-                                    if (/^\d{2}:\d{2}$/.test(hora)) return hora + ':00';
-                                    // Si viene como 900, 0930, etc
-                                    let h = hora.replace(/[^0-9]/g, '');
-                                    if (h.length === 3) h = '0' + h;
-                                    if (h.length === 4) return h.slice(0,2) + ':' + h.slice(2,4) + ':00';
-                                    return '';
-                                }
-
-                                const horaInicio = normalizaHora(item.hora_inicio);
-                                const horaFin = normalizaHora(item.hora_fin);
-
-                                document.getElementById('input-hora_inicio').value = horaInicio;
-                                document.getElementById('input-hora_fin').value = horaFin;
-
-                                // Log para depuración
-                                console.log('Hora inicio enviada:', horaInicio);
-                                console.log('Hora fin enviada:', horaFin);
-
-                                document.getElementById('btn-agendar-cita').disabled = false;
-                            });
-                            scheduleContent.appendChild(card);
-                        });
-                    } else {
-                        scheduleDiv.classList.remove('hidden');
-                        scheduleContent.innerHTML = `<div class='text-gray-500'>No hay horario registrado para este doctor.</div>`;
-                    }
-                });
-        });
-        // Mostrar modal al hacer click en agendar cita
-        document.getElementById('btn-agendar-cita').addEventListener('click', function() {
-            document.getElementById('modal-malestar').classList.remove('hidden');
-        });
-        // Cerrar modal
-        document.getElementById('close-modal-malestar').addEventListener('click', function() {
-            document.getElementById('modal-malestar').classList.add('hidden');
-        });
-        // Enviar formulario con AJAX y mostrar errores en el modal
-        document.getElementById('submit-cita').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('input-descripcion-malestar').value = document.getElementById('motivo').value;
-            const selectedHorario = document.querySelector('.select-horario.ring-2');
-            if (selectedHorario) {
-                document.getElementById('input-motivo').value = selectedHorario.querySelector('.text-gray-500')?.textContent?.trim() || '';
-                document.getElementById('input-dia_semana').value = selectedHorario.dataset.diaSemana;
-                document.getElementById('input-hora_inicio').value = selectedHorario.dataset.horaInicio;
-            }
-            // Validar que los campos requeridos estén presentes
-            const diaSemana = document.getElementById('input-dia_semana').value;
-            const horaInicio = document.getElementById('input-hora_inicio').value;
-            if (!diaSemana || !horaInicio) {
-                mostrarErrorModal('Debes seleccionar un horario válido antes de confirmar la cita.');
-                return;
-            }
-            // Preparar datos del formulario
-            const form = document.querySelector('form');
-            const formData = new FormData(form);
-            document.getElementById('modal-error-msg')?.remove();
-            let url = form.action.split('?')[0];
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': formData.get('_token'),
-                    'Accept': 'application/json'
-                },
-                body: formData
-            })
-            .then(async res => {
-                const data = await res.json();
-                if (data.success) {
-                    window.location.reload();
-                } else {
-                    let msg = data.error || 'Error desconocido';
-                    if (data.validation) {
-                        msg += '<ul class="list-disc ml-6">';
-                        Object.values(data.validation).forEach(arr => arr.forEach(e => {msg += `<li>${e}</li>`;}));
-                        msg += '</ul>';
-                    }
-                    mostrarErrorModal(msg);
-                }
-            })
-            .catch(err => {
-                mostrarErrorModal('Error inesperado al agendar la cita.');
+        document.addEventListener('DOMContentLoaded', function() {
+            // Prevenir envío tradicional del formulario SIEMPRE
+            document.querySelector('form').addEventListener('submit', function(e) {
+                e.preventDefault();
             });
+            document.getElementById('categoria').addEventListener('change', function() {
+                const categoria = this.value;
+                const doctorSelect = document.getElementById('doctor_id');
+                // Limpiar opciones actuales
+                doctorSelect.innerHTML = '<option value="">Cargando doctores...</option>';
+                if (categoria) {
+                    fetch(`/api/doctores/${categoria}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            doctorSelect.innerHTML = '<option value="">Seleccione un doctor</option>';
+                            if (data && data.doctores && Array.isArray(data.doctores)) {
+                                for (const doctor of data.doctores) {
+                                    const nombreCompleto = `${doctor.nombre} ${doctor.apellido_paterno || ''} ${doctor.apellido_materno || ''}`.trim();
+                                    doctorSelect.innerHTML += `<option value="${doctor.id}">${nombreCompleto}</option>`;
+                                }
+                            } else {
+                                console.error('La respuesta no tiene el formato esperado:', data);
+                                doctorSelect.innerHTML = '<option value="">Error: formato de respuesta inválido</option>';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            doctorSelect.innerHTML = '<option value="">Error al cargar doctores</option>';
+                        });
+                } else {
+                    doctorSelect.innerHTML = '<option value="">Primero seleccione una especialidad</option>';
+                }
+            });
+
+            document.getElementById('doctor_id').addEventListener('change', function() {
+                const doctorId = this.value;
+                const scheduleDiv = document.getElementById('doctor-schedule');
+                const scheduleContent = document.getElementById('schedule-content');
+                scheduleDiv.classList.add('hidden');
+                scheduleContent.innerHTML = '';
+                document.getElementById('btn-agendar-cita').disabled = true;
+                document.getElementById('input-dia_semana').value = '';
+                document.getElementById('input-hora_inicio').value = '';
+                document.getElementById('input-hora_fin').value = '';
+                if (!doctorId) return;
+                fetch(`/doctores/${doctorId}/horario`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success && data.horario && data.horario.length > 0) {
+                            scheduleDiv.classList.remove('hidden');
+                            const dias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+                            data.horario.forEach((item, idx) => {
+                                const dia = dias[item.dia_semana-1] || 'Día';
+                                const card = document.createElement('button');
+                                card.type = 'button';
+                                card.className = 'select-horario bg-cyan-50 border-l-4 border-cyan-400 rounded-lg p-4 shadow flex flex-col gap-1 hover:bg-cyan-100 focus:ring-2 focus:ring-cyan-500 outline-none transition mb-2';
+                                card.dataset.diaSemana = item.dia_semana;
+                                card.dataset.horaInicio = item.hora_inicio;
+                                card.dataset.horaFin = item.hora_fin;
+                                card.dataset.diaNombre = dia;
+                                card.innerHTML = `<div class='font-semibold text-cyan-700'><i class=\"fa-solid fa-calendar-day\"></i> ${dia}</div>
+                                    <div class='text-gray-700'><i class=\"fa-solid fa-clock\"></i> ${item.hora_inicio} - ${item.hora_fin}</div>
+                                    <div class='text-gray-500 text-sm'>${item.titulo || ''}</div>`;
+                                card.addEventListener('click', function() {
+                                    // Marcar seleccionado
+                                    document.querySelectorAll('.select-horario').forEach(btn => btn.classList.remove('ring-2', 'ring-cyan-500', 'bg-cyan-200'));
+                                    card.classList.add('ring-2', 'ring-cyan-500', 'bg-cyan-200');
+                                    // Guardar horario seleccionado
+                                    document.getElementById('input-dia_semana').value = item.dia_semana;
+
+                                    // Normaliza la hora a HH:MM:SS
+                                    function normalizaHora(hora) {
+                                        // Si ya viene como HH:MM:SS, retorna igual
+                                        if (/^\d{2}:\d{2}:\d{2}$/.test(hora)) return hora;
+                                        // Si viene como HH:MM, agrega :00
+                                        if (/^\d{2}:\d{2}$/.test(hora)) return hora + ':00';
+                                        // Si viene como 900, 0930, etc
+                                        let h = hora.replace(/[^0-9]/g, '');
+                                        if (h.length === 3) h = '0' + h;
+                                        if (h.length === 4) return h.slice(0,2) + ':' + h.slice(2,4) + ':00';
+                                        return '';
+                                    }
+
+                                    const horaInicio = normalizaHora(item.hora_inicio);
+                                    const horaFin = normalizaHora(item.hora_fin);
+
+                                    document.getElementById('input-hora_inicio').value = horaInicio;
+                                    document.getElementById('input-hora_fin').value = horaFin;
+
+                                    // Log para depuración
+                                    console.log('Hora inicio enviada:', horaInicio);
+                                    console.log('Hora fin enviada:', horaFin);
+
+                                    document.getElementById('btn-agendar-cita').disabled = false;
+                                });
+                                scheduleContent.appendChild(card);
+                            });
+                        } else {
+                            scheduleDiv.classList.remove('hidden');
+                            scheduleContent.innerHTML = `<div class='text-gray-500'>No hay horario registrado para este doctor.</div>`;
+                        }
+                    });
+            });
+            // ABRIR MODAL NUEVO
+            window.openModalCita = function() {
+                const doctorSelect = document.getElementById('doctor_id');
+                const selectedHorario = document.querySelector('.select-horario.ring-2');
+                let errorMsg = '';
+                if (!doctorSelect || !doctorSelect.value) errorMsg = 'Selecciona un doctor antes de agendar.';
+                if (!selectedHorario) errorMsg = 'Selecciona un horario antes de agendar.';
+                if (errorMsg) {
+                    alert(errorMsg);
+                    return;
+                }
+                // LLENAR CAMPOS ANTES DE MOSTRAR EL MODAL
+                document.getElementById('modal-doctor').value = doctorSelect.options[doctorSelect.selectedIndex].text;
+                document.getElementById('modal-doctor').setAttribute('data-id', doctorSelect.value);
+                document.getElementById('modal-dia').value = selectedHorario.getAttribute('data-dia-nombre') || '';
+                document.getElementById('modal-dia').setAttribute('data-id', selectedHorario.getAttribute('data-dia-semana'));
+                document.getElementById('modal-hora-inicio').value = selectedHorario.getAttribute('data-hora-inicio');
+                document.getElementById('modal-hora-fin').value = selectedHorario.getAttribute('data-hora-fin');
+                // Motivo: si hay un campo específico, úsalo. Si no, busca en el dataset o en el texto de la tarjeta
+                let motivo = '';
+                if(selectedHorario.querySelector('.text-gray-500')) {
+                    motivo = selectedHorario.querySelector('.text-gray-500').textContent.trim();
+                } else if(selectedHorario.getAttribute('data-motivo')) {
+                    motivo = selectedHorario.getAttribute('data-motivo');
+                }
+                document.getElementById('modal-motivo').value = motivo;
+                document.getElementById('modal-descripcion').value = '';
+                document.getElementById('modal-error-msg').classList.add('hidden');
+                document.getElementById('modal-error-msg').innerHTML = '';
+                document.getElementById('modal-cita').classList.remove('hidden');
+            };
+            document.getElementById('btn-agendar-cita').onclick = openModalCita;
+            document.getElementById('close-modal-cita').onclick = function() {
+                document.getElementById('modal-cita').classList.add('hidden');
+            };
+            // SUBMIT AJAX NUEVO MODAL
+            const formCita = document.getElementById('form-cita');
+            formCita.onsubmit = async function(e) {
+                // Antes de enviar, poner el id real en el campo hidden para doctor y dia_semana
+                document.getElementById('modal-doctor').value = document.getElementById('modal-doctor').getAttribute('data-id');
+                document.getElementById('modal-dia').value = document.getElementById('modal-dia').getAttribute('data-id');
+                // Validación frontend extra
+                for (const [key, val] of new FormData(formCita).entries()) {
+                    if (!val || val.toString().trim() === '') {
+                        mostrarErrorModalNuevo('Por favor llena todos los campos.');
+                        return;
+                    }
+                }
+                const btn = document.getElementById('modal-submit-cita');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Agendando...';
+                document.getElementById('modal-error-msg').classList.add('hidden');
+                document.getElementById('modal-error-msg').innerHTML = '';
+                const formData = new FormData(formCita);
+                try {
+                    const res = await fetch(formCita.action || window.location.pathname, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('input[name=_token]')?.value,
+                            'Accept': 'application/json'
+                        },
+                        body: formData
+                    });
+                    let data = null;
+                    try {
+                        data = await res.clone().json();
+                    } catch (e) {
+                        mostrarErrorModalNuevo('Respuesta inesperada del servidor.');
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Confirmar Cita';
+                        return;
+                    }
+                    if (res.ok && data.success) {
+                        btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> ¡Cita agendada!';
+                        btn.classList.remove('bg-cyan-500','hover:bg-cyan-600');
+                        btn.classList.add('bg-green-500');
+                        setTimeout(() => {
+                            document.getElementById('modal-cita').classList.add('hidden');
+                            window.location.reload();
+                        }, 1200);
+                    } else {
+                        mostrarErrorModalNuevo(data?.message || 'Error al agendar cita.');
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Confirmar Cita';
+                    }
+                } catch (err) {
+                    mostrarErrorModalNuevo('Error inesperado.');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Confirmar Cita';
+                }
+            };
+            function mostrarErrorModalNuevo(msg) {
+                const div = document.getElementById('modal-error-msg');
+                div.classList.remove('hidden');
+                div.className = 'bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow mb-4';
+                div.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-2"></i> ' + msg;
+            }
         });
-        function mostrarErrorModal(msg) {
-            let errorDiv = document.createElement('div');
-            errorDiv.id = 'modal-error-msg';
-            errorDiv.className = 'bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow mb-4';
-            errorDiv.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-2"></i>' + msg;
-            const modalBody = document.getElementById('modal-malestar').querySelector('.p-8');
-            modalBody.prepend(errorDiv);
-        }
     </script>
     
 </body>
