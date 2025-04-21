@@ -474,27 +474,36 @@
                                 },
                                 body: JSON.stringify(eventData)
                             })
-                            .then(response => {
-                                // Verificar si la respuesta es exitosa
-                                if (!response.ok) {
-                                    // Si el estado es 401, probablemente la sesión expiró
-                                    if (response.status === 401) {
-                                        throw new Error('Sesión expirada');
-                                    }
-                                    throw new Error(`Error de red: ${response.status}`);
-                                }
-                                // Verificar el tipo de contenido para asegurarse de que es JSON
+                            .then(async response => {
                                 const contentType = response.headers.get('content-type');
-                                if (!contentType || !contentType.includes('application/json')) {
-                                    // Intentar obtener el texto de la respuesta para diagnóstico
-                                    return response.text().then(text => {
-                                        console.error('Respuesta no JSON recibida:', text.substring(0, 150) + '...');
-                                        throw new Error('La respuesta no es JSON válido. Posiblemente la sesión ha expirado.');
-                                    });
+                                let data = null;
+                                if (contentType && contentType.includes('application/json')) {
+                                    data = await response.json();
+                                } else {
+                                    data = { message: await response.text() };
                                 }
-                                return response.json();
-                            })
-                            .then(data => {
+
+                                if (!response.ok) {
+                                    // Si es validación, muestra los errores
+                                    if (response.status === 422 && data.errors) {
+                                        this.errors = data.errors;
+                                        this.message = {
+                                            type: 'error',
+                                            text: data.message || 'Error de validación. Por favor, revise los campos marcados.'
+                                        };
+                                        this.loading = false;
+                                        return;
+                                    }
+                                    // Otros errores
+                                    this.message = {
+                                        type: 'error',
+                                        text: data.message || `Error de red: ${response.status}`
+                                    };
+                                    this.loading = false;
+                                    return;
+                                }
+
+                                // Si es éxito
                                 if (data.success) {
                                     this.message = {
                                         type: 'success',
@@ -515,22 +524,10 @@
                             })
                             .catch(error => {
                                 console.error('Error:', error);
-                                // Si no es un error de sesión expirada, mostrar mensaje genérico
-                                if (error.message === 'Sesión expirada') {
-                                    this.message = {
-                                        type: 'error',
-                                        text: 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.'
-                                    };
-                                    // Redirigir al login después de 2 segundos
-                                    setTimeout(() => {
-                                        window.location.href = '/';
-                                    }, 2000);
-                                } else {
-                                    this.message = {
-                                        type: 'error',
-                                        text: 'Ha ocurrido un error en el servidor. Por favor, recargue la página o inicie sesión nuevamente.'
-                                    };
-                                }
+                                this.message = {
+                                    type: 'error',
+                                    text: error.message || 'Ha ocurrido un error en el servidor. Por favor, recargue la página o inicie sesión nuevamente.'
+                                };
                                 this.loading = false;
                             });
                         },
@@ -656,7 +653,7 @@
                             <div class="space-y-4">
                                 <div class="flex items-center space-x-2">
                                     <div class="w-8 h-8 rounded-full flex items-center justify-center" :style="`background-color: ${drawer.currentEvent.color}`">
-                                        <i :class="`fas ${drawer.currentEvent.icono} text-white`"></i>
+                                        <i :class="`text-white fas ${drawer.currentEvent.icono}`"></i>
                                     </div>
                                     <h4 class="text-lg font-semibold" x-text="drawer.currentEvent.titulo"></h4>
                                 </div>

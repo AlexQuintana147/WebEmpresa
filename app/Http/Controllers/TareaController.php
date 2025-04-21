@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 
-
 class TareaController extends Controller
 {
     public function index()
@@ -132,25 +131,48 @@ class TareaController extends Controller
     {
         // Forzar que todas las respuestas sean JSON
         $request->headers->set('Accept', 'application/json');
-        
+
         // Verificar que la tarea pertenezca al usuario autenticado
         if ($tarea->usuario_id !== Auth::id()) {
             return response()->json([
                 'success' => false,
-                'message' => 'No tiene permiso para actualizar este horario'
+                'message' => 'No tiene permiso para editar este horario'
             ], 403, ['Content-Type' => 'application/json']);
         }
 
         try {
-            // Validar manualmente para poder capturar errores y devolverlos como JSON
-            $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-                'titulo' => 'required|string|max:255',
-                'descripcion' => 'nullable|string',
-                'dia_semana' => 'required|integer|min:1|max:7',
-                'hora_inicio' => 'required|date_format:H:i',
-                'hora_fin' => 'required|date_format:H:i|after:hora_inicio',
-                'color' => 'nullable|string|max:255',
-                'icono' => 'nullable|string|max:255',
+            // Solo actualizar los campos presentes en la petición (permite edición parcial)
+            $campos = [
+                'titulo', 'descripcion', 'dia_semana', 'hora_inicio', 'hora_fin', 'color', 'icono'
+            ];
+            $datosActualizar = [];
+            foreach ($campos as $campo) {
+                if ($request->has($campo)) {
+                    $datosActualizar[$campo] = $request->$campo;
+                }
+            }
+
+            // Normaliza las horas a formato HH:mm (sin segundos)
+            if (isset($datosActualizar['hora_inicio'])) {
+                $datosActualizar['hora_inicio'] = substr($datosActualizar['hora_inicio'], 0, 5);
+            }
+            if (isset($datosActualizar['hora_fin'])) {
+                $datosActualizar['hora_fin'] = substr($datosActualizar['hora_fin'], 0, 5);
+            }
+
+            // Validar solo los campos enviados, con mensajes personalizados
+            $validator = \Illuminate\Support\Facades\Validator::make($datosActualizar, [
+                'titulo' => 'sometimes|required|string|max:255',
+                'descripcion' => 'sometimes|nullable|string',
+                'dia_semana' => 'sometimes|required|integer|min:1|max:7',
+                'hora_inicio' => 'sometimes|required|date_format:H:i',
+                'hora_fin' => 'sometimes|required|date_format:H:i|after:hora_inicio',
+                'color' => 'sometimes|nullable|string|max:255',
+                'icono' => 'sometimes|nullable|string|max:255',
+            ], [
+                'hora_inicio.date_format' => 'La hora de inicio debe tener el formato HH:mm (por ejemplo, 08:00)',
+                'hora_fin.date_format' => 'La hora de fin debe tener el formato HH:mm (por ejemplo, 09:00)',
+                'hora_fin.after' => 'La hora de fin debe ser posterior a la hora de inicio',
             ]);
 
             if ($validator->fails()) {
@@ -160,14 +182,11 @@ class TareaController extends Controller
                     'errors' => $validator->errors()
                 ], 422, ['Content-Type' => 'application/json']);
             }
-            
-            $tarea->titulo = $request->titulo;
-            $tarea->descripcion = $request->descripcion;
-            $tarea->dia_semana = $request->dia_semana;
-            $tarea->hora_inicio = $request->hora_inicio;
-            $tarea->hora_fin = $request->hora_fin;
-            $tarea->color = $request->color ?? '#4A90E2';
-            $tarea->icono = $request->icono ?? 'fa-user-doctor';
+
+            // Actualizar solo los campos enviados
+            foreach ($datosActualizar as $campo => $valor) {
+                $tarea->$campo = $valor;
+            }
             $tarea->save();
 
             return response()->json([

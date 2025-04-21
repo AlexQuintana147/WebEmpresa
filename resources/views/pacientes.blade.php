@@ -21,29 +21,25 @@
             <!-- Contenido Principal -->
             <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" id="gestionPacientes">
                 <!-- Título de la página -->
-                <div class="flex justify-between items-center mb-6">
-                    <h1 class="text-2xl font-semibold text-gray-900">Pacientes</h1>
+                <div class="flex justify-between items-center mb-8">
+                    <h1 class="text-3xl font-bold text-cyan-700 flex items-center gap-2">
+                        <i class="fas fa-users-medical"></i> Gestión de Pacientes
+                    </h1>
                 </div>
                 
                 <!-- Mensaje de estado -->
                 <div 
                     id="messageContainer"
-                    class="border-l-4 p-4 mb-6 hidden transition-message message-hidden"
+                    class="border-l-4 p-4 mb-6 hidden transition-message message-hidden bg-white rounded-lg shadow flex items-center gap-3"
                 >
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i id="messageIcon" class=""></i>
-                        </div>
-                        <div class="ml-3">
-                            <p id="messageText"></p>
-                        </div>
-                    </div>
+                    <i id="messageIcon" class="text-xl"></i>
+                    <span id="messageText" class="text-base"></span>
                 </div>
                 
                 <!-- Formulario de verificación de DNI (mostrar solo si el doctor no tiene DNI) -->
-                <div id="dniVerificationForm" class="medical-card bg-white overflow-hidden mb-6 {{ $doctor ? 'hidden' : '' }}">
+                <div id="dniVerificationForm" class="medical-card bg-white overflow-hidden mb-6 {{ $doctor ? 'hidden' : '' }} rounded-xl shadow border border-cyan-100">
                     <div class="p-6">
-                        <h2 class="text-xl font-semibold text-gray-800 mb-4">Verificación de Identidad</h2>
+                        <h2 class="text-xl font-bold text-cyan-700 mb-4 flex items-center gap-2"><i class="fas fa-id-card"></i> Verificación de Identidad</h2>
                         <p class="text-gray-600 mb-4">Para acceder a la lista de pacientes, primero debe verificar su identidad ingresando su DNI.</p>
                         
                         <form id="verificarDniForm" class="space-y-4">
@@ -62,6 +58,7 @@
                                         maxlength="8"
                                         pattern="[0-9]{8}"
                                         required
+                                        autocomplete="off"
                                     >
                                 </div>
                                 <p id="dniError" class="mt-1 text-sm text-red-600 hidden"></p>
@@ -71,11 +68,10 @@
                                 <p id="loadingDni" class="text-sm text-cyan-600 hidden"><i class="fas fa-spinner fa-spin mr-2"></i> Verificando DNI...</p>
                                 <button 
                                     type="submit" 
-                                    class="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center space-x-2"
+                                    class="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center space-x-2 shadow" 
                                     id="verificarDniBtn"
                                 >
-                                    <i class="fas fa-check-circle"></i>
-                                    <span>Verificar DNI</span>
+                                    <i class="fas fa-check-circle"></i> <span>Verificar DNI</span>
                                 </button>
                             </div>
                         </form>
@@ -83,9 +79,9 @@
                 </div>
                 
                 <!-- Formulario para completar datos del doctor (mostrar después de verificar DNI) -->
-                <div id="doctorForm" class="medical-card bg-white overflow-hidden mb-6 hidden">
+                <div id="doctorForm" class="medical-card bg-white overflow-hidden mb-6 hidden rounded-xl shadow border border-cyan-100">
                     <div class="p-6">
-                        <h2 class="text-xl font-semibold text-gray-800 mb-4">Complete sus Datos</h2>
+                        <h2 class="text-xl font-bold text-cyan-700 mb-4 flex items-center gap-2"><i class="fas fa-user-md"></i> Complete sus Datos</h2>
                         <p class="text-gray-600 mb-4">Hemos verificado su DNI. Por favor, confirme sus datos para continuar.</p>
                         
                         <form id="guardarDatosMedicoForm" class="space-y-4">
@@ -182,11 +178,10 @@
                                 <p id="loadingGuardar" class="text-sm text-cyan-600 hidden"><i class="fas fa-spinner fa-spin mr-2"></i> Guardando datos...</p>
                                 <button 
                                     type="submit" 
-                                    class="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center space-x-2"
+                                    class="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center space-x-2 shadow" 
                                     id="guardarDatosBtn"
                                 >
-                                    <i class="fas fa-save"></i>
-                                    <span>Guardar Datos</span>
+                                    <i class="fas fa-save"></i> <span>Guardar Datos</span>
                                 </button>
                             </div>
                         </form>
@@ -194,9 +189,9 @@
                 </div>
                 
                 <!-- Información del Doctor -->
-                <div id="doctorInfo" class="medical-card bg-white overflow-hidden mb-6 {{ $doctor ? '' : 'hidden' }}">
+                <div id="doctorInfo" class="medical-card bg-white overflow-hidden mb-6 {{ $doctor ? '' : 'hidden' }} rounded-xl shadow border border-cyan-100">
                     <div class="p-6">
-                        <h2 class="text-xl font-semibold text-gray-800 mb-4">Información del Médico</h2>
+                        <h2 class="text-xl font-bold text-cyan-700 mb-4 flex items-center gap-2"><i class="fas fa-user-md"></i> Información del Médico</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <h3 class="text-sm font-medium text-gray-500">Nombre Completo</h3>
@@ -225,13 +220,11 @@
                 <!-- Lista de Pacientes del Doctor -->
                 <div id="pacientesList" class="medical-card bg-white overflow-hidden mb-6 {{ $doctor ? '' : 'hidden' }} shadow-lg rounded-2xl border border-cyan-200">
                     <div class="p-6">
-                        <h2 class="text-3xl font-bold text-cyan-700 mb-4 flex items-center gap-2">
-                            <i class="fas fa-users"></i> Lista de Pacientes
-                        </h2>
+                        <h2 class="text-3xl font-bold text-cyan-700 mb-4 flex items-center gap-2"><i class="fas fa-users"></i> Lista de Pacientes</h2>
                         @if(count($pacientes) > 0)
                         <div class="overflow-x-auto rounded-xl border border-gray-100">
                             <table class="min-w-full divide-y divide-cyan-100 bg-white">
-                                <thead class="bg-cyan-50">
+                                <thead class="bg-cyan-50 sticky top-0 z-10">
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-bold text-cyan-700 uppercase tracking-wider">DNI</th>
                                         <th class="px-6 py-3 text-left text-xs font-bold text-cyan-700 uppercase tracking-wider">Nombre Completo</th>
@@ -282,17 +275,16 @@
                     <div class="bg-white rounded-2xl shadow-2xl transform transition-all max-w-lg w-full p-8 z-50 border-t-8 border-cyan-500">
                       <div class="flex justify-between items-center mb-6">
                         <h3 id="modalPacienteTitle" class="text-2xl font-bold text-cyan-700"></h3>
-                        <button onclick="closeModalPaciente()" class="text-gray-400 hover:text-cyan-600 focus:outline-none">
+                        <button onclick="closeModalPaciente()" class="text-gray-400 hover:text-cyan-600 focus:outline-none" title="Cerrar">
                           <i class="fas fa-times text-xl"></i>
                         </button>
                       </div>
-                      <div id="modalPacienteContent" class="text-gray-700 text-lg min-h-[60px]">
+                      <div id="modalPacienteContent" class="text-gray-700 text-lg min-h-[60px] pb-2">
                         <!-- Aquí el contenido dinámico -->
                       </div>
                       <div class="mt-8 flex justify-end gap-4">
-                        <button id="btnDiagnosticoIAAlt" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded shadow flex items-center gap-2">
-                            <i class="fas fa-vials"></i>
-                            Diagnóstico IA Alternativo
+                        <button id="btnDiagnosticoIAAlt" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded shadow flex items-center gap-2 transition-all duration-200">
+                            <i class="fas fa-vials"></i> Diagnóstico IA Alternativo
                         </button>
                         <button onclick="closeModalPaciente()" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-6 rounded shadow transition-all">Cerrar</button>
                       </div>
