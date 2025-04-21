@@ -76,21 +76,6 @@ class CitaController extends Controller
             'citas' => $citas
         ]);
     }
-    
-    /**
-     * Obtiene los doctores por especialidad
-     */
-    public function getDoctoresPorEspecialidad($categoria)
-    {
-        $doctores = Doctor::where('especialidad', $categoria)
-            ->select('id', 'nombre', 'apellido')
-            ->orderBy('apellido')
-            ->orderBy('nombre')
-            ->get();
-
-        return response()->json($doctores);
-    }
-
     /**
      * Almacena una nueva cita en la base de datos
      */
