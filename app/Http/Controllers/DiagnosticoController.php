@@ -41,14 +41,20 @@ class DiagnosticoController extends Controller
                 Log::warning("DiagnosticoIA.py STDERR: $stderr");
             }
 
-            // Buscar la línea de respuesta IA
+            // Buscar la línea de respuesta IA y concatenar todas las líneas siguientes
             $respuestaIA = null;
+            $encontrado = false;
+            $lineas = [];
             foreach (preg_split('/\r?\n/', $response) as $line) {
+                if ($encontrado) {
+                    $lineas[] = trim($line);
+                }
                 if (strpos($line, 'Respuesta IA:') === 0) {
-                    $respuestaIA = trim(substr($line, strlen('Respuesta IA:')));
-                    break;
+                    $lineas[] = trim(substr($line, strlen('Respuesta IA:')));
+                    $encontrado = true;
                 }
             }
+            $respuestaIA = trim(implode("\n", array_filter($lineas)));
 
             // --- Normalización y limpieza de codificación UTF-8 ---
             $detectedEncoding = mb_detect_encoding($respuestaIA, 'UTF-8, ISO-8859-1, Windows-1252', true);
