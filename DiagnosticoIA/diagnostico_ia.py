@@ -12,7 +12,7 @@ if len(sys.argv) < 2:
 descripcion = sys.argv[1]
 
 chrome_options = Options()
-# chrome_options.add_argument('--headless')
+chrome_options.add_argument('--headless')
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 chrome_options.add_argument('--disable-gpu')
@@ -34,7 +34,7 @@ try:
         sys.exit(3)
     textarea.send_keys(descripcion)
     textarea.send_keys('\n')
-    time.sleep(12)  # Espera más tiempo para que llegue la respuesta
+    time.sleep(8)  # Espera más tiempo para que llegue la respuesta
     responses = driver.find_elements(By.CLASS_NAME, 'bpMessageBlocksTextText')
     print("Mensajes encontrados:")
     for i, resp in enumerate(responses):
