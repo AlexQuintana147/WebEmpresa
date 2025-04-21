@@ -118,37 +118,11 @@
                                     <i class="fa-solid fa-user-md absolute right-3 top-3 text-cyan-300"></i>
                                 </div>
                             </div>
-                            <div>
-                                <label for="tipo_consulta" class="block text-gray-700 font-semibold mb-1">¿Qué desea?</label>
-                                <div class="relative">
-                                    <select name="tipo_consulta" id="tipo_consulta" class="select-medical w-full border border-cyan-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400 shadow-sm transition">
-                                        <option value="">Seleccione el tipo de consulta</option>
-                                        <option value="consulta_general">Consulta General</option>
-                                        <option value="atencion_medica">Atención Médica</option>
-                                        <option value="consulta_especialidad">Consulta de Especialidad</option>
-                                        <option value="revision_resultados">Revisión de Resultados</option>
-                                    </select>
-                                    <i class="fa-solid fa-stethoscope absolute right-3 top-3 text-cyan-300"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <label for="fecha_cita" class="block text-gray-700 font-semibold mb-1">Día Disponible</label>
-                                <div class="relative">
-                                    <select name="fecha_cita" id="fecha_cita" class="select-medical w-full border border-cyan-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400 shadow-sm transition">
-                                        <option value="">Primero seleccione un doctor</option>
-                                    </select>
-                                    <i class="fa-solid fa-calendar-day absolute right-3 top-3 text-cyan-300"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <label for="hora_cita" class="block text-gray-700 font-semibold mb-1">Horario Disponible</label>
-                                <div class="relative">
-                                    <select name="hora_cita" id="hora_cita" class="select-medical w-full border border-cyan-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400 shadow-sm transition">
-                                        <option value="">Primero seleccione un día</option>
-                                    </select>
-                                    <i class="fa-solid fa-clock absolute right-3 top-3 text-cyan-300"></i>
-                                </div>
-                            </div>
+                        </div>
+                        <!-- Aquí se mostrará el horario del doctor -->
+                        <div id="doctor-schedule" class="mt-10 hidden">
+                            <h3 class="text-lg font-bold text-cyan-700 mb-4 flex items-center gap-2"><i class="fa-solid fa-calendar-days"></i> Horario semanal del doctor</h3>
+                            <div id="schedule-content" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                         </div>
                         <div class="flex justify-end mt-6">
                             <button type="submit" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-8 rounded-lg shadow-md transition flex items-center gap-2">
@@ -165,20 +139,8 @@
         document.getElementById('categoria').addEventListener('change', function() {
             const categoria = this.value;
             const doctorSelect = document.getElementById('doctor_id');
-            const tipoConsultaSelect = document.getElementById('tipo_consulta');
-            const fechaSelect = document.getElementById('fecha_cita');
-            
             // Limpiar opciones actuales
             doctorSelect.innerHTML = '<option value="">Cargando doctores...</option>';
-            tipoConsultaSelect.innerHTML = '<option value="">Seleccione el tipo de consulta</option>';
-            tipoConsultaSelect.innerHTML += `
-                <option value="consulta_general">Consulta General</option>
-                <option value="atencion_medica">Atención Médica</option>
-                <option value="consulta_especialidad">Consulta de Especialidad</option>
-                <option value="revision_resultados">Revisión de Resultados</option>
-            `;
-            fechaSelect.innerHTML = '<option value="">Primero seleccione un doctor y tipo de consulta</option>';
-            
             if (categoria) {
                 fetch(`/api/doctores/${categoria}`)
                     .then(response => response.json())
@@ -200,106 +162,37 @@
                     });
             } else {
                 doctorSelect.innerHTML = '<option value="">Primero seleccione una especialidad</option>';
-                fechaSelect.innerHTML = '<option value="">Primero seleccione un doctor y tipo de consulta</option>';
             }
         });
-
-        function actualizarHorarios() {
-            const doctorId = document.getElementById('doctor_id').value;
-            const tipoConsulta = document.getElementById('tipo_consulta').value;
-            const fecha = document.getElementById('fecha_cita').value;
-            const horaSelect = document.getElementById('hora_cita');
-            
-            if (!doctorId || !tipoConsulta || !fecha) {
-                horaSelect.innerHTML = '<option value="">Complete la selección anterior</option>';
-                return;
-            }
-            
-            horaSelect.innerHTML = '<option value="">Cargando horarios disponibles...</option>';
-            
-            // Hacer la petición AJAX para obtener los horarios disponibles según el tipo de consulta
-            fetch(`/api/doctores/${doctorId}/horarios-disponibles/${fecha}/${tipoConsulta}`)
-                .then(response => response.json())
-                .then(data => {
-                    horaSelect.innerHTML = '<option value="">Seleccione un horario</option>';
-                    if (data.success && data.horarios && Array.isArray(data.horarios)) {
-                        for (const horario of data.horarios) {
-                            const horaInicio = horario.hora_inicio.substring(0, 5);
-                            const horaFin = horario.hora_fin.substring(0, 5);
-                            horaSelect.innerHTML += `<option value="${horario.hora_inicio}">${horaInicio} - ${horaFin}</option>`;
-                        }
-                    } else {
-                        console.error('La respuesta no tiene el formato esperado:', data);
-                        horaSelect.innerHTML = '<option value="">Error: formato de respuesta inválido</option>';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    horaSelect.innerHTML = '<option value="">Error al cargar horarios</option>';
-                });
-        }
 
         document.getElementById('doctor_id').addEventListener('change', function() {
             const doctorId = this.value;
-            const tipoConsulta = document.getElementById('tipo_consulta').value;
-            const fechaSelect = document.getElementById('fecha_cita');
-            const horaSelect = document.getElementById('hora_cita');
-            
-            fechaSelect.innerHTML = '<option value="">Cargando días disponibles...</option>';
-            horaSelect.innerHTML = '<option value="">Primero seleccione un día</option>';
-            
-            if (doctorId) {
-                fetch(`/api/doctores/${doctorId}/dias-disponibles`)
-                    .then(response => response.json())
-                    .then(data => {
-                        fechaSelect.innerHTML = '<option value="">Seleccione un día disponible</option>';
-                        if (data && data.dias && Array.isArray(data.dias)) {
-                            for (const dia of data.dias) {
-                                const fecha = new Date(dia.fecha);
-                                const diaSemana = fecha.getDay(); // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
-                                
-                                // Filtrar días según el tipo de consulta
-                                if (tipoConsulta === 'consulta_general' && !(diaSemana === 1 || diaSemana === 2)) {
-                                    continue; // Saltar si no es lunes o martes para consulta general
-                                } else if (tipoConsulta === 'atencion_medica' && diaSemana !== 3) {
-                                    continue; // Saltar si no es miércoles para atención médica
-                                } else if (tipoConsulta === 'consulta_especialidad' && diaSemana !== 4) {
-                                    continue; // Saltar si no es jueves para consulta de especialidad
-                                } else if (tipoConsulta === 'revision_resultados' && diaSemana !== 6) {
-                                    continue; // Saltar si no es sábado para revisión de resultados
-                                }
-                                
-                                const fechaFormateada = fecha.toLocaleDateString('es-ES', {
-                                    weekday: 'long',
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                });
-                                fechaSelect.innerHTML += `<option value="${dia.fecha}">${fechaFormateada}</option>`;
-                            }
-                        } else {
-                            console.error('La respuesta no tiene el formato esperado:', data);
-                            fechaSelect.innerHTML = '<option value="">Error: formato de respuesta inválido</option>';
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        fechaSelect.innerHTML = '<option value="">Error al cargar días disponibles</option>';
-                    });
-            } else {
-                fechaSelect.innerHTML = '<option value="">Primero seleccione un doctor</option>';
-                horaSelect.innerHTML = '<option value="">Primero seleccione un día</option>';
-            }
-        });
-
-        document.getElementById('fecha_cita').addEventListener('change', actualizarHorarios);
-        document.getElementById('tipo_consulta').addEventListener('change', function() {
-            const doctorId = document.getElementById('doctor_id').value;
-            if (doctorId) {
-                // Volver a cargar los días disponibles cuando cambie el tipo de consulta
-                document.getElementById('doctor_id').dispatchEvent(new Event('change'));
-            }
-            actualizarHorarios();
+            const scheduleDiv = document.getElementById('doctor-schedule');
+            const scheduleContent = document.getElementById('schedule-content');
+            scheduleDiv.classList.add('hidden');
+            scheduleContent.innerHTML = '';
+            if (!doctorId) return;
+            fetch(`/doctores/${doctorId}/horario`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.horario && data.horario.length > 0) {
+                        scheduleDiv.classList.remove('hidden');
+                        // Mostrar horario por día
+                        const dias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+                        data.horario.forEach(item => {
+                            const dia = dias[item.dia_semana-1] || 'Día';
+                            const card = `<div class='bg-cyan-50 border-l-4 border-cyan-400 rounded-lg p-4 shadow flex flex-col gap-1'>
+                                <div class='font-semibold text-cyan-700'><i class="fa-solid fa-calendar-day"></i> ${dia}</div>
+                                <div class='text-gray-700'><i class="fa-solid fa-clock"></i> ${item.hora_inicio} - ${item.hora_fin}</div>
+                                <div class='text-gray-500 text-sm'>${item.titulo || ''}</div>
+                            </div>`;
+                            scheduleContent.innerHTML += card;
+                        });
+                    } else {
+                        scheduleDiv.classList.remove('hidden');
+                        scheduleContent.innerHTML = `<div class='text-gray-500'>No hay horario registrado para este doctor.</div>`;
+                    }
+                });
         });
     </script>
     

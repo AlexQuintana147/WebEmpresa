@@ -74,6 +74,8 @@ Route::middleware('doctor')->group(function () {
     Route::post('/doctores/guardar-dni', [\App\Http\Controllers\DoctorController::class, 'guardarDni'])->name('doctores.guardar-dni');
 });
 
+// Ruta pública para obtener el horario semanal de un doctor
+Route::get('/doctores/{doctor}/horario', [App\Http\Controllers\DoctorController::class, 'horario']);
 
 // Rutas para pacientes (rol_id = 2)
 Route::middleware('paciente')->group(function () {

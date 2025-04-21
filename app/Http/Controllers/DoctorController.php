@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Doctor;
 use App\Models\Paciente;
 use App\Models\User;
+use App\Models\Tarea;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -211,6 +212,25 @@ class DoctorController extends Controller
             'success' => true,
             'message' => 'Paciente asociado correctamente',
             'paciente' => $paciente
+        ]);
+    }
+    
+    /**
+     * Devuelve el horario semanal del doctor (sus tareas)
+     */
+    public function horario($doctor_id)
+    {
+        // Obtener el usuario_id del doctor
+        $doctor = \App\Models\Doctor::findOrFail($doctor_id);
+        $usuario_id = $doctor->usuario_id;
+        // Obtener tareas (horarios) de la semana, ordenadas por día y hora
+        $tareas = \App\Models\Tarea::where('usuario_id', $usuario_id)
+            ->orderBy('dia_semana')
+            ->orderBy('hora_inicio')
+            ->get(['dia_semana', 'hora_inicio', 'hora_fin', 'titulo']);
+        return response()->json([
+            'success' => true,
+            'horario' => $tareas
         ]);
     }
 }
