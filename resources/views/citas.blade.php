@@ -72,22 +72,10 @@
                             </select>
                         </div>
 
-                        <!-- Fecha y Hora -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="space-y-2">
-                                <label for="fecha" class="block text-sm font-medium text-gray-700">Fecha</label>
-                                <input type="date" name="fecha" id="fecha" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                            </div>
-                            <div class="space-y-2">
-                                <label for="hora" class="block text-sm font-medium text-gray-700">Hora</label>
-                                <input type="time" name="hora" id="hora" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                            </div>
-                        </div>
-
-                        <!-- Motivo de la Cita -->
+                        <!-- Hora -->
                         <div class="space-y-2">
-                            <label for="motivo" class="block text-sm font-medium text-gray-700">Motivo de la Cita</label>
-                            <textarea name="motivo" id="motivo" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Describa brevemente el motivo de su cita"></textarea>
+                            <label for="hora" class="block text-sm font-medium text-gray-700">Hora</label>
+                            <input type="time" name="hora" id="hora" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                         </div>
 
                         <div class="flex justify-end">
@@ -114,11 +102,17 @@
                 // Hacer la petición AJAX para obtener los doctores de la categoría seleccionada
                 fetch(`/api/doctores/${categoria}`)
                     .then(response => response.json())
-                    .then(doctores => {
+                    .then(data => {
                         doctorSelect.innerHTML = '<option value="">Seleccione un doctor</option>';
-                        doctores.forEach(doctor => {
-                            doctorSelect.innerHTML += `<option value="${doctor.id}">${doctor.nombre} ${doctor.apellido}</option>`;
-                        });
+                        if (data && data.doctores && Array.isArray(data.doctores)) {
+                            for (const doctor of data.doctores) {
+                                const nombreCompleto = `${doctor.nombre} ${doctor.apellido_paterno || ''} ${doctor.apellido_materno || ''}`.trim();
+                                doctorSelect.innerHTML += `<option value="${doctor.id}">${nombreCompleto}</option>`;
+                            }
+                        } else {
+                            console.error('La respuesta no tiene el formato esperado:', data);
+                            doctorSelect.innerHTML = '<option value="">Error: formato de respuesta inválido</option>';
+                        }
                     })
                     .catch(error => {
                         console.error('Error:', error);
