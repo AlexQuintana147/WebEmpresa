@@ -90,6 +90,28 @@
                     </div>
                 </div>
             @endif
+            <!-- Validación de cita existente -->
+            @if(isset($citas) && count($citas) > 0)
+                <div class="max-w-2xl mx-auto mt-8">
+                    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded shadow text-lg flex items-start gap-3">
+                        <i class="fa-solid fa-calendar-check text-2xl mt-1"></i>
+                        <div>
+                            <span class="font-bold">Ya tienes una cita registrada:</span>
+                            <ul class="mt-2 text-base">
+                                @foreach($citas as $cita)
+                                    <li>
+                                        <b>Fecha:</b> {{ \Carbon\Carbon::parse($cita->fecha)->format('d/m/Y') }}<br>
+                                        <b>Hora:</b> {{ $cita->hora_inicio }} - {{ $cita->hora_fin }}<br>
+                                        <b>Doctor:</b> {{ $cita->doctor->nombre }} {{ $cita->doctor->apellido_paterno }}<br>
+                                        <b>Estado:</b> {{ ucfirst($cita->estado) }}
+                                    </li>
+                                @endforeach
+                            </ul>
+                            <div class="mt-4 text-cyan-700 font-semibold">Por el momento no puedes registrar otra cita hasta que tu cita actual sea atendida o cancelada.</div>
+                        </div>
+                    </div>
+                </div>
+            @else
             <!-- Contenido Principal -->
             <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
                 <!-- Título de la página con decoración médica -->
@@ -157,6 +179,7 @@
                     </form>
                 </div>
             </main>
+            @endif
         </div>
     </div>
     <!-- Scripts -->
