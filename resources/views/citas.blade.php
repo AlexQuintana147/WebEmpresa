@@ -126,6 +126,18 @@
                             </select>
                         </div>
 
+                        <!-- Selector de Tipo de Consulta -->
+                        <div class="space-y-2">
+                            <label for="tipo_consulta" class="block text-sm font-medium text-gray-700">¿Qué desea?</label>
+                            <select name="tipo_consulta" id="tipo_consulta" class="select-medical mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md bg-white">
+                                <option value="">Seleccione el tipo de consulta</option>
+                                <option value="consulta_general">Consulta General</option>
+                                <option value="atencion_medica">Atención Médica</option>
+                                <option value="consulta_especialidad">Consulta de Especialidad</option>
+                                <option value="revision_resultados">Revisión de Resultados</option>
+                            </select>
+                        </div>
+
                         <!-- Selector de Día Disponible -->
                         <div class="space-y-2">
                             <label for="fecha_cita" class="block text-sm font-medium text-gray-700">Día Disponible</label>
@@ -158,14 +170,21 @@
         document.getElementById('categoria').addEventListener('change', function() {
             const categoria = this.value;
             const doctorSelect = document.getElementById('doctor_id');
+            const tipoConsultaSelect = document.getElementById('tipo_consulta');
             const fechaSelect = document.getElementById('fecha_cita');
             
             // Limpiar opciones actuales
             doctorSelect.innerHTML = '<option value="">Cargando doctores...</option>';
-            fechaSelect.innerHTML = '<option value="">Primero seleccione un doctor</option>';
+            tipoConsultaSelect.innerHTML = '<option value="">Seleccione el tipo de consulta</option>';
+            tipoConsultaSelect.innerHTML += `
+                <option value="consulta_general">Consulta General</option>
+                <option value="atencion_medica">Atención Médica</option>
+                <option value="consulta_especialidad">Consulta de Especialidad</option>
+                <option value="revision_resultados">Revisión de Resultados</option>
+            `;
+            fechaSelect.innerHTML = '<option value="">Primero seleccione un doctor y tipo de consulta</option>';
             
             if (categoria) {
-                // Hacer la petición AJAX para obtener los doctores de la categoría seleccionada
                 fetch(`/api/doctores/${categoria}`)
                     .then(response => response.json())
                     .then(data => {
@@ -186,21 +205,54 @@
                     });
             } else {
                 doctorSelect.innerHTML = '<option value="">Primero seleccione una especialidad</option>';
-                fechaSelect.innerHTML = '<option value="">Primero seleccione un doctor</option>';
+                fechaSelect.innerHTML = '<option value="">Primero seleccione un doctor y tipo de consulta</option>';
             }
         });
+
+        function actualizarHorarios() {
+            const doctorId = document.getElementById('doctor_id').value;
+            const tipoConsulta = document.getElementById('tipo_consulta').value;
+            const fecha = document.getElementById('fecha_cita').value;
+            const horaSelect = document.getElementById('hora_cita');
+            
+            if (!doctorId || !tipoConsulta || !fecha) {
+                horaSelect.innerHTML = '<option value="">Complete la selección anterior</option>';
+                return;
+            }
+            
+            horaSelect.innerHTML = '<option value="">Cargando horarios disponibles...</option>';
+            
+            // Hacer la petición AJAX para obtener los horarios disponibles según el tipo de consulta
+            fetch(`/api/doctores/${doctorId}/horarios-disponibles/${fecha}/${tipoConsulta}`)
+                .then(response => response.json())
+                .then(data => {
+                    horaSelect.innerHTML = '<option value="">Seleccione un horario</option>';
+                    if (data.success && data.horarios && Array.isArray(data.horarios)) {
+                        for (const horario of data.horarios) {
+                            const horaInicio = horario.hora_inicio.substring(0, 5);
+                            const horaFin = horario.hora_fin.substring(0, 5);
+                            horaSelect.innerHTML += `<option value="${horario.hora_inicio}">${horaInicio} - ${horaFin}</option>`;
+                        }
+                    } else {
+                        console.error('La respuesta no tiene el formato esperado:', data);
+                        horaSelect.innerHTML = '<option value="">Error: formato de respuesta inválido</option>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    horaSelect.innerHTML = '<option value="">Error al cargar horarios</option>';
+                });
+        }
 
         document.getElementById('doctor_id').addEventListener('change', function() {
             const doctorId = this.value;
             const fechaSelect = document.getElementById('fecha_cita');
             const horaSelect = document.getElementById('hora_cita');
             
-            // Limpiar opciones actuales
             fechaSelect.innerHTML = '<option value="">Cargando días disponibles...</option>';
             horaSelect.innerHTML = '<option value="">Primero seleccione un día</option>';
             
             if (doctorId) {
-                // Hacer la petición AJAX para obtener los días disponibles del doctor seleccionado
                 fetch(`/api/doctores/${doctorId}/dias-disponibles`)
                     .then(response => response.json())
                     .then(data => {
@@ -231,39 +283,8 @@
             }
         });
 
-        document.getElementById('fecha_cita').addEventListener('change', function() {
-            const doctorId = document.getElementById('doctor_id').value;
-            const fecha = this.value;
-            const horaSelect = document.getElementById('hora_cita');
-            
-            // Limpiar opciones actuales
-            horaSelect.innerHTML = '<option value="">Cargando horarios disponibles...</option>';
-            
-            if (doctorId && fecha) {
-                // Hacer la petición AJAX para obtener los horarios disponibles
-                fetch(`/api/doctores/${doctorId}/horarios-disponibles/${fecha}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        horaSelect.innerHTML = '<option value="">Seleccione un horario</option>';
-                        if (data.success && data.horarios && Array.isArray(data.horarios)) {
-                            for (const horario of data.horarios) {
-                                const horaInicio = horario.hora_inicio.substring(0, 5);
-                                const horaFin = horario.hora_fin.substring(0, 5);
-                                horaSelect.innerHTML += `<option value="${horario.hora_inicio}">${horaInicio} - ${horaFin}</option>`;
-                            }
-                        } else {
-                            console.error('La respuesta no tiene el formato esperado:', data);
-                            horaSelect.innerHTML = '<option value="">Error: formato de respuesta inválido</option>';
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        horaSelect.innerHTML = '<option value="">Error al cargar horarios</option>';
-                    });
-            } else {
-                horaSelect.innerHTML = '<option value="">Primero seleccione un día</option>';
-            }
-        });
+        document.getElementById('fecha_cita').addEventListener('change', actualizarHorarios);
+        document.getElementById('tipo_consulta').addEventListener('change', actualizarHorarios);
     </script>
     
 </body>
