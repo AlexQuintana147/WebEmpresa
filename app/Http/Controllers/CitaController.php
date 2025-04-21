@@ -410,4 +410,28 @@ class CitaController extends Controller
         ]);
     }
 
+    /**
+     * Guarda la respuesta IA en la cita (solo para doctores dueños de la cita)
+     */
+    public function guardarRespuestaBot(Request $request, $id)
+    {
+        $user = Auth::user();
+        // Buscar cita y verificar que el doctor sea el dueño
+        $cita = Cita::findOrFail($id);
+        if (!$user || !$user->doctor || $cita->doctor_id != $user->doctor->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No autorizado.'
+            ], 403);
+        }
+        $request->validate([
+            'respuesta_bot' => 'required|string|max:2000'
+        ]);
+        $cita->respuesta_bot = $request->respuesta_bot;
+        $cita->save();
+        return response()->json([
+            'success' => true,
+            'message' => 'Respuesta IA guardada correctamente.'
+        ]);
+    }
 }

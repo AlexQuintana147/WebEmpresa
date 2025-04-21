@@ -311,24 +311,37 @@
             try {
                 const paciente = window.pacientes[index];
                 let descripcion = '-';
+                let respuestaBot = null;
+                let citaId = null;
                 if (paciente.citas && paciente.citas.length > 0) {
                     let citaReciente = paciente.citas.reduce((a, b) => new Date(a.fecha) > new Date(b.fecha) ? a : b);
                     descripcion = citaReciente.descripcion_malestar ?? '-';
+                    respuestaBot = citaReciente.respuesta_bot ?? null;
+                    citaId = citaReciente.id;
                 }
                 document.getElementById('modalPacienteTitle').innerText = 'Descripción del malestar';
                 document.getElementById('modalPacienteContent').innerHTML = `<p class='text-gray-700 whitespace-pre-line'>${descripcion ? descripcion : '-'}</p>`;
+                // Mostrar diagnóstico IA si existe
+                if (respuestaBot) {
+                    document.getElementById('modalPacienteContent').innerHTML += `<div class='mt-6 p-4 rounded border border-green-300 bg-green-50 text-green-900'><b>Diagnóstico IA Alternativo:</b><br>${respuestaBot}</div>`;
+                }
                 document.getElementById('modalPaciente').classList.remove('hidden');
-
-                // ASOCIA EL LISTENER AQUÍ
+                // Botón IA
                 const btnDiagnosticoIAAlt = document.getElementById('btnDiagnosticoIAAlt');
+                if (btnDiagnosticoIAAlt) {
+                    btnDiagnosticoIAAlt.disabled = !!respuestaBot;
+                    if (respuestaBot) {
+                        btnDiagnosticoIAAlt.innerHTML = '<i class="fas fa-vials"></i> Diagnóstico IA Alternativo (ya realizado)';
+                    } else {
+                        btnDiagnosticoIAAlt.innerHTML = '<i class="fas fa-vials"></i> Diagnóstico IA Alternativo';
+                    }
+                }
                 if (btnDiagnosticoIAAlt && !btnDiagnosticoIAAlt.dataset.listener) {
                     btnDiagnosticoIAAlt.addEventListener('click', async function() {
-                        console.log('[DiagnosticoIAAlt] Botón presionado');
                         btnDiagnosticoIAAlt.disabled = true;
                         btnDiagnosticoIAAlt.innerHTML = '<i class="fas fa-vials fa-spin"></i> Consultando IA...';
                         const descripcionElem = document.querySelector('#modalPacienteContent p');
                         const descripcion = descripcionElem ? descripcionElem.innerText.trim() : '';
-                        console.log('[DiagnosticoIAAlt] Descripción enviada:', descripcion);
                         try {
                             const resp = await fetch('/diagnostico-ia', {
                                 method: 'POST',
@@ -338,20 +351,31 @@
                                 },
                                 body: JSON.stringify({ descripcion })
                             });
-                            console.log('[DiagnosticoIAAlt] Estado HTTP:', resp.status);
                             const data = await resp.json();
-                            console.log('[DiagnosticoIAAlt] Respuesta IA:', data);
                             if (data.success) {
                                 document.getElementById('modalPacienteContent').innerHTML += `<div class='mt-6 p-4 rounded border border-green-300 bg-green-50 text-green-900'><b>Diagnóstico IA Alternativo:</b><br>${data.respuesta}</div>`;
+                                // Guardar respuesta IA en la cita
+                                if (citaId) {
+                                    await fetch(`/citas/${citaId}/respuesta-bot`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                        },
+                                        body: JSON.stringify({ respuesta_bot: data.respuesta })
+                                    });
+                                }
+                                btnDiagnosticoIAAlt.innerHTML = '<i class="fas fa-vials"></i> Diagnóstico IA Alternativo (ya realizado)';
                             } else {
                                 document.getElementById('modalPacienteContent').innerHTML += `<div class='mt-6 p-4 rounded border border-red-300 bg-red-50 text-red-900'><b>Error IA Alternativo:</b> ${data.error}</div>`;
+                                btnDiagnosticoIAAlt.disabled = false;
+                                btnDiagnosticoIAAlt.innerHTML = '<i class="fas fa-vials"></i> Diagnóstico IA Alternativo';
                             }
                         } catch (e) {
-                            console.error('[DiagnosticoIAAlt] Error en fetch:', e);
                             document.getElementById('modalPacienteContent').innerHTML += `<div class='mt-6 p-4 rounded border border-red-300 bg-red-50 text-red-900'><b>Error IA Alternativo:</b> ${e.message}</div>`;
+                            btnDiagnosticoIAAlt.disabled = false;
+                            btnDiagnosticoIAAlt.innerHTML = '<i class="fas fa-vials"></i> Diagnóstico IA Alternativo';
                         }
-                        btnDiagnosticoIAAlt.disabled = false;
-                        btnDiagnosticoIAAlt.innerHTML = '<i class="fas fa-vials"></i> Diagnóstico IA Alternativo';
                     });
                     btnDiagnosticoIAAlt.dataset.listener = 'true';
                 }

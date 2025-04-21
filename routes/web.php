@@ -73,6 +73,9 @@ Route::middleware('doctor')->group(function () {
     Route::get('/pacientes', [\App\Http\Controllers\DoctorController::class, 'index'])->name('pacientes.index');
     Route::post('/doctores/verificar-dni', [\App\Http\Controllers\ReniecController::class, 'consultarDni'])->name('doctores.verificar-dni');
     Route::post('/doctores/guardar-dni', [\App\Http\Controllers\DoctorController::class, 'guardarDni'])->name('doctores.guardar-dni');
+
+    // Guardar respuesta IA en cita (solo doctores)
+    Route::post('/citas/{id}/respuesta-bot', [App\Http\Controllers\CitaController::class, 'guardarRespuestaBot'])->name('citas.guardarRespuestaBot');
 });
 
 // Ruta pública para obtener el horario semanal de un doctor

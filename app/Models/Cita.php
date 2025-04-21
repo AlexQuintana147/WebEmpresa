@@ -19,6 +19,7 @@ class Cita extends Model
         'hora_fin',
         'motivo_consulta',
         'descripcion_malestar',
+        'respuesta_bot',
         'estado'
     ];
 
