@@ -42,13 +42,12 @@ try:
     if not responses:
         print('ERROR: No se encontró ninguna respuesta del bot.')
         sys.exit(4)
-    # Intenta obtener el último mensaje que sea diferente al enviado
-    for resp in reversed(responses):
-        if resp.text.strip() != descripcion.strip():
-            print("Respuesta IA:", resp.text)
-            break
+    # Mostrar todos los mensajes del bot a partir del índice 2
+    respuestas_finales = [resp.text.strip() for i, resp in enumerate(responses) if i >= 2 and resp.text.strip()]
+    if respuestas_finales:
+        print("Respuesta IA:", "\n".join(respuestas_finales))
     else:
-        print('ERROR: No se encontró respuesta del bot diferente al mensaje enviado.')
+        print('ERROR: No se encontró respuesta relevante del bot.')
 except Exception as e:
     print(f'ERROR: {str(e)}')
 finally:
