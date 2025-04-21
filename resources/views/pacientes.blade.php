@@ -290,9 +290,9 @@
                         <!-- Aquí el contenido dinámico -->
                       </div>
                       <div class="mt-8 flex justify-end gap-4">
-                        <button id="btnDiagnosticoIA" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded shadow transition-all animate-pulse-leds flex items-center gap-2">
-                            <i class="fas fa-robot"></i>
-                            Diagnóstico rápido con IA
+                        <button id="btnDiagnosticoIAAlt" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded shadow flex items-center gap-2">
+                            <i class="fas fa-vials"></i>
+                            Diagnóstico IA Alternativo
                         </button>
                         <button onclick="closeModalPaciente()" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-6 rounded shadow transition-all">Cerrar</button>
                       </div>
@@ -303,12 +303,11 @@
         </div>
     </div>
 
-    <!-- Script GLOBAL para modales y pacientes -->
     <script>
-        // Hacer pacientes global para acceso desde botones
+        console.log('Script de pacientes.blade.php cargado');
         window.pacientes = @json($pacientes);
 
-        window.showDetallesModal = function(index) {
+        function showDetallesModal(index) {
             try {
                 const paciente = window.pacientes[index];
                 let descripcion = '-';
@@ -319,370 +318,49 @@
                 document.getElementById('modalPacienteTitle').innerText = 'Descripción del malestar';
                 document.getElementById('modalPacienteContent').innerHTML = `<p class='text-gray-700 whitespace-pre-line'>${descripcion ? descripcion : '-'}</p>`;
                 document.getElementById('modalPaciente').classList.remove('hidden');
+
+                // ASOCIA EL LISTENER AQUÍ
+                const btnDiagnosticoIAAlt = document.getElementById('btnDiagnosticoIAAlt');
+                if (btnDiagnosticoIAAlt && !btnDiagnosticoIAAlt.dataset.listener) {
+                    btnDiagnosticoIAAlt.addEventListener('click', async function() {
+                        console.log('[DiagnosticoIAAlt] Botón presionado');
+                        btnDiagnosticoIAAlt.disabled = true;
+                        btnDiagnosticoIAAlt.innerHTML = '<i class="fas fa-vials fa-spin"></i> Consultando IA...';
+                        const descripcionElem = document.querySelector('#modalPacienteContent p');
+                        const descripcion = descripcionElem ? descripcionElem.innerText.trim() : '';
+                        console.log('[DiagnosticoIAAlt] Descripción enviada:', descripcion);
+                        try {
+                            const resp = await fetch('/diagnostico-ia', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                },
+                                body: JSON.stringify({ descripcion })
+                            });
+                            console.log('[DiagnosticoIAAlt] Estado HTTP:', resp.status);
+                            const data = await resp.json();
+                            console.log('[DiagnosticoIAAlt] Respuesta IA:', data);
+                            if (data.success) {
+                                document.getElementById('modalPacienteContent').innerHTML += `<div class='mt-6 p-4 rounded border border-green-300 bg-green-50 text-green-900'><b>Diagnóstico IA Alternativo:</b><br>${data.respuesta}</div>`;
+                            } else {
+                                document.getElementById('modalPacienteContent').innerHTML += `<div class='mt-6 p-4 rounded border border-red-300 bg-red-50 text-red-900'><b>Error IA Alternativo:</b> ${data.error}</div>`;
+                            }
+                        } catch (e) {
+                            console.error('[DiagnosticoIAAlt] Error en fetch:', e);
+                            document.getElementById('modalPacienteContent').innerHTML += `<div class='mt-6 p-4 rounded border border-red-300 bg-red-50 text-red-900'><b>Error IA Alternativo:</b> ${e.message}</div>`;
+                        }
+                        btnDiagnosticoIAAlt.disabled = false;
+                        btnDiagnosticoIAAlt.innerHTML = '<i class="fas fa-vials"></i> Diagnóstico IA Alternativo';
+                    });
+                    btnDiagnosticoIAAlt.dataset.listener = 'true';
+                }
             } catch (e) {
                 document.getElementById('modalPacienteTitle').innerText = 'Error al mostrar detalles';
                 document.getElementById('modalPacienteContent').innerHTML = `<pre class='text-red-600'>${e.message}\n${e.stack}</pre>`;
                 document.getElementById('modalPaciente').classList.remove('hidden');
             }
         }
-
-        window.closeModalPaciente = function() {
-            document.getElementById('modalPaciente').classList.add('hidden');
-        }
-    </script>
-
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Variables globales
-        let doctor = {{ $doctor ? json_encode($doctor) : 'null' }};
-        let pacientes = window.pacientes;
-        let initialized = false;
-        let loading = false;
-        let formData = {
-            dni: '',
-            nombre: '',
-            apellido_paterno: '',
-            apellido_materno: '',
-            especialidad: '',
-            telefono: '',
-            correo: ''
-        };
-        
-        // Elementos del DOM
-        const messageContainer = document.getElementById('messageContainer');
-        const messageIcon = document.getElementById('messageIcon');
-        const messageText = document.getElementById('messageText');
-        const dniVerificationForm = document.getElementById('dniVerificationForm');
-        const doctorForm = document.getElementById('doctorForm');
-        const pacientesContainer = document.getElementById('pacientesContainer');
-        const loadingPacientes = document.getElementById('loadingPacientes');
-        const loadingPacientesText = document.getElementById('loadingPacientesText');
-        const noPacientes = document.getElementById('noPacientes');
-        const tablaPacientes = document.getElementById('tablaPacientes');
-        const pacientesTableBody = document.getElementById('pacientesTableBody');
-        const loadingDni = document.getElementById('loadingDni');
-        const loadingGuardar = document.getElementById('loadingGuardar');
-        const dniError = document.getElementById('dniError');
-        
-        // Inicialización
-        function init() {
-            // Si ya tenemos los datos del doctor, no necesitamos hacer nada más
-            if (doctor) {
-                console.log('Doctor ya registrado:', doctor);
-                // Obtener pacientes del backend
-                loading = true;
-                updateLoadingState();
-                fetch('/doctor/pacientes')
-                    .then(resp => resp.json())
-                    .then(data => {
-                        if (data.success && Array.isArray(data.pacientes)) {
-                            pacientes = data.pacientes;
-                        } else {
-                            pacientes = [];
-                        }
-                        loading = false;
-                        renderPacientes();
-                    })
-                    .catch(() => {
-                        pacientes = [];
-                        loading = false;
-                        renderPacientes();
-                        showMessage('error', 'Error al cargar pacientes del doctor.');
-                    });
-            }
-            // Marcar como inicializado después de que todo esté listo
-            initialized = true;
-            updateLoadingState();
-        }
-        
-        // Mostrar mensaje
-        function showMessage(type, text) {
-            messageText.textContent = text;
-            
-            if (type === 'success') {
-                messageContainer.classList.remove('bg-red-100', 'border-red-400', 'text-red-700');
-                messageContainer.classList.add('bg-green-100', 'border-green-400', 'text-green-700');
-                messageIcon.classList.remove('fa-exclamation-circle');
-                messageIcon.classList.add('fa-check-circle');
-            } else {
-                messageContainer.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
-                messageContainer.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
-                messageIcon.classList.remove('fa-check-circle');
-                messageIcon.classList.add('fa-exclamation-circle');
-            }
-            
-            messageContainer.classList.remove('hidden', 'message-hidden');
-            messageContainer.classList.add('message-visible');
-            
-            // Auto-ocultar después de 5 segundos
-            setTimeout(() => {
-                hideMessage();
-            }, 5000);
-        }
-        
-        // Ocultar mensaje
-        function hideMessage() {
-            messageContainer.classList.remove('message-visible');
-            messageContainer.classList.add('message-hidden');
-            setTimeout(() => {
-                messageContainer.classList.add('hidden');
-            }, 300);
-        }
-        
-        // Actualizar estado de carga
-        function updateLoadingState() {
-            if (loading || !initialized) {
-                loadingPacientes.classList.remove('hidden');
-                loadingPacientesText.textContent = loading ? 'Cargando pacientes...' : 'Inicializando...';
-                noPacientes.classList.add('hidden');
-                tablaPacientes.classList.add('hidden');
-            } else {
-                loadingPacientes.classList.add('hidden');
-                
-                if (!pacientes || pacientes.length === 0) {
-                    noPacientes.classList.remove('hidden');
-                    tablaPacientes.classList.add('hidden');
-                } else {
-                    noPacientes.classList.add('hidden');
-                    tablaPacientes.classList.remove('hidden');
-                }
-            }
-        }
-        
-        // Renderizar pacientes en la tabla
-        function renderPacientes() {
-            // Verificar inmediatamente si hay pacientes
-            if (!Array.isArray(pacientes) || pacientes.length === 0) {
-                loadingPacientes.classList.add('hidden');
-                noPacientes.classList.remove('hidden');
-                tablaPacientes.classList.add('hidden');
-                return;
-            }
-
-            // Si hay pacientes, proceder con la renderización
-            const tbody = document.getElementById('pacientesTableBody');
-            tbody.innerHTML = '';
-            
-            pacientes.forEach(paciente => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->dni }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->nombre }} {{ $paciente->apellido_paterno }} {{ $paciente->apellido_materno }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->correo }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->telefono }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->created_at ? $paciente->created_at->format('d/m/Y') : '-' }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-cyan-700">
-                        <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editarPaciente(${paciente.id})">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="text-red-600 hover:text-red-800" onclick="eliminarPaciente(${paciente.id})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-
-            // Mostrar la tabla y ocultar los otros elementos
-            loadingPacientes.classList.add('hidden');
-            noPacientes.classList.add('hidden');
-            tablaPacientes.classList.remove('hidden');
-        }
-        
-        // Verificar DNI
-        function verificarDni(e) {
-            e.preventDefault();
-            
-            loading = true;
-            loadingDni.classList.remove('hidden');
-            dniError.classList.add('hidden');
-            
-            const dniInput = document.getElementById('dni');
-            formData.dni = dniInput.value;
-            
-            // Validar formato de DNI
-            if (!/^\d{8}$/.test(formData.dni)) {
-                dniError.textContent = 'El DNI debe tener 8 dígitos numéricos';
-                dniError.classList.remove('hidden');
-                loading = false;
-                loadingDni.classList.add('hidden');
-                return;
-            }
-            
-            // Consultar API de RENIEC
-            fetch('/doctores/verificar-dni', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({ dni: formData.dni })
-            })
-            .then(async response => {
-                const contentType = response.headers.get('content-type');
-                if (!response.ok) {
-                    const errorData = contentType && contentType.includes('application/json') 
-                        ? await response.json()
-                        : { message: 'Error en la respuesta del servidor' };
-                    throw new Error(errorData.message);
-                }
-                
-                if (contentType && contentType.includes('application/json')) {
-                    return response.json();
-                }
-                throw new Error('Respuesta del servidor no válida');
-            })
-            .then(data => {
-                loading = false;
-                loadingDni.classList.add('hidden');
-                
-                if (!data.success) {
-                    throw new Error(data.message || 'No se pudo verificar el DNI');
-                }
-                
-                // Llenar el formulario con los datos obtenidos
-                formData.nombre = data.data.nombres;
-                formData.apellido_paterno = data.data.apellidoPaterno;
-                formData.apellido_materno = data.data.apellidoMaterno;
-                
-                document.getElementById('nombre').value = formData.nombre;
-                document.getElementById('apellido_paterno').value = formData.apellido_paterno;
-                document.getElementById('apellido_materno').value = formData.apellido_materno;
-                
-                // Mostrar formulario para completar datos
-                dniVerificationForm.classList.add('hidden');
-                doctorForm.classList.remove('hidden');
-                
-                showMessage('success', 'DNI verificado correctamente. Por favor complete sus datos.');
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                loading = false;
-                loadingDni.classList.add('hidden');
-                showMessage('error', error.message || 'Ocurrió un error al verificar el DNI. Por favor intente nuevamente.');
-            });
-        }
-        
-        // Guardar datos del médico
-        function guardarDatosMedico(e) {
-            e.preventDefault();
-            
-            loading = true;
-            loadingGuardar.classList.remove('hidden');
-            
-            // Actualizar formData con los valores del formulario
-            formData.telefono = document.getElementById('telefono').value;
-            formData.correo = document.getElementById('correo').value;
-            formData.especialidad = document.getElementById('especialidad').value;
-            
-            // Enviar datos al servidor
-            fetch('/doctores/guardar-dni', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify(formData)
-            })
-            .then(async response => {
-                const contentType = response.headers.get('content-type');
-                if (!response.ok) {
-                    const errorData = contentType && contentType.includes('application/json') 
-                        ? await response.json()
-                        : { message: 'Error en la respuesta del servidor' };
-                    throw new Error(errorData.message);
-                }
-                
-                if (!contentType || !contentType.includes('application/json')) {
-                    throw new Error('Respuesta del servidor no válida');
-                }
-                
-                return response.json();
-            })
-            .then(data => {
-                loading = false;
-                loadingGuardar.classList.add('hidden');
-                
-                if (data.success) {
-                    doctor = data.doctor;
-                    doctorForm.classList.add('hidden');
-                    pacientesContainer.classList.remove('hidden');
-                    
-                    showMessage('success', 'Datos guardados correctamente. Ya puede gestionar sus pacientes.');
-                    
-                    // Inicializar la vista de pacientes sin recargar la página
-                    pacientes = [];
-                    renderPacientes();
-                } else {
-                    throw new Error(data.message || 'No se pudieron guardar los datos');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                loading = false;
-                loadingGuardar.classList.add('hidden');
-                showMessage('error', error.message || 'Ocurrió un error al guardar los datos. Por favor intente nuevamente.');
-            });
-        }
-        
-        // Funciones para ver y editar pacientes (placeholders)
-        function verPaciente(id) {
-            console.log('Ver paciente:', id);
-            // Implementar lógica para ver paciente
-        }
-        
-        function editarPaciente(id) {
-            console.log('Editar paciente:', id);
-            // Implementar lógica para editar paciente
-        }
-        
-        // Modal lógica
-        window.showHistorialModal = function(nombreCompleto) {
-            document.getElementById('modalPacienteTitle').innerText = 'Historial médico';
-            document.getElementById('modalPacienteContent').innerHTML = `<p>El paciente <strong>${nombreCompleto}</strong> aún no tiene historial médico registrado.</p>`;
-            document.getElementById('modalPaciente').classList.remove('hidden');
-        }
-
-        const btnDiagnosticoIA = document.getElementById('btnDiagnosticoIA');
-        if (btnDiagnosticoIA) {
-            btnDiagnosticoIA.addEventListener('click', async function() {
-                btnDiagnosticoIA.disabled = true;
-                btnDiagnosticoIA.innerHTML = '<i class="fas fa-robot fa-spin"></i> Consultando IA...';
-                const descripcionElem = document.querySelector('#modalPacienteContent p');
-                const descripcion = descripcionElem ? descripcionElem.innerText.trim() : '';
-                console.log('Descripción enviada:', descripcion);
-                try {
-                    const resp = await fetch('/diagnostico-ia', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        },
-                        body: JSON.stringify({ descripcion })
-                    });
-                    const data = await resp.json();
-                    console.log('Respuesta IA:', data);
-                    if (data.success) {
-                        document.getElementById('modalPacienteContent').innerHTML += `<div class='mt-6 p-4 rounded border border-purple-300 bg-purple-50 text-purple-900'><b>Diagnóstico IA:</b><br>${data.respuesta}</div>`;
-                    } else {
-                        document.getElementById('modalPacienteContent').innerHTML += `<div class='mt-6 p-4 rounded border border-red-300 bg-red-50 text-red-900'><b>Error IA:</b> ${data.error}</div>`;
-                    }
-                } catch (e) {
-                    document.getElementById('modalPacienteContent').innerHTML += `<div class='mt-6 p-4 rounded border border-red-300 bg-red-50 text-red-900'><b>Error IA:</b> ${e.message}</div>`;
-                }
-                btnDiagnosticoIA.disabled = false;
-                btnDiagnosticoIA.innerHTML = '<i class="fas fa-robot"></i> Diagnóstico rápido con IA';
-            });
-        }
-        
-        // Event listeners
-        document.getElementById('verificarDniForm').addEventListener('submit', verificarDni);
-        document.getElementById('guardarDatosMedicoForm').addEventListener('submit', guardarDatosMedico);
-        messageContainer.addEventListener('click', hideMessage);
-        
-        // Inicializar la aplicación
-        init();
-    });
     </script>
 </body>
 </html>
