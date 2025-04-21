@@ -69,6 +69,52 @@ class DiagnosticoController extends Controller
             }
             // --- FIN normalización ---
 
+            // --- Procesamiento estructurado del diagnóstico IA ---
+            // 1. Extrae todas las líneas relevantes
+            $lineas = array_filter(array_map('trim', preg_split('/\r?\n/', $respuestaIA)));
+            $malestares = [];
+            $enfermedades = '';
+            $recomendaciones = '';
+            $recuerda = '';
+
+            // 2. Buscar todos los textos entre comillas en la primera línea
+            if (isset($lineas[0])) {
+                preg_match_all('/"([^"]+)"/', $lineas[0], $matches);
+                $malestares = $matches[1];
+            }
+            // 3. Enfermedades asociadas: texto después del último malestar entre comillas en la primera línea
+            if (isset($lineas[0]) && !empty($malestares)) {
+                $last_quote = strrpos($lineas[0], '"');
+                if ($last_quote !== false) {
+                    $enfermedades = trim(substr($lineas[0], $last_quote + 1));
+                }
+            }
+            // 4. Recomendaciones (línea 2 si existe)
+            if (isset($lineas[1])) {
+                $recomendaciones = $lineas[1];
+            }
+            // 5. Recuerda (línea 3 si existe)
+            if (isset($lineas[2])) {
+                $recuerda = $lineas[2];
+            }
+
+            // 6. Construye el texto final formateado
+            $texto_final = "";
+            if (!empty($malestares)) {
+                $texto_final .= "<b>Malestares:</b> " . implode(', ', $malestares) . "<br>";
+            }
+            if (!empty($enfermedades)) {
+                $texto_final .= "<b>Enfermedades asociadas:</b> " . htmlspecialchars($enfermedades) . "<br>";
+            }
+            if (!empty($recomendaciones)) {
+                $texto_final .= "<b>Recomendaciones:</b> " . htmlspecialchars($recomendaciones) . "<br>";
+            }
+            if (!empty($recuerda)) {
+                $texto_final .= "<b>Recuerda:</b> " . htmlspecialchars($recuerda);
+            }
+            $respuestaIA = $texto_final;
+            // --- FIN procesamiento estructurado ---
+
             if ($returnCode !== 0 || !$respuestaIA) {
                 Log::error('DiagnosticoIA: Error de ejecución o sin respuesta IA', [
                     'stdout' => $response,
