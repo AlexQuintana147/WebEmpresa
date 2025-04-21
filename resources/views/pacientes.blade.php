@@ -223,13 +223,15 @@
                 </div>
 
                 <!-- Lista de Pacientes del Doctor -->
-                <div id="pacientesList" class="medical-card bg-white overflow-hidden mb-6 {{ $doctor ? '' : 'hidden' }}">
+                <div id="pacientesList" class="medical-card bg-white overflow-hidden mb-6 {{ $doctor ? '' : 'hidden' }} shadow-lg rounded-2xl border border-cyan-200">
                     <div class="p-6">
-                        <h2 class="text-xl font-semibold text-gray-800 mb-4">Lista de Pacientes</h2>
+                        <h2 class="text-3xl font-bold text-cyan-700 mb-4 flex items-center gap-2">
+                            <i class="fas fa-users"></i> Lista de Pacientes
+                        </h2>
                         @if(count($pacientes) > 0)
-                        <div class="overflow-x-auto rounded-lg shadow">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-cyan-100">
+                        <div class="overflow-x-auto rounded-xl border border-gray-100">
+                            <table class="min-w-full divide-y divide-cyan-100 bg-white">
+                                <thead class="bg-cyan-50">
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-bold text-cyan-700 uppercase tracking-wider">DNI</th>
                                         <th class="px-6 py-3 text-left text-xs font-bold text-cyan-700 uppercase tracking-wider">Nombre Completo</th>
@@ -239,21 +241,21 @@
                                         <th class="px-6 py-3 text-left text-xs font-bold text-cyan-700 uppercase tracking-wider">Acciones</th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
+                                <tbody class="bg-white divide-y divide-cyan-100">
                                     @foreach($pacientes as $index => $paciente)
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->dni }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {{ $paciente->nombre }} {{ $paciente->apellido_paterno }} {{ $paciente->apellido_materno }}
+                                    <tr class="hover:bg-cyan-50 transition-colors duration-150">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">{{ $paciente->dni }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">
+                                            <i class="fas fa-user-circle text-cyan-400 mr-1"></i>{{ $paciente->nombre }} {{ $paciente->apellido_paterno }} {{ $paciente->apellido_materno }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->correo }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->telefono }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->created_at ? $paciente->created_at->format('d/m/Y') : '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-cyan-700">
-                                            <button onclick="showHistorialModal('{{ $paciente->nombre }} {{ $paciente->apellido_paterno }} {{ $paciente->apellido_materno }}')" class="bg-cyan-100 hover:bg-cyan-200 text-cyan-700 font-semibold py-1 px-3 rounded mr-2" title="Ver historial">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-cyan-700">{{ $paciente->correo }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-cyan-700">{{ $paciente->telefono }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $paciente->created_at ? $paciente->created_at->format('d/m/Y') : '-' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-cyan-700 flex gap-2">
+                                            <button onclick="showHistorialModal('{{ $paciente->nombre }} {{ $paciente->apellido_paterno }} {{ $paciente->apellido_materno }}')" class="bg-cyan-100 hover:bg-cyan-200 text-cyan-700 font-semibold py-1 px-3 rounded shadow-sm border border-cyan-200 transition-all flex items-center gap-1" title="Ver historial">
                                                 <i class="fas fa-notes-medical"></i> Historial
                                             </button>
-                                            <button onclick="showDetallesModal({{ $index }})" class="bg-cyan-100 hover:bg-cyan-200 text-cyan-700 font-semibold py-1 px-3 rounded" title="Más detalles">
+                                            <button onclick="showDetallesModal({{ $index }})" class="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-1 px-3 rounded shadow-sm border border-cyan-600 transition-all flex items-center gap-1" title="Más detalles">
                                                 <i class="fas fa-eye"></i> Detalles
                                             </button>
                                         </td>
@@ -263,7 +265,10 @@
                             </table>
                         </div>
                         @else
-                        <p class="text-gray-600">No se encontraron pacientes para este doctor.</p>
+                        <div class="flex flex-col items-center justify-center py-8">
+                            <i class="fas fa-user-slash text-5xl text-cyan-200 mb-4"></i>
+                            <p class="text-gray-500 text-lg">No se encontraron pacientes para este doctor.</p>
+                        </div>
                         @endif
                     </div>
                 </div>
@@ -274,18 +279,22 @@
                     <div class="fixed inset-0 transition-opacity" aria-hidden="true">
                       <div class="absolute inset-0 bg-gray-900 opacity-50"></div>
                     </div>
-                    <div class="bg-white rounded-lg shadow-xl transform transition-all max-w-lg w-full p-6 z-50">
-                      <div class="flex justify-between items-center mb-4">
-                        <h3 id="modalPacienteTitle" class="text-lg font-semibold text-gray-800"></h3>
-                        <button onclick="closeModalPaciente()" class="text-gray-500 hover:text-gray-700 focus:outline-none">
-                          <i class="fas fa-times"></i>
+                    <div class="bg-white rounded-2xl shadow-2xl transform transition-all max-w-lg w-full p-8 z-50 border-t-8 border-cyan-500">
+                      <div class="flex justify-between items-center mb-6">
+                        <h3 id="modalPacienteTitle" class="text-2xl font-bold text-cyan-700"></h3>
+                        <button onclick="closeModalPaciente()" class="text-gray-400 hover:text-cyan-600 focus:outline-none">
+                          <i class="fas fa-times text-xl"></i>
                         </button>
                       </div>
-                      <div id="modalPacienteContent" class="text-gray-700">
+                      <div id="modalPacienteContent" class="text-gray-700 text-lg min-h-[60px]">
                         <!-- Aquí el contenido dinámico -->
                       </div>
-                      <div class="mt-6 flex justify-end">
-                        <button onclick="closeModalPaciente()" class="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-4 rounded">Cerrar</button>
+                      <div class="mt-8 flex justify-end gap-4">
+                        <button class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded shadow transition-all animate-pulse-leds flex items-center gap-2">
+                            <i class="fas fa-robot"></i>
+                            Diagnóstico rápido con IA
+                        </button>
+                        <button onclick="closeModalPaciente()" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-6 rounded shadow transition-all">Cerrar</button>
                       </div>
                     </div>
                   </div>
@@ -296,30 +305,30 @@
 
     <!-- Script GLOBAL para modales y pacientes -->
     <script>
-    // Hacer pacientes global para acceso desde botones
-    window.pacientes = @json($pacientes);
+        // Hacer pacientes global para acceso desde botones
+        window.pacientes = @json($pacientes);
 
-    window.showDetallesModal = function(index) {
-        try {
-            const paciente = window.pacientes[index];
-            let descripcion = '-';
-            if (paciente.citas && paciente.citas.length > 0) {
-                let citaReciente = paciente.citas.reduce((a, b) => new Date(a.fecha) > new Date(b.fecha) ? a : b);
-                descripcion = citaReciente.descripcion_malestar ?? '-';
+        window.showDetallesModal = function(index) {
+            try {
+                const paciente = window.pacientes[index];
+                let descripcion = '-';
+                if (paciente.citas && paciente.citas.length > 0) {
+                    let citaReciente = paciente.citas.reduce((a, b) => new Date(a.fecha) > new Date(b.fecha) ? a : b);
+                    descripcion = citaReciente.descripcion_malestar ?? '-';
+                }
+                document.getElementById('modalPacienteTitle').innerText = 'Descripción del malestar';
+                document.getElementById('modalPacienteContent').innerHTML = `<p class='text-gray-700 whitespace-pre-line'>${descripcion ? descripcion : '-'}</p>`;
+                document.getElementById('modalPaciente').classList.remove('hidden');
+            } catch (e) {
+                document.getElementById('modalPacienteTitle').innerText = 'Error al mostrar detalles';
+                document.getElementById('modalPacienteContent').innerHTML = `<pre class='text-red-600'>${e.message}\n${e.stack}</pre>`;
+                document.getElementById('modalPaciente').classList.remove('hidden');
             }
-            document.getElementById('modalPacienteTitle').innerText = 'Descripción del malestar';
-            document.getElementById('modalPacienteContent').innerHTML = `<p class='text-gray-700 whitespace-pre-line'>${descripcion ? descripcion : '-'}</p>`;
-            document.getElementById('modalPaciente').classList.remove('hidden');
-        } catch (e) {
-            document.getElementById('modalPacienteTitle').innerText = 'Error al mostrar detalles';
-            document.getElementById('modalPacienteContent').innerHTML = `<pre class='text-red-600'>${e.message}\n${e.stack}</pre>`;
-            document.getElementById('modalPaciente').classList.remove('hidden');
         }
-    }
 
-    window.closeModalPaciente = function() {
-        document.getElementById('modalPaciente').classList.add('hidden');
-    }
+        window.closeModalPaciente = function() {
+            document.getElementById('modalPaciente').classList.add('hidden');
+        }
     </script>
 
     <script>
@@ -457,11 +466,11 @@
             pacientes.forEach(paciente => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${paciente.dni}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${paciente.nombre} ${paciente.apellido_paterno} ${paciente.apellido_materno}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${paciente.correo}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${paciente.telefono}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${paciente.created_at ? new Date(paciente.created_at).toLocaleDateString() : '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->dni }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->nombre }} {{ $paciente->apellido_paterno }} {{ $paciente->apellido_materno }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->correo }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->telefono }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->created_at ? $paciente->created_at->format('d/m/Y') : '-' }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-cyan-700">
                         <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editarPaciente(${paciente.id})">
                             <i class="fas fa-edit"></i>
