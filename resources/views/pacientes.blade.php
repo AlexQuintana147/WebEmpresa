@@ -255,7 +255,7 @@
                                             <button onclick="showHistorialModal('{{ $paciente->nombre }} {{ $paciente->apellido_paterno }} {{ $paciente->apellido_materno }}')" class="bg-cyan-100 hover:bg-cyan-200 text-cyan-700 font-semibold py-1 px-3 rounded shadow-sm border border-cyan-200 transition-all flex items-center gap-1" title="Ver historial">
                                                 <i class="fas fa-notes-medical"></i> Historial
                                             </button>
-                                            <button onclick="showDetallesModal({{ $index }})" class="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-1 px-3 rounded shadow-sm border border-cyan-600 transition-all flex items-center gap-1" title="Más detalles">
+                                            <button onclick="showDetallesModal({{ $index }}, {{ $paciente->citas->last()->id ?? 'null' }})" class="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-1 px-3 rounded shadow-sm border border-cyan-600 transition-all flex items-center gap-1" title="Más detalles">
                                                 <i class="fas fa-eye"></i> Detalles
                                             </button>
                                         </td>
@@ -307,26 +307,27 @@
         console.log('Script de pacientes.blade.php cargado');
         window.pacientes = @json($pacientes);
 
-        function showDetallesModal(index) {
+        function showDetallesModal(index, citaId) {
             try {
                 const paciente = window.pacientes[index];
-                let descripcion = '-';
-                let respuestaBot = null;
-                let citaId = null;
+                let cita = null;
                 if (paciente.citas && paciente.citas.length > 0) {
-                    let citaReciente = paciente.citas.reduce((a, b) => new Date(a.fecha) > new Date(b.fecha) ? a : b);
-                    descripcion = citaReciente.descripcion_malestar ?? '-';
-                    respuestaBot = citaReciente.respuesta_bot ?? null;
-                    citaId = citaReciente.id;
+                    if (citaId) {
+                        cita = paciente.citas.find(c => c.id == citaId);
+                    }
+                    if (!cita) {
+                        cita = paciente.citas.reduce((a, b) => new Date(a.fecha) > new Date(b.fecha) ? a : b);
+                    }
                 }
+                let descripcion = cita ? (cita.descripcion_malestar ?? '-') : '-';
+                let respuestaBot = cita ? (cita.respuesta_bot ?? null) : null;
+                let idCita = cita ? cita.id : null;
                 document.getElementById('modalPacienteTitle').innerText = 'Descripción del malestar';
                 document.getElementById('modalPacienteContent').innerHTML = `<p class='text-gray-700 whitespace-pre-line'>${descripcion ? descripcion : '-'}</p>`;
-                // Mostrar diagnóstico IA si existe
                 if (respuestaBot) {
                     document.getElementById('modalPacienteContent').innerHTML += `<div class='mt-6 p-4 rounded border border-green-300 bg-green-50 text-green-900'><b>Diagnóstico IA Alternativo:</b><br>${respuestaBot}</div>`;
                 }
                 document.getElementById('modalPaciente').classList.remove('hidden');
-                // Botón IA
                 const btnDiagnosticoIAAlt = document.getElementById('btnDiagnosticoIAAlt');
                 if (btnDiagnosticoIAAlt) {
                     btnDiagnosticoIAAlt.disabled = !!respuestaBot;
@@ -354,9 +355,9 @@
                             const data = await resp.json();
                             if (data.success) {
                                 document.getElementById('modalPacienteContent').innerHTML += `<div class='mt-6 p-4 rounded border border-green-300 bg-green-50 text-green-900'><b>Diagnóstico IA Alternativo:</b><br>${data.respuesta}</div>`;
-                                // Guardar respuesta IA en la cita
-                                if (citaId) {
-                                    await fetch(`/citas/${citaId}/respuesta-bot`, {
+                                // Guardar respuesta IA en la cita correcta
+                                if (idCita) {
+                                    await fetch(`/citas/${idCita}/respuesta-bot`, {
                                         method: 'POST',
                                         headers: {
                                             'Content-Type': 'application/json',
