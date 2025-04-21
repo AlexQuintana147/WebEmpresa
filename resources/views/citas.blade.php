@@ -129,12 +129,14 @@
                         <div id="modal-error-msg" class="hidden"></div>
                         <div>
                             <label for="modal-doctor" class="block font-semibold mb-1">Doctor</label>
-                            <input id="modal-doctor" name="doctor_id" class="w-full border rounded px-3 py-2 bg-gray-100" value="" readonly required>
+                            <input id="modal-doctor" class="w-full border rounded px-3 py-2 bg-gray-100" value="" readonly required>
+                            <input type="hidden" id="modal-doctor-id" name="doctor_id">
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label for="modal-dia" class="block font-semibold mb-1">Día</label>
-                                <input id="modal-dia" name="dia_semana" class="w-full border rounded px-3 py-2 bg-gray-100" value="" readonly required>
+                                <input id="modal-dia" class="w-full border rounded px-3 py-2 bg-gray-100" value="" readonly required>
+                                <input type="hidden" id="modal-dia-id" name="dia_semana">
                             </div>
                             <div>
                                 <label for="modal-hora-inicio" class="block font-semibold mb-1">Hora Inicio</label>
@@ -329,9 +331,9 @@
                 }
                 // LLENAR CAMPOS ANTES DE MOSTRAR EL MODAL
                 document.getElementById('modal-doctor').value = doctorSelect.options[doctorSelect.selectedIndex].text;
-                document.getElementById('modal-doctor').setAttribute('data-id', doctorSelect.value);
+                document.getElementById('modal-doctor-id').value = doctorSelect.value;
                 document.getElementById('modal-dia').value = selectedHorario.getAttribute('data-dia-nombre') || '';
-                document.getElementById('modal-dia').setAttribute('data-id', selectedHorario.getAttribute('data-dia-semana'));
+                document.getElementById('modal-dia-id').value = selectedHorario.getAttribute('data-dia-semana');
                 document.getElementById('modal-hora-inicio').value = selectedHorario.getAttribute('data-hora-inicio');
                 document.getElementById('modal-hora-fin').value = selectedHorario.getAttribute('data-hora-fin');
                 // Motivo: si hay un campo específico, úsalo. Si no, busca en el dataset o en el texto de la tarjeta
@@ -354,9 +356,7 @@
             // SUBMIT AJAX NUEVO MODAL
             const formCita = document.getElementById('form-cita');
             formCita.onsubmit = async function(e) {
-                // Antes de enviar, poner el id real en el campo hidden para doctor y dia_semana
-                document.getElementById('modal-doctor').value = document.getElementById('modal-doctor').getAttribute('data-id');
-                document.getElementById('modal-dia').value = document.getElementById('modal-dia').getAttribute('data-id');
+                // Antes de enviar, asegúrate de que los campos hidden tengan el valor correcto (ya se llenaron al abrir el modal)
                 // Validación frontend extra
                 for (const [key, val] of new FormData(formCita).entries()) {
                     if (!val || val.toString().trim() === '') {
