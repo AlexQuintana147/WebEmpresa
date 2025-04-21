@@ -90,10 +90,11 @@ Route::middleware('paciente')->group(function () {
     Route::post('/reniec/consultar-dni', [\App\Http\Controllers\ReniecController::class, 'consultarDni'])->name('reniec.consultar-dni');
     
     Route::get('/citas', [CitaController::class, 'index'])->name('citas.index');
+    Route::post('/citas', [CitaController::class, 'store'])->name('citas.store');
     Route::post('/api/citas/agendar', [CitaController::class, 'agendarCita']);
     Route::post('/api/citas/cancelar/{id}', [CitaController::class, 'cancelarCita']);
     Route::get('/api/citas/horarios-disponibles/{doctorId}/{fecha}', [CitaController::class, 'getHorariosDisponibles']);
-    Route::get('/api/doctores/por-especialidad/{especialidad}', [CitaController::class, 'getDoctoresPorEspecialidad']);
+    Route::get('/api/doctores/{categoria}', [CitaController::class, 'getDoctoresPorEspecialidad']);
     Route::post('/api/pacientes/verificar-dni', [CitaController::class, 'verificarDni']);
 });
 

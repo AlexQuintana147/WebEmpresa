@@ -227,6 +227,35 @@
                     </div>
                 </div>
                 
+                <!-- Información del Doctor -->
+                <div id="doctorInfo" class="medical-card bg-white overflow-hidden mb-6 {{ $doctor ? '' : 'hidden' }}">
+                    <div class="p-6">
+                        <h2 class="text-xl font-semibold text-gray-800 mb-4">Información del Médico</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-500">Nombre Completo</h3>
+                                <p class="mt-1 text-lg text-gray-900">{{ $doctor ? $doctor->nombre . ' ' . $doctor->apellido_paterno . ' ' . $doctor->apellido_materno : '' }}</p>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-500">Especialidad</h3>
+                                <p class="mt-1 text-lg text-gray-900">{{ $doctor ? $doctor->especialidad : '' }}</p>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-500">DNI</h3>
+                                <p class="mt-1 text-lg text-gray-900">{{ $doctor ? $doctor->dni : '' }}</p>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-500">Teléfono</h3>
+                                <p class="mt-1 text-lg text-gray-900">{{ $doctor ? $doctor->telefono : '' }}</p>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-500">Correo Electrónico</h3>
+                                <p class="mt-1 text-lg text-gray-900">{{ $doctor ? $doctor->correo : '' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Lista de Pacientes (mostrar solo si el doctor tiene DNI) -->
                 <div id="pacientesContainer" class="medical-card bg-white overflow-hidden {{ $doctor ? '' : 'hidden' }}">
                     <div class="p-6">

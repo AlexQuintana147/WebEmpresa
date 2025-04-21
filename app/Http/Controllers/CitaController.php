@@ -21,6 +21,9 @@ class CitaController extends Controller
         $paciente = null;
         $citas = [];
         
+        // Obtener todas las especialidades únicas de los doctores
+        $especialidades = Doctor::select('especialidad')->distinct()->orderBy('especialidad')->pluck('especialidad');
+        
         // Verificar si el usuario está autenticado
         if (Auth::check()) {
             $usuario = Auth::user();
@@ -38,7 +41,7 @@ class CitaController extends Controller
             }
         }
         
-        return view('citas', compact('paciente', 'citas'));
+        return view('citas', compact('paciente', 'citas', 'especialidades'));
     }
     
     /**
@@ -77,11 +80,87 @@ class CitaController extends Controller
     /**
      * Obtiene los doctores por especialidad
      */
+    public function getDoctoresPorEspecialidad($categoria)
+    {
+        $doctores = Doctor::where('especialidad', $categoria)
+            ->select('id', 'nombre', 'apellido')
+            ->orderBy('apellido')
+            ->orderBy('nombre')
+            ->get();
+
+        return response()->json($doctores);
+    }
+
+    /**
+     * Almacena una nueva cita en la base de datos
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'doctor_id' => 'required|exists:doctores,id',
+            'fecha' => 'required|date|after:today',
+            'hora' => 'required',
+            'motivo' => 'required|string|max:500'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $paciente = Paciente::where('usuario_id', Auth::id())->firstOrFail();
+
+            $cita = new Cita();
+            $cita->paciente_id = $paciente->id;
+            $cita->doctor_id = $request->doctor_id;
+            $cita->fecha = $request->fecha;
+            $cita->hora_inicio = $request->hora;
+            $cita->motivo = $request->motivo;
+            $cita->estado = 'pendiente';
+            $cita->save();
+
+            DB::commit();
+
+            return redirect()->route('citas.index')
+                ->with('success', 'Cita agendada correctamente.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->with('error', 'Error al agendar la cita. Por favor, inténtelo de nuevo.')
+                ->withInput();
+        }
+    }
+
     public function getDoctoresPorEspecialidad($especialidad)
     {
         $doctores = Doctor::where('especialidad', $especialidad)
             ->orderBy('nombre')
             ->get();
+        
+        // Enriquecer la información de cada doctor con datos adicionales
+        foreach ($doctores as $doctor) {
+            // Obtener el número de tareas (horarios disponibles) para este doctor
+            $numTareas = Tarea::where('usuario_id', $doctor->usuario_id)->count();
+            $doctor->num_horarios_disponibles = $numTareas;
+            
+            // Obtener los días de la semana en que atiende
+            $diasAtencion = Tarea::where('usuario_id', $doctor->usuario_id)
+                ->select('dia_semana')
+                ->distinct()
+                ->get()
+                ->pluck('dia_semana')
+                ->toArray();
+            
+            // Convertir números a nombres de días
+            $nombresDias = [];
+            $diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            foreach ($diasAtencion as $dia) {
+                // Ajustar el índice (en la BD: 1=Lunes, ..., 7=Domingo)
+                $indice = $dia % 7; // Convertir 7 (domingo en BD) a 0 (domingo en array)
+                $nombresDias[] = $diasSemana[$indice];
+            }
+            
+            $doctor->dias_atencion = $nombresDias;
+        }
         
         return response()->json([
             'success' => true,
@@ -123,8 +202,19 @@ class CitaController extends Controller
         
         // Generar horarios disponibles (intervalos de 30 minutos)
         $horariosDisponibles = [];
+        $tareasInfo = [];
         
+        // Preparar información de las tareas para enviarla al frontend
         foreach ($tareas as $tarea) {
+            $tareasInfo[] = [
+                'id' => $tarea->id,
+                'titulo' => $tarea->titulo,
+                'descripcion' => $tarea->descripcion,
+                'hora_inicio' => $tarea->hora_inicio,
+                'hora_fin' => $tarea->hora_fin,
+                'color' => $tarea->color
+            ];
+            
             $horaInicio = strtotime($tarea->hora_inicio);
             $horaFin = strtotime($tarea->hora_fin);
             
@@ -150,15 +240,29 @@ class CitaController extends Controller
                 if (!$ocupado) {
                     $horariosDisponibles[] = [
                         'hora_inicio' => $inicioIntervalo,
-                        'hora_fin' => $finIntervalo
+                        'hora_fin' => $finIntervalo,
+                        'tarea_id' => $tarea->id,
+                        'tarea_titulo' => $tarea->titulo
                     ];
                 }
             }
         }
         
+        // Obtener el nombre del día de la semana en español
+        $nombresDias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        $nombreDia = $nombresDias[$diaSemana];
+        
+        // Contar el total de horarios disponibles
+        $totalDisponibles = count($horariosDisponibles);
+        $totalOcupados = count($citasAgendadas);
+        
         return response()->json([
             'success' => true,
-            'horarios' => $horariosDisponibles
+            'horarios' => $horariosDisponibles,
+            'tareas' => $tareasInfo,
+            'dia_semana' => $nombreDia,
+            'total_disponibles' => $totalDisponibles,
+            'total_ocupados' => $totalOcupados
         ]);
     }
     
