@@ -138,37 +138,94 @@ class CitaController extends Controller
 
     public function store(Request $request)
     {
+        // Ajusta las reglas para que coincidan con los nombres enviados desde el frontend
         $request->validate([
             'doctor_id' => 'required|exists:doctores,id',
-            'fecha' => 'required|date|after:today',
-            'hora' => 'required',
-            'motivo' => 'required|string|max:500'
+            'dia_semana' => 'required|integer|min:1|max:7',
+            'hora_inicio' => ['required'],
+            'hora_fin' => ['required'],
+            'motivo' => 'required|string|max:255',
+            'descripcion_malestar' => 'required|string|max:1000',
+        ]);
+
+        // Normalizar hora_inicio y hora_fin a formato H:i:s antes de guardar
+        $hora_inicio = $request->input('hora_inicio');
+        if (preg_match('/^\d{2}:\d{2}$/', $hora_inicio)) {
+            $hora_inicio .= ':00';
+        }
+        if (preg_match('/^\d{4}$/', $hora_inicio)) {
+            $hora_inicio = substr($hora_inicio,0,2).':'.substr($hora_inicio,2,2).':00';
+        }
+        $hora_fin = $request->input('hora_fin');
+        if (preg_match('/^\d{2}:\d{2}$/', $hora_fin)) {
+            $hora_fin .= ':00';
+        }
+        if (preg_match('/^\d{4}$/', $hora_fin)) {
+            $hora_fin = substr($hora_fin,0,2).':'.substr($hora_fin,2,2).':00';
+        }
+        // Asignar las horas normalizadas al request
+        $request->merge([
+            'hora_inicio' => $hora_inicio,
+            'hora_fin' => $hora_fin,
         ]);
 
         try {
             DB::beginTransaction();
 
-            $paciente = Paciente::where('usuario_id', Auth::id())->firstOrFail();
+            $paciente = \App\Models\Paciente::where('usuario_id', Auth::id())->firstOrFail();
 
-            $cita = new Cita();
+            // Verificar si ya existe una cita pendiente/en espera para este paciente
+            $yaTieneCita = \App\Models\Cita::where('paciente_id', $paciente->id)
+                ->whereIn('estado', ['pendiente', 'En Espera'])
+                ->whereDate('fecha', '>=', now()->toDateString())
+                ->exists();
+            if ($yaTieneCita) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Ya tienes una cita pendiente o en espera. No puedes agendar otra hasta que sea atendida o cancelada.'
+                ], 409);
+            }
+
+            // Calcular la próxima fecha del día de la semana seleccionado
+            $hoy = now();
+            $targetDay = $request->dia_semana;
+            $daysToAdd = ($targetDay - $hoy->dayOfWeekIso + 7) % 7;
+            $fecha = $hoy->copy()->addDays($daysToAdd ?: 7)->toDateString();
+
+            // Calcular hora_fin (+30min)
+            $hora_inicio = \Carbon\Carbon::createFromFormat('H:i:s', $request->hora_inicio);
+            $hora_fin = $hora_inicio->copy()->addMinutes(30)->format('H:i:s');
+
+            $cita = new \App\Models\Cita();
             $cita->paciente_id = $paciente->id;
             $cita->doctor_id = $request->doctor_id;
-            $cita->fecha = $request->fecha;
-            $cita->hora_inicio = $request->hora;
-            $cita->motivo = $request->motivo;
-            $cita->estado = 'pendiente';
+            $cita->fecha = $fecha;
+            $cita->hora_inicio = $request->hora_inicio;
+            $cita->hora_fin = $hora_fin;
+            $cita->motivo_consulta = $request->motivo;
+            $cita->descripcion_malestar = $request->descripcion_malestar;
+            $cita->estado = 'pendiente'; // Usar solo valores válidos según el enum de la BD
             $cita->save();
 
             DB::commit();
 
-            return redirect()->route('citas.index')
-                ->with('success', 'Cita agendada correctamente.');
+            return response()->json([
+                'success' => true,
+                'message' => 'Cita agendada correctamente.'
+            ]);
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'validation' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()
-                ->with('error', 'Error al agendar la cita. Por favor, inténtelo de nuevo.')
-                ->withInput();
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -279,8 +336,8 @@ class CitaController extends Controller
             'paciente_id' => 'required|exists:pacientes,id',
             'doctor_id' => 'required|exists:doctores,id',
             'fecha' => 'required|date|after_or_equal:today',
-            'hora_inicio' => 'required',
-            'hora_fin' => 'required',
+            'hora_inicio' => 'required|date_format:H:i',
+            'hora_fin' => 'required|date_format:H:i',
             'motivo_consulta' => 'required|string',
             'descripcion_malestar' => 'nullable|string'
         ]);
@@ -354,4 +411,3 @@ class CitaController extends Controller
     }
 
 }
-    

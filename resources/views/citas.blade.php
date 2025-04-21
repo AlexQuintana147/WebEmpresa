@@ -66,8 +66,15 @@
             <!-- Mensajes de éxito/error -->
             @if(session('success'))
                 <div class="max-w-2xl mx-auto mt-6">
-                    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow">
+                    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow text-lg flex items-center gap-2">
                         <i class="fa-solid fa-circle-check mr-2"></i> {{ session('success') }}
+                    </div>
+                </div>
+            @endif
+            @if(session('error'))
+                <div class="max-w-2xl mx-auto mt-6">
+                    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation mr-2"></i> {{ session('error') }}
                     </div>
                 </div>
             @endif
@@ -127,27 +134,29 @@
                         <input type="hidden" name="dia_semana" id="input-dia_semana">
                         <input type="hidden" name="hora_inicio" id="input-hora_inicio">
                         <input type="hidden" name="hora_fin" id="input-hora_fin">
+                        <input type="hidden" name="motivo" id="input-motivo">
+                        <input type="hidden" name="descripcion_malestar" id="input-descripcion-malestar">
                         <div class="flex justify-end mt-6">
                             <button type="button" id="btn-agendar-cita" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-8 rounded-lg shadow-md transition flex items-center gap-2" disabled>
                                 <i class="fa-solid fa-paper-plane"></i> Agendar Cita
                             </button>
                         </div>
+                        <!-- Modal para ingresar malestar (AHORA DENTRO DEL FORM) -->
+                        <div id="modal-malestar" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+                            <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative">
+                                <button id="close-modal-malestar" class="absolute top-2 right-2 text-gray-400 hover:text-red-500"><i class="fa-solid fa-times"></i></button>
+                                <h2 class="text-xl font-bold text-cyan-700 mb-4 flex items-center gap-2"><i class="fa-solid fa-notes-medical"></i> Describa su malestar</h2>
+                                <textarea name="motivo" id="motivo" rows="4" class="w-full border border-cyan-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400 shadow-sm transition placeholder-gray-400 mb-4" placeholder="Ejemplo: Dolor de cabeza, fiebre..."></textarea>
+                                <div class="flex justify-end">
+                                    <button type="submit" id="submit-cita" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-6 rounded-lg shadow-md transition flex items-center gap-2">
+                                        <i class="fa-solid fa-paper-plane"></i> Confirmar Cita
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </form>
                 </div>
             </main>
-        </div>
-    </div>
-    <!-- Modal para ingresar malestar -->
-    <div id="modal-malestar" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative">
-            <button id="close-modal-malestar" class="absolute top-2 right-2 text-gray-400 hover:text-red-500"><i class="fa-solid fa-times"></i></button>
-            <h2 class="text-xl font-bold text-cyan-700 mb-4 flex items-center gap-2"><i class="fa-solid fa-notes-medical"></i> Describa su malestar</h2>
-            <textarea name="motivo" id="motivo" rows="4" class="w-full border border-cyan-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400 shadow-sm transition placeholder-gray-400 mb-4" placeholder="Ejemplo: Dolor de cabeza, fiebre..."></textarea>
-            <div class="flex justify-end">
-                <button type="submit" id="submit-cita" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-6 rounded-lg shadow-md transition flex items-center gap-2">
-                    <i class="fa-solid fa-paper-plane"></i> Confirmar Cita
-                </button>
-            </div>
         </div>
     </div>
     <!-- Scripts -->
@@ -215,8 +224,30 @@
                                 card.classList.add('ring-2', 'ring-cyan-500', 'bg-cyan-200');
                                 // Guardar horario seleccionado
                                 document.getElementById('input-dia_semana').value = item.dia_semana;
-                                document.getElementById('input-hora_inicio').value = item.hora_inicio;
-                                document.getElementById('input-hora_fin').value = item.hora_fin;
+
+                                // Normaliza la hora a HH:MM:SS
+                                function normalizaHora(hora) {
+                                    // Si ya viene como HH:MM:SS, retorna igual
+                                    if (/^\d{2}:\d{2}:\d{2}$/.test(hora)) return hora;
+                                    // Si viene como HH:MM, agrega :00
+                                    if (/^\d{2}:\d{2}$/.test(hora)) return hora + ':00';
+                                    // Si viene como 900, 0930, etc
+                                    let h = hora.replace(/[^0-9]/g, '');
+                                    if (h.length === 3) h = '0' + h;
+                                    if (h.length === 4) return h.slice(0,2) + ':' + h.slice(2,4) + ':00';
+                                    return '';
+                                }
+
+                                const horaInicio = normalizaHora(item.hora_inicio);
+                                const horaFin = normalizaHora(item.hora_fin);
+
+                                document.getElementById('input-hora_inicio').value = horaInicio;
+                                document.getElementById('input-hora_fin').value = horaFin;
+
+                                // Log para depuración
+                                console.log('Hora inicio enviada:', horaInicio);
+                                console.log('Hora fin enviada:', horaFin);
+
                                 document.getElementById('btn-agendar-cita').disabled = false;
                             });
                             scheduleContent.appendChild(card);
@@ -235,12 +266,62 @@
         document.getElementById('close-modal-malestar').addEventListener('click', function() {
             document.getElementById('modal-malestar').classList.add('hidden');
         });
-        // Enviar formulario con horario y motivo
+        // Enviar formulario con AJAX y mostrar errores en el modal
         document.getElementById('submit-cita').addEventListener('click', function(e) {
             e.preventDefault();
-            document.getElementById('modal-malestar').classList.add('hidden');
-            document.querySelector('form').submit();
+            document.getElementById('input-descripcion-malestar').value = document.getElementById('motivo').value;
+            const selectedHorario = document.querySelector('.select-horario.ring-2');
+            if (selectedHorario) {
+                document.getElementById('input-motivo').value = selectedHorario.querySelector('.text-gray-500')?.textContent?.trim() || '';
+                document.getElementById('input-dia_semana').value = selectedHorario.dataset.diaSemana;
+                document.getElementById('input-hora_inicio').value = selectedHorario.dataset.horaInicio;
+            }
+            // Validar que los campos requeridos estén presentes
+            const diaSemana = document.getElementById('input-dia_semana').value;
+            const horaInicio = document.getElementById('input-hora_inicio').value;
+            if (!diaSemana || !horaInicio) {
+                mostrarErrorModal('Debes seleccionar un horario válido antes de confirmar la cita.');
+                return;
+            }
+            // Preparar datos del formulario
+            const form = document.querySelector('form');
+            const formData = new FormData(form);
+            document.getElementById('modal-error-msg')?.remove();
+            let url = form.action.split('?')[0];
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': formData.get('_token'),
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(async res => {
+                const data = await res.json();
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    let msg = data.error || 'Error desconocido';
+                    if (data.validation) {
+                        msg += '<ul class="list-disc ml-6">';
+                        Object.values(data.validation).forEach(arr => arr.forEach(e => {msg += `<li>${e}</li>`;}));
+                        msg += '</ul>';
+                    }
+                    mostrarErrorModal(msg);
+                }
+            })
+            .catch(err => {
+                mostrarErrorModal('Error inesperado al agendar la cita.');
+            });
         });
+        function mostrarErrorModal(msg) {
+            let errorDiv = document.createElement('div');
+            errorDiv.id = 'modal-error-msg';
+            errorDiv.className = 'bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow mb-4';
+            errorDiv.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-2"></i>' + msg;
+            const modalBody = document.getElementById('modal-malestar').querySelector('.p-8');
+            modalBody.prepend(errorDiv);
+        }
     </script>
     
 </body>
