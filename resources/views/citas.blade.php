@@ -6,10 +6,55 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Agendar Cita - Clínica Ricardo Palma</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    
+    <style>
+        /* Estilos médicos personalizados */
+        .medical-gradient {
+            background: linear-gradient(135deg, #e6f7ff 0%, #cce7f8 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .medical-card {
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .medical-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #0ea5e9, #0891b2);
+        }
+        .medical-card:hover {
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        .select-medical {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        @keyframes float-medical {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float-medical {
+            animation: float-medical 4s ease-in-out infinite;
+        }
+    </style>
 </head>
-<body class="bg-blue-50">
+<body class="bg-gradient-to-br from-blue-50 to-cyan-50">
     <div class="min-h-screen flex">
         <!-- Sidebar -->
         <x-sidebar />
@@ -21,9 +66,18 @@
             
             <!-- Contenido Principal -->
             <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <!-- Título de la página con decoración médica -->
+                <div class="mb-10 text-center relative">
+                    <div class="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
+                        <div class="absolute top-10 left-10 w-8 h-8 border-2 border-cyan-200 rounded-full opacity-20 animate-float-medical" style="animation-delay: 0s;"></div>
+                        <div class="absolute top-5 right-10 w-6 h-6 border-2 border-blue-200 rounded-full opacity-20 animate-float-medical" style="animation-delay: 1s;"></div>
+                    </div>
+                    <h1 class="text-4xl font-bold text-gray-900 relative z-10">Agendar Nueva Cita</h1>
+                    <p class="mt-2 text-gray-600">Complete el formulario para programar su cita médica</p>
+                </div>
                 <!-- Información del Paciente -->
                 @if(auth()->check() && auth()->user()->paciente)
-                    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <div class="medical-card bg-white p-6 mb-6">
                         <h2 class="text-2xl font-semibold text-gray-800 mb-4">Información del Paciente</h2>
                         <div class="flex items-center space-x-4">
                             <div class="flex-1">
@@ -33,7 +87,7 @@
                         </div>
                     </div>
                 @else
-                    <div class="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-6">
+                    <div class="medical-card bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
                         <div class="flex">
                             <div class="flex-shrink-0">
                                 <i class="fas fa-exclamation-triangle text-yellow-500"></i>
@@ -48,7 +102,7 @@
                     </div>
                 @endif
                 <!-- Formulario de Cita -->
-                <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="medical-card bg-white p-6 medical-gradient">
                     <h2 class="text-2xl font-semibold text-gray-800 mb-4">Agendar Nueva Cita</h2>
                     <form action="{{ route('citas.store') }}" method="POST" class="space-y-6">
                         @csrf
@@ -56,7 +110,7 @@
                         <!-- Selector de Categoría de Doctor -->
                         <div class="space-y-2">
                             <label for="categoria" class="block text-sm font-medium text-gray-700">Especialidad Médica</label>
-                            <select name="categoria" id="categoria" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                            <select name="categoria" id="categoria" class="select-medical mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md bg-white">
                                 <option value="">Seleccione una especialidad</option>
                                 @foreach($especialidades as $especialidad)
                                     <option value="{{ $especialidad }}">{{ $especialidad }}</option>
@@ -67,7 +121,7 @@
                         <!-- Selector de Doctor -->
                         <div class="space-y-2">
                             <label for="doctor_id" class="block text-sm font-medium text-gray-700">Doctor</label>
-                            <select name="doctor_id" id="doctor_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                            <select name="doctor_id" id="doctor_id" class="select-medical mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md bg-white">
                                 <option value="">Primero seleccione una especialidad</option>
                             </select>
                         </div>
@@ -75,7 +129,7 @@
                         <!-- Selector de Día Disponible -->
                         <div class="space-y-2">
                             <label for="fecha_cita" class="block text-sm font-medium text-gray-700">Día Disponible</label>
-                            <select name="fecha_cita" id="fecha_cita" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                            <select name="fecha_cita" id="fecha_cita" class="select-medical mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md bg-white">
                                 <option value="">Primero seleccione un doctor</option>
                             </select>
                         </div>
@@ -83,13 +137,13 @@
                         <!-- Selector de Horario Disponible -->
                         <div class="space-y-2">
                             <label for="hora_cita" class="block text-sm font-medium text-gray-700">Horario Disponible</label>
-                            <select name="hora_cita" id="hora_cita" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                            <select name="hora_cita" id="hora_cita" class="select-medical mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md bg-white">
                                 <option value="">Primero seleccione un día</option>
                             </select>
                         </div>
                     
                         <div class="flex justify-end">
-                            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <button type="submit" class="inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transform transition-all duration-200 hover:scale-105">
                                 Agendar Cita
                             </button>
                         </div>
