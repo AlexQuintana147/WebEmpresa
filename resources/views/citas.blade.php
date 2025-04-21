@@ -124,14 +124,30 @@
                             <h3 class="text-lg font-bold text-cyan-700 mb-4 flex items-center gap-2"><i class="fa-solid fa-calendar-days"></i> Horario semanal del doctor</h3>
                             <div id="schedule-content" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                         </div>
+                        <input type="hidden" name="dia_semana" id="input-dia_semana">
+                        <input type="hidden" name="hora_inicio" id="input-hora_inicio">
+                        <input type="hidden" name="hora_fin" id="input-hora_fin">
                         <div class="flex justify-end mt-6">
-                            <button type="submit" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-8 rounded-lg shadow-md transition flex items-center gap-2">
+                            <button type="button" id="btn-agendar-cita" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-8 rounded-lg shadow-md transition flex items-center gap-2" disabled>
                                 <i class="fa-solid fa-paper-plane"></i> Agendar Cita
                             </button>
                         </div>
                     </form>
                 </div>
             </main>
+        </div>
+    </div>
+    <!-- Modal para ingresar malestar -->
+    <div id="modal-malestar" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative">
+            <button id="close-modal-malestar" class="absolute top-2 right-2 text-gray-400 hover:text-red-500"><i class="fa-solid fa-times"></i></button>
+            <h2 class="text-xl font-bold text-cyan-700 mb-4 flex items-center gap-2"><i class="fa-solid fa-notes-medical"></i> Describa su malestar</h2>
+            <textarea name="motivo" id="motivo" rows="4" class="w-full border border-cyan-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400 shadow-sm transition placeholder-gray-400 mb-4" placeholder="Ejemplo: Dolor de cabeza, fiebre..."></textarea>
+            <div class="flex justify-end">
+                <button type="submit" id="submit-cita" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-6 rounded-lg shadow-md transition flex items-center gap-2">
+                    <i class="fa-solid fa-paper-plane"></i> Confirmar Cita
+                </button>
+            </div>
         </div>
     </div>
     <!-- Scripts -->
@@ -171,28 +187,59 @@
             const scheduleContent = document.getElementById('schedule-content');
             scheduleDiv.classList.add('hidden');
             scheduleContent.innerHTML = '';
+            document.getElementById('btn-agendar-cita').disabled = true;
+            document.getElementById('input-dia_semana').value = '';
+            document.getElementById('input-hora_inicio').value = '';
+            document.getElementById('input-hora_fin').value = '';
             if (!doctorId) return;
             fetch(`/doctores/${doctorId}/horario`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.success && data.horario && data.horario.length > 0) {
                         scheduleDiv.classList.remove('hidden');
-                        // Mostrar horario por día
                         const dias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-                        data.horario.forEach(item => {
+                        data.horario.forEach((item, idx) => {
                             const dia = dias[item.dia_semana-1] || 'Día';
-                            const card = `<div class='bg-cyan-50 border-l-4 border-cyan-400 rounded-lg p-4 shadow flex flex-col gap-1'>
-                                <div class='font-semibold text-cyan-700'><i class="fa-solid fa-calendar-day"></i> ${dia}</div>
-                                <div class='text-gray-700'><i class="fa-solid fa-clock"></i> ${item.hora_inicio} - ${item.hora_fin}</div>
-                                <div class='text-gray-500 text-sm'>${item.titulo || ''}</div>
-                            </div>`;
-                            scheduleContent.innerHTML += card;
+                            const card = document.createElement('button');
+                            card.type = 'button';
+                            card.className = 'select-horario bg-cyan-50 border-l-4 border-cyan-400 rounded-lg p-4 shadow flex flex-col gap-1 hover:bg-cyan-100 focus:ring-2 focus:ring-cyan-500 outline-none transition mb-2';
+                            card.dataset.diaSemana = item.dia_semana;
+                            card.dataset.horaInicio = item.hora_inicio;
+                            card.dataset.horaFin = item.hora_fin;
+                            card.innerHTML = `<div class='font-semibold text-cyan-700'><i class=\"fa-solid fa-calendar-day\"></i> ${dia}</div>
+                                <div class='text-gray-700'><i class=\"fa-solid fa-clock\"></i> ${item.hora_inicio} - ${item.hora_fin}</div>
+                                <div class='text-gray-500 text-sm'>${item.titulo || ''}</div>`;
+                            card.addEventListener('click', function() {
+                                // Marcar seleccionado
+                                document.querySelectorAll('.select-horario').forEach(btn => btn.classList.remove('ring-2', 'ring-cyan-500', 'bg-cyan-200'));
+                                card.classList.add('ring-2', 'ring-cyan-500', 'bg-cyan-200');
+                                // Guardar horario seleccionado
+                                document.getElementById('input-dia_semana').value = item.dia_semana;
+                                document.getElementById('input-hora_inicio').value = item.hora_inicio;
+                                document.getElementById('input-hora_fin').value = item.hora_fin;
+                                document.getElementById('btn-agendar-cita').disabled = false;
+                            });
+                            scheduleContent.appendChild(card);
                         });
                     } else {
                         scheduleDiv.classList.remove('hidden');
                         scheduleContent.innerHTML = `<div class='text-gray-500'>No hay horario registrado para este doctor.</div>`;
                     }
                 });
+        });
+        // Mostrar modal al hacer click en agendar cita
+        document.getElementById('btn-agendar-cita').addEventListener('click', function() {
+            document.getElementById('modal-malestar').classList.remove('hidden');
+        });
+        // Cerrar modal
+        document.getElementById('close-modal-malestar').addEventListener('click', function() {
+            document.getElementById('modal-malestar').classList.add('hidden');
+        });
+        // Enviar formulario con horario y motivo
+        document.getElementById('submit-cita').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('modal-malestar').classList.add('hidden');
+            document.querySelector('form').submit();
         });
     </script>
     
