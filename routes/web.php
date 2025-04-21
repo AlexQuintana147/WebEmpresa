@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\TareaController;
 use App\Http\Controllers\NotaController;
 use App\Http\Controllers\CitaController;
+use App\Http\Controllers\DiagnosticoController;
 
 Route::get('/', function () {
     return view('sobrenosotros');
@@ -100,6 +101,8 @@ Route::middleware('paciente')->group(function () {
 Route::get('/api/doctores/{doctor}/dias-disponibles', [CitaController::class, 'getDiasDisponibles']);
     Route::post('/api/pacientes/verificar-dni', [CitaController::class, 'verificarDni']);
 });
+
+Route::post('/diagnostico-ia', [DiagnosticoController::class, 'diagnosticoIA'])->name('diagnostico.ia');
 
 Route::get('/opciones', function () {
     return view('opciones');

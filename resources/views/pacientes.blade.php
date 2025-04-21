@@ -290,7 +290,7 @@
                         <!-- Aquí el contenido dinámico -->
                       </div>
                       <div class="mt-8 flex justify-end gap-4">
-                        <button class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded shadow transition-all animate-pulse-leds flex items-center gap-2">
+                        <button id="btnDiagnosticoIA" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded shadow transition-all animate-pulse-leds flex items-center gap-2">
                             <i class="fas fa-robot"></i>
                             Diagnóstico rápido con IA
                         </button>
@@ -643,6 +643,38 @@
             document.getElementById('modalPaciente').classList.remove('hidden');
         }
 
+        const btnDiagnosticoIA = document.getElementById('btnDiagnosticoIA');
+        if (btnDiagnosticoIA) {
+            btnDiagnosticoIA.addEventListener('click', async function() {
+                btnDiagnosticoIA.disabled = true;
+                btnDiagnosticoIA.innerHTML = '<i class="fas fa-robot fa-spin"></i> Consultando IA...';
+                const descripcionElem = document.querySelector('#modalPacienteContent p');
+                const descripcion = descripcionElem ? descripcionElem.innerText.trim() : '';
+                console.log('Descripción enviada:', descripcion);
+                try {
+                    const resp = await fetch('/diagnostico-ia', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ descripcion })
+                    });
+                    const data = await resp.json();
+                    console.log('Respuesta IA:', data);
+                    if (data.success) {
+                        document.getElementById('modalPacienteContent').innerHTML += `<div class='mt-6 p-4 rounded border border-purple-300 bg-purple-50 text-purple-900'><b>Diagnóstico IA:</b><br>${data.respuesta}</div>`;
+                    } else {
+                        document.getElementById('modalPacienteContent').innerHTML += `<div class='mt-6 p-4 rounded border border-red-300 bg-red-50 text-red-900'><b>Error IA:</b> ${data.error}</div>`;
+                    }
+                } catch (e) {
+                    document.getElementById('modalPacienteContent').innerHTML += `<div class='mt-6 p-4 rounded border border-red-300 bg-red-50 text-red-900'><b>Error IA:</b> ${e.message}</div>`;
+                }
+                btnDiagnosticoIA.disabled = false;
+                btnDiagnosticoIA.innerHTML = '<i class="fas fa-robot"></i> Diagnóstico rápido con IA';
+            });
+        }
+        
         // Event listeners
         document.getElementById('verificarDniForm').addEventListener('submit', verificarDni);
         document.getElementById('guardarDatosMedicoForm').addEventListener('submit', guardarDatosMedico);

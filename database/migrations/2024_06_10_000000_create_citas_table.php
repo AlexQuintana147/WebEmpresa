@@ -17,6 +17,7 @@ return new class extends Migration
             $table->time('hora_fin');
             $table->text('motivo_consulta')->nullable();
             $table->text('descripcion_malestar')->nullable();
+            $table->text('respuesta_bot')->nullable();
             $table->enum('estado', ['pendiente', 'confirmada', 'cancelada', 'completada'])->default('pendiente');
             $table->timestamps();
             
