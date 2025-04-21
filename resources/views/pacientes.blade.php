@@ -361,6 +361,13 @@
                 document.getElementById('modalPaciente').classList.remove('hidden');
             }
         }
+
+        function closeModalPaciente() {
+            var modal = document.getElementById('modalPaciente');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
     </script>
 </body>
 </html>
