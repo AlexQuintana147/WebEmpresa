@@ -4,43 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Gestión de Pacientes - Clínica Ricardo Palma</title>
+    <title>Pacientes - Clínica Ricardo Palma</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <style>
-        .hidden { display: none !important; }
-        .medical-card {
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        .medical-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #0ea5e9, #0891b2);
-        }
-        .medical-card:hover {
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-            transform: translateY(-2px);
-        }
-        .transition-message {
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-        .message-hidden {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-        .message-visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    </style>
 </head>
 <body class="bg-blue-50">
     <div class="min-h-screen flex">
@@ -56,7 +22,7 @@
             <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" id="gestionPacientes">
                 <!-- Título de la página -->
                 <div class="flex justify-between items-center mb-6">
-                    <h1 class="text-2xl font-semibold text-gray-900">Gestión de Pacientes</h1>
+                    <h1 class="text-2xl font-semibold text-gray-900">Pacientes</h1>
                 </div>
                 
                 <!-- Mensaje de estado -->
@@ -256,57 +222,44 @@
                     </div>
                 </div>
 
-                <!-- Lista de Pacientes (mostrar solo si el doctor tiene DNI) -->
-                <div id="pacientesContainer" class="medical-card bg-white overflow-hidden {{ $doctor ? '' : 'hidden' }}">
+                <!-- Lista de Pacientes del Doctor -->
+                <div id="pacientesList" class="medical-card bg-white overflow-hidden mb-6 {{ $doctor ? '' : 'hidden' }}">
                     <div class="p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-xl font-semibold text-gray-800">Listado de Pacientes</h2>
-                            <button 
-                                class="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center space-x-2"
-                                id="nuevoPacienteBtn"
-                            >
-                                <i class="fas fa-plus"></i>
-                                <span>Nuevo Paciente</span>
-                            </button>
-                        </div>
-                        
-                        <!-- Información de carga -->
-                        <div id="loadingPacientes" class="mb-4 p-3 bg-blue-50 text-blue-700 rounded">
-                            <p class="flex items-center">
-                                <i class="fas fa-spinner fa-spin mr-2"></i> <span id="loadingPacientesText">Cargando pacientes...</span>
-                            </p>
-                        </div>
-                        
-                        <div id="noPacientes" class="mb-4 p-3 bg-yellow-50 text-yellow-700 rounded hidden">
-                            <p>No se encontraron pacientes asociados a su cuenta. Puede agregar nuevos pacientes usando el botón "Nuevo Paciente".</p>
-                        </div>
-                        
-                        <!-- Tabla de pacientes -->
-                        <div id="tablaPacientes" class="overflow-x-auto hidden">
+                        <h2 class="text-xl font-semibold text-gray-800 mb-4">Lista de Pacientes</h2>
+                        @if(count($pacientes) > 0)
+                        <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DNI</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contacto</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DNI</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Apellido Paterno</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Apellido Materno</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correo</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teléfono</th>
                                     </tr>
                                 </thead>
-                                <tbody id="pacientesTableBody" class="bg-white divide-y divide-gray-200">
-                                    <!-- Aquí se insertarán las filas de pacientes dinámicamente -->
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach($pacientes as $paciente)
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->dni }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->nombre }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->apellido_paterno }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->apellido_materno }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->correo }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $paciente->telefono }}</td>
+                                    </tr>
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>
-                        
-                        <!-- Botón para agendar citas -->
-                        <div class="mt-6 flex justify-center">
-                            <a href="{{ route('citas.index') }}" class="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-6 py-3 rounded-lg transition-all duration-300 flex items-center space-x-3">
-                                <i class="fas fa-calendar-check text-xl"></i>
-                                <span class="text-lg font-medium">Agendar Cita Médica</span>
-                            </a>
-                        </div>
+                        @else
+                        <p class="text-gray-600">No se encontraron pacientes para este doctor.</p>
+                        @endif
                     </div>
                 </div>
+
+                
             </main>
         </div>
     </div>
@@ -349,13 +302,27 @@
             // Si ya tenemos los datos del doctor, no necesitamos hacer nada más
             if (doctor) {
                 console.log('Doctor ya registrado:', doctor);
-                // Asegurarse de que pacientes siempre sea un array
-                if (!Array.isArray(pacientes)) {
-                    pacientes = [];
-                }
-                renderPacientes();
+                // Obtener pacientes del backend
+                loading = true;
+                updateLoadingState();
+                fetch('/doctor/pacientes')
+                    .then(resp => resp.json())
+                    .then(data => {
+                        if (data.success && Array.isArray(data.pacientes)) {
+                            pacientes = data.pacientes;
+                        } else {
+                            pacientes = [];
+                        }
+                        loading = false;
+                        renderPacientes();
+                    })
+                    .catch(() => {
+                        pacientes = [];
+                        loading = false;
+                        renderPacientes();
+                        showMessage('error', 'Error al cargar pacientes del doctor.');
+                    });
             }
-            
             // Marcar como inicializado después de que todo esté listo
             initialized = true;
             updateLoadingState();
@@ -433,10 +400,10 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${paciente.dni}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${paciente.nombre} ${paciente.apellido_paterno} ${paciente.apellido_materno}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${paciente.nombres ?? paciente.nombre} ${paciente.apellido_paterno ?? ''} ${paciente.apellido_materno ?? ''}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div>Tel: ${paciente.telefono}</div>
-                        <div>Email: ${paciente.correo}</div>
+                        <div>Tel: ${paciente.telefono ?? ''}</div>
+                        <div>Email: ${paciente.correo ?? ''}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editarPaciente(${paciente.id})">

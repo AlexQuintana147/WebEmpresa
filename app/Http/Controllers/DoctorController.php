@@ -22,9 +22,16 @@ class DoctorController extends Controller
         $doctor = Doctor::where('usuario_id', Auth::id())->first();
         $pacientes = [];
         
-        // Si el doctor está registrado, obtener sus pacientes
+        // Si el doctor está registrado, obtener sus pacientes mediante la tabla de citas
         if ($doctor) {
-            $pacientes = Paciente::where('doctor_id', $doctor->id)->get();
+            // Obtener los IDs únicos de pacientes que tienen citas con este doctor
+            $pacienteIds = \App\Models\Cita::where('doctor_id', $doctor->id)
+                ->pluck('paciente_id')
+                ->unique();
+
+            // Obtener los pacientes
+            $pacientes = \App\Models\Paciente::whereIn('id', $pacienteIds)->get();
+
             return view('pacientes', compact('doctor', 'pacientes'));
         }
         
@@ -161,17 +168,19 @@ class DoctorController extends Controller
      */
     public function getPacientes()
     {
-        $doctor = Doctor::where('usuario_id', Auth::id())->first();
-        
+        // Buscar el doctor por usuario_id
+        $doctor = \App\Models\Doctor::where('usuario_id', Auth::id())->first();
+
         if (!$doctor) {
             return response()->json([
                 'success' => false,
-                'message' => 'No se encontró información del doctor'
+                'message' => 'No se encontró información del doctor autenticado'
             ], 404);
         }
-        
-        $pacientes = Paciente::where('doctor_id', $doctor->id)->get();
-        
+
+        // Buscar pacientes asociados a este doctor
+        $pacientes = \App\Models\Paciente::where('doctor_id', $doctor->id)->get();
+
         return response()->json([
             'success' => true,
             'pacientes' => $pacientes
