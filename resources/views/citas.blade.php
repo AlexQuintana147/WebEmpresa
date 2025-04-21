@@ -54,109 +54,105 @@
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-cyan-50">
+<body class="bg-gradient-to-br from-blue-50 to-cyan-50 min-h-screen">
     <div class="min-h-screen flex">
         <!-- Sidebar -->
         <x-sidebar />
 
         <!-- Main Content -->
-        <div class="flex-1">
+        <div class="flex-1 flex flex-col">
             <!-- Header -->
             <x-header />
-            
+            <!-- Mensajes de éxito/error -->
+            @if(session('success'))
+                <div class="max-w-2xl mx-auto mt-6">
+                    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow">
+                        <i class="fa-solid fa-circle-check mr-2"></i> {{ session('success') }}
+                    </div>
+                </div>
+            @endif
+            @if($errors->any())
+                <div class="max-w-2xl mx-auto mt-6">
+                    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow">
+                        <i class="fa-solid fa-triangle-exclamation mr-2"></i> Por favor corrige los siguientes errores:
+                        <ul class="list-disc ml-6 mt-2">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            @endif
             <!-- Contenido Principal -->
-            <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
                 <!-- Título de la página con decoración médica -->
                 <div class="mb-10 text-center relative">
-                    <div class="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
-                        <div class="absolute top-10 left-10 w-8 h-8 border-2 border-cyan-200 rounded-full opacity-20 animate-float-medical" style="animation-delay: 0s;"></div>
-                        <div class="absolute top-5 right-10 w-6 h-6 border-2 border-blue-200 rounded-full opacity-20 animate-float-medical" style="animation-delay: 1s;"></div>
-                    </div>
-                    <h1 class="text-4xl font-bold text-gray-900 relative z-10">Agendar Nueva Cita</h1>
-                    <p class="mt-2 text-gray-600">Complete el formulario para programar su cita médica</p>
+                    <h1 class="text-4xl font-bold text-cyan-700 mb-2 tracking-tight flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-calendar-check text-cyan-500"></i> Agendar Nueva Cita
+                    </h1>
+                    <p class="text-gray-500">Reserva tu cita médica de manera rápida y sencilla</p>
                 </div>
-                <!-- Información del Paciente -->
-                @if(auth()->check() && auth()->user()->paciente)
-                    <div class="medical-card bg-white p-6 mb-6">
-                        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Información del Paciente</h2>
-                        <div class="flex items-center space-x-4">
-                            <div class="flex-1">
-                                <p class="text-gray-600">Nombre completo: <span class="font-medium text-gray-800">{{ auth()->user()->paciente->nombre }} {{ auth()->user()->paciente->apellido }}</span></p>
-                                <p class="text-gray-600">DNI: <span class="font-medium text-gray-800">{{ auth()->user()->paciente->dni }}</span></p>
-                            </div>
-                        </div>
-                    </div>
-                @else
-                    <div class="medical-card bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-exclamation-triangle text-yellow-500"></i>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm text-yellow-700">
-                                    Para agendar una cita, primero debe completar su información como paciente.
-                                    Por favor, contacte con administración.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-                <!-- Formulario de Cita -->
-                <div class="medical-card bg-white p-6 medical-gradient">
-                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Agendar Nueva Cita</h2>
-                    <form action="{{ route('citas.store') }}" method="POST" class="space-y-6">
+                <!-- Card del formulario -->
+                <div class="medical-card bg-white p-8 medical-gradient shadow-lg rounded-xl border border-cyan-100">
+                    <form action="{{ route('citas.store') }}" method="POST" class="space-y-7">
                         @csrf
-                        
-                        <!-- Selector de Categoría de Doctor -->
-                        <div class="space-y-2">
-                            <label for="categoria" class="block text-sm font-medium text-gray-700">Especialidad Médica</label>
-                            <select name="categoria" id="categoria" class="select-medical mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md bg-white">
-                                <option value="">Seleccione una especialidad</option>
-                                @foreach($especialidades as $especialidad)
-                                    <option value="{{ $especialidad }}">{{ $especialidad }}</option>
-                                @endforeach
-                            </select>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="categoria" class="block text-gray-700 font-semibold mb-1">Especialidad Médica</label>
+                                <div class="relative">
+                                    <select name="categoria" id="categoria" class="select-medical w-full border border-cyan-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400 shadow-sm transition">
+                                        <option value="">Seleccione una especialidad</option>
+                                        @foreach($especialidades as $especialidad)
+                                            <option value="{{ $especialidad }}">{{ $especialidad }}</option>
+                                        @endforeach
+                                    </select>
+                                    <i class="fa-solid fa-layer-group absolute right-3 top-3 text-cyan-300"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="doctor_id" class="block text-gray-700 font-semibold mb-1">Doctor</label>
+                                <div class="relative">
+                                    <select name="doctor_id" id="doctor_id" class="select-medical w-full border border-cyan-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400 shadow-sm transition">
+                                        <option value="">Primero seleccione una especialidad</option>
+                                    </select>
+                                    <i class="fa-solid fa-user-md absolute right-3 top-3 text-cyan-300"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="tipo_consulta" class="block text-gray-700 font-semibold mb-1">¿Qué desea?</label>
+                                <div class="relative">
+                                    <select name="tipo_consulta" id="tipo_consulta" class="select-medical w-full border border-cyan-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400 shadow-sm transition">
+                                        <option value="">Seleccione el tipo de consulta</option>
+                                        <option value="consulta_general">Consulta General</option>
+                                        <option value="atencion_medica">Atención Médica</option>
+                                        <option value="consulta_especialidad">Consulta de Especialidad</option>
+                                        <option value="revision_resultados">Revisión de Resultados</option>
+                                    </select>
+                                    <i class="fa-solid fa-stethoscope absolute right-3 top-3 text-cyan-300"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="fecha_cita" class="block text-gray-700 font-semibold mb-1">Día Disponible</label>
+                                <div class="relative">
+                                    <select name="fecha_cita" id="fecha_cita" class="select-medical w-full border border-cyan-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400 shadow-sm transition">
+                                        <option value="">Primero seleccione un doctor</option>
+                                    </select>
+                                    <i class="fa-solid fa-calendar-day absolute right-3 top-3 text-cyan-300"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="hora_cita" class="block text-gray-700 font-semibold mb-1">Horario Disponible</label>
+                                <div class="relative">
+                                    <select name="hora_cita" id="hora_cita" class="select-medical w-full border border-cyan-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-400 shadow-sm transition">
+                                        <option value="">Primero seleccione un día</option>
+                                    </select>
+                                    <i class="fa-solid fa-clock absolute right-3 top-3 text-cyan-300"></i>
+                                </div>
+                            </div>
                         </div>
-
-                        <!-- Selector de Doctor -->
-                        <div class="space-y-2">
-                            <label for="doctor_id" class="block text-sm font-medium text-gray-700">Doctor</label>
-                            <select name="doctor_id" id="doctor_id" class="select-medical mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md bg-white">
-                                <option value="">Primero seleccione una especialidad</option>
-                            </select>
-                        </div>
-
-                        <!-- Selector de Tipo de Consulta -->
-                        <div class="space-y-2">
-                            <label for="tipo_consulta" class="block text-sm font-medium text-gray-700">¿Qué desea?</label>
-                            <select name="tipo_consulta" id="tipo_consulta" class="select-medical mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md bg-white">
-                                <option value="">Seleccione el tipo de consulta</option>
-                                <option value="consulta_general">Consulta General</option>
-                                <option value="atencion_medica">Atención Médica</option>
-                                <option value="consulta_especialidad">Consulta de Especialidad</option>
-                                <option value="revision_resultados">Revisión de Resultados</option>
-                            </select>
-                        </div>
-
-                        <!-- Selector de Día Disponible -->
-                        <div class="space-y-2">
-                            <label for="fecha_cita" class="block text-sm font-medium text-gray-700">Día Disponible</label>
-                            <select name="fecha_cita" id="fecha_cita" class="select-medical mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md bg-white">
-                                <option value="">Primero seleccione un doctor</option>
-                            </select>
-                        </div>
-
-                        <!-- Selector de Horario Disponible -->
-                        <div class="space-y-2">
-                            <label for="hora_cita" class="block text-sm font-medium text-gray-700">Horario Disponible</label>
-                            <select name="hora_cita" id="hora_cita" class="select-medical mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md bg-white">
-                                <option value="">Primero seleccione un día</option>
-                            </select>
-                        </div>
-                    
-                        <div class="flex justify-end">
-                            <button type="submit" class="inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transform transition-all duration-200 hover:scale-105">
-                                Agendar Cita
+                        <div class="flex justify-end mt-6">
+                            <button type="submit" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-8 rounded-lg shadow-md transition flex items-center gap-2">
+                                <i class="fa-solid fa-paper-plane"></i> Agendar Cita
                             </button>
                         </div>
                     </form>
@@ -164,7 +160,6 @@
             </main>
         </div>
     </div>
-
     <!-- Scripts -->
     <script>
         document.getElementById('categoria').addEventListener('change', function() {
@@ -246,6 +241,7 @@
 
         document.getElementById('doctor_id').addEventListener('change', function() {
             const doctorId = this.value;
+            const tipoConsulta = document.getElementById('tipo_consulta').value;
             const fechaSelect = document.getElementById('fecha_cita');
             const horaSelect = document.getElementById('hora_cita');
             
@@ -260,6 +256,19 @@
                         if (data && data.dias && Array.isArray(data.dias)) {
                             for (const dia of data.dias) {
                                 const fecha = new Date(dia.fecha);
+                                const diaSemana = fecha.getDay(); // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
+                                
+                                // Filtrar días según el tipo de consulta
+                                if (tipoConsulta === 'consulta_general' && !(diaSemana === 1 || diaSemana === 2)) {
+                                    continue; // Saltar si no es lunes o martes para consulta general
+                                } else if (tipoConsulta === 'atencion_medica' && diaSemana !== 3) {
+                                    continue; // Saltar si no es miércoles para atención médica
+                                } else if (tipoConsulta === 'consulta_especialidad' && diaSemana !== 4) {
+                                    continue; // Saltar si no es jueves para consulta de especialidad
+                                } else if (tipoConsulta === 'revision_resultados' && diaSemana !== 6) {
+                                    continue; // Saltar si no es sábado para revisión de resultados
+                                }
+                                
                                 const fechaFormateada = fecha.toLocaleDateString('es-ES', {
                                     weekday: 'long',
                                     year: 'numeric',
@@ -284,7 +293,14 @@
         });
 
         document.getElementById('fecha_cita').addEventListener('change', actualizarHorarios);
-        document.getElementById('tipo_consulta').addEventListener('change', actualizarHorarios);
+        document.getElementById('tipo_consulta').addEventListener('change', function() {
+            const doctorId = document.getElementById('doctor_id').value;
+            if (doctorId) {
+                // Volver a cargar los días disponibles cuando cambie el tipo de consulta
+                document.getElementById('doctor_id').dispatchEvent(new Event('change'));
+            }
+            actualizarHorarios();
+        });
     </script>
     
 </body>
