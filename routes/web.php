@@ -95,6 +95,7 @@ Route::middleware('paciente')->group(function () {
     Route::post('/api/citas/cancelar/{id}', [CitaController::class, 'cancelarCita']);
     Route::get('/api/citas/horarios-disponibles/{doctorId}/{fecha}', [CitaController::class, 'getHorariosDisponibles']);
     Route::get('/api/doctores/{categoria}', [CitaController::class, 'getDoctoresPorEspecialidad']);
+Route::get('/api/doctores/{doctor}/dias-disponibles', [CitaController::class, 'getDiasDisponibles']);
     Route::post('/api/pacientes/verificar-dni', [CitaController::class, 'verificarDni']);
 });
 

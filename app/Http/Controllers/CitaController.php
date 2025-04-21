@@ -79,6 +79,63 @@ class CitaController extends Controller
     /**
      * Almacena una nueva cita en la base de datos
      */
+    /**
+     * Obtiene los días disponibles para un doctor específico
+     */
+    public function getDiasDisponibles($doctor_id)
+    {
+        try {
+            // Obtener las tareas del doctor
+            $tareas = Tarea::where('usuario_id', $doctor_id)
+                ->orderBy('dia_semana')
+                ->get();
+
+            if ($tareas->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No hay horarios disponibles para este doctor'
+                ]);
+            }
+
+            // Obtener la fecha actual
+            $fechaActual = now();
+            $diasDisponibles = [];
+
+            // Generar fechas para los próximos 30 días
+            for ($i = 0; $i < 30; $i++) {
+                $fecha = $fechaActual->copy()->addDays($i);
+                $diaSemana = $fecha->dayOfWeek ?: 7; // Convertir 0 (domingo) a 7
+
+                // Verificar si hay tareas para este día de la semana
+                $tareasDelDia = $tareas->where('dia_semana', $diaSemana);
+
+                if ($tareasDelDia->isNotEmpty()) {
+                    $diasDisponibles[] = [
+                        'fecha' => $fecha->format('Y-m-d'),
+                        'dia_semana' => $diaSemana,
+                        'horarios' => $tareasDelDia->map(function ($tarea) {
+                            return [
+                                'hora_inicio' => $tarea->hora_inicio,
+                                'hora_fin' => $tarea->hora_fin
+                            ];
+                        })
+                    ];
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'dias' => $diasDisponibles
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener los días disponibles: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -158,102 +215,64 @@ class CitaController extends Controller
      */
     public function getHorariosDisponibles($doctorId, $fecha)
     {
-        $doctor = Doctor::findOrFail($doctorId);
-        
-        // Obtener el día de la semana (0: domingo, 1: lunes, ..., 6: sábado)
-        $diaSemana = date('w', strtotime($fecha));
-        
-        // Convertir a formato de la base de datos (1: lunes, ..., 7: domingo)
-        $diaSemanaDB = $diaSemana == 0 ? 7 : $diaSemana;
-        
-        // Obtener tareas del doctor para ese día de la semana
-        $tareas = Tarea::where('usuario_id', $doctor->usuario_id)
-            ->where('dia_semana', $diaSemanaDB)
-            ->orderBy('hora_inicio')
-            ->get();
-        
-        if ($tareas->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'El doctor no tiene horarios disponibles para este día.'
-            ]);
-        }
-        
-        // Obtener citas ya agendadas para ese doctor en esa fecha
-        $citasAgendadas = Cita::where('doctor_id', $doctorId)
-            ->where('fecha', $fecha)
-            ->whereIn('estado', ['pendiente', 'confirmada'])
-            ->get();
-        
-        // Generar horarios disponibles (intervalos de 30 minutos)
-        $horariosDisponibles = [];
-        $tareasInfo = [];
-        
-        // Preparar información de las tareas para enviarla al frontend
-        foreach ($tareas as $tarea) {
-            $tareasInfo[] = [
-                'id' => $tarea->id,
-                'titulo' => $tarea->titulo,
-                'descripcion' => $tarea->descripcion,
-                'hora_inicio' => $tarea->hora_inicio,
-                'hora_fin' => $tarea->hora_fin,
-                'color' => $tarea->color
-            ];
+        try {
+            $doctor = Doctor::findOrFail($doctorId);
             
-            $horaInicio = strtotime($tarea->hora_inicio);
-            $horaFin = strtotime($tarea->hora_fin);
+            // Obtener el día de la semana (1: lunes, ..., 7: domingo)
+            $diaSemana = date('N', strtotime($fecha));
             
-            // Generar intervalos de 30 minutos
-            while ($horaInicio < $horaFin) {
-                $inicioIntervalo = date('H:i:s', $horaInicio);
-                $horaInicio += 30 * 60; // Sumar 30 minutos
-                $finIntervalo = date('H:i:s', $horaInicio);
-                
-                // Verificar si el horario ya está ocupado
-                $ocupado = false;
-                foreach ($citasAgendadas as $cita) {
-                    if (
-                        ($inicioIntervalo >= $cita->hora_inicio && $inicioIntervalo < $cita->hora_fin) ||
-                        ($finIntervalo > $cita->hora_inicio && $finIntervalo <= $cita->hora_fin) ||
-                        ($inicioIntervalo <= $cita->hora_inicio && $finIntervalo >= $cita->hora_fin)
-                    ) {
-                        $ocupado = true;
-                        break;
-                    }
-                }
+            // Obtener tareas del doctor para ese día de la semana
+            $tareas = Tarea::where('usuario_id', $doctor->usuario_id)
+                ->where('dia_semana', $diaSemana)
+                ->orderBy('hora_inicio')
+                ->get();
+            
+            if ($tareas->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El doctor no tiene horarios disponibles para este día.'
+                ]);
+            }
+            
+            // Obtener citas ya agendadas para ese doctor en esa fecha
+            $citasAgendadas = Cita::where('doctor_id', $doctorId)
+                ->where('fecha', $fecha)
+                ->whereIn('estado', ['pendiente', 'confirmada'])
+                ->get();
+            
+            $horariosDisponibles = [];
+            
+            foreach ($tareas as $tarea) {
+                // Verificar si el horario ya está ocupado por una cita
+                $ocupado = $citasAgendadas->contains(function ($cita) use ($tarea) {
+                    return (
+                        ($tarea->hora_inicio >= $cita->hora_inicio && $tarea->hora_inicio < $cita->hora_fin) ||
+                        ($tarea->hora_fin > $cita->hora_inicio && $tarea->hora_fin <= $cita->hora_fin) ||
+                        ($tarea->hora_inicio <= $cita->hora_inicio && $tarea->hora_fin >= $cita->hora_fin)
+                    );
+                });
                 
                 if (!$ocupado) {
                     $horariosDisponibles[] = [
-                        'hora_inicio' => $inicioIntervalo,
-                        'hora_fin' => $finIntervalo,
-                        'tarea_id' => $tarea->id,
-                        'tarea_titulo' => $tarea->titulo
+                        'hora_inicio' => $tarea->hora_inicio,
+                        'hora_fin' => $tarea->hora_fin
                     ];
                 }
             }
+            
+            return response()->json([
+                'success' => true,
+                'horarios' => $horariosDisponibles
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener los horarios disponibles: ' . $e->getMessage()
+            ], 500);
         }
-        
-        // Obtener el nombre del día de la semana en español
-        $nombresDias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-        $nombreDia = $nombresDias[$diaSemana];
-        
-        // Contar el total de horarios disponibles
-        $totalDisponibles = count($horariosDisponibles);
-        $totalOcupados = count($citasAgendadas);
-        
-        return response()->json([
-            'success' => true,
-            'horarios' => $horariosDisponibles,
-            'tareas' => $tareasInfo,
-            'dia_semana' => $nombreDia,
-            'total_disponibles' => $totalDisponibles,
-            'total_ocupados' => $totalOcupados
-        ]);
     }
-    
-    /**
-     * Agenda una nueva cita
-     */
+
     public function agendarCita(Request $request)
     {
         $request->validate([
@@ -333,4 +352,6 @@ class CitaController extends Controller
             'message' => 'Cita cancelada correctamente.'
         ]);
     }
+
 }
+    
