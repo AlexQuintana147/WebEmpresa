@@ -50,6 +50,19 @@ class DiagnosticoController extends Controller
                 }
             }
 
+            // --- Normalización y limpieza de codificación UTF-8 ---
+            $detectedEncoding = mb_detect_encoding($respuestaIA, 'UTF-8, ISO-8859-1, Windows-1252', true);
+            if ($detectedEncoding && $detectedEncoding !== 'UTF-8') {
+                $respuestaIA = mb_convert_encoding($respuestaIA, 'UTF-8', $detectedEncoding);
+            } elseif (!$detectedEncoding) {
+                $respuestaIA = mb_convert_encoding($respuestaIA, 'UTF-8', 'Windows-1252');
+            }
+            $respuestaIA = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $respuestaIA);
+            if (!mb_check_encoding($respuestaIA, 'UTF-8')) {
+                $respuestaIA = mb_convert_encoding($respuestaIA, 'UTF-8', 'UTF-8');
+            }
+            // --- FIN normalización ---
+
             if ($returnCode !== 0 || !$respuestaIA) {
                 Log::error('DiagnosticoIA: Error de ejecución o sin respuesta IA', [
                     'stdout' => $response,
@@ -67,7 +80,9 @@ class DiagnosticoController extends Controller
                 ], 500);
             }
 
-            return response()->json(['success' => true, 'respuesta' => $respuestaIA]);
+            return response()->json(['success' => true, 'respuesta' => $respuestaIA], 200, [
+                'Content-Type' => 'application/json; charset=UTF-8'
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
         } else {
             Log::error('DiagnosticoIA: No se pudo iniciar el proceso del script Python');
             return response()->json([
