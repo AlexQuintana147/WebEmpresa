@@ -3,176 +3,59 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Routing\Controller;
+
 
 class ChatbotController extends Controller
 {
-    /**
-     * Procesa la consulta del usuario y ejecuta el script Python.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function processQuery(Request $request)
-    {
-        // Validar la solicitud
-        $request->validate([
-            'question' => 'required|string|max:1000',
-        ]);
+    protected $apiKey;
+    protected $apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
+    protected $model = 'deepseek/deepseek-chat:free';
+    protected $catalogPath;
 
-        // Obtener la pregunta del usuario
-        $question = $request->input('question');
-        
-        // Escapar comillas para evitar problemas en la línea de comandos
-        $escapedQuestion = escapeshellarg($question);
-        
-        // Ruta al script Python (usando rutas absolutas para mayor seguridad)
-        $scriptPath = base_path('Script/app.py');
-        
-        // Comando a ejecutar
-        $command = "python \"$scriptPath\" $escapedQuestion";
-        
-        // Registrar el comando para depuración
-        Log::info("Ejecutando comando: $command");
-        
+    public function __construct()
+    {
+        $this->apiKey = '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';
+        $this->catalogPath = public_path('CorpusChatBot.txt');
+    }
+
+    public function chat(Request $request)
+    {
         try {
-            // Ejecutar el comando usando proc_open para mayor control sobre la salida
-            $descriptorspec = [
-                0 => ["pipe", "r"],  // stdin
-                1 => ["pipe", "w"],  // stdout
-                2 => ["pipe", "w"]   // stderr
-            ];
-            
-            // Abrir el proceso
-            $process = proc_open($command, $descriptorspec, $pipes);
-            
-            if (is_resource($process)) {
-                // Leer la salida estándar con codificación binaria para evitar transformaciones automáticas
-                $response = stream_get_contents($pipes[1]);
-                
-                // Leer también los errores si hay alguno
-                $stderr = stream_get_contents($pipes[2]);
-                
-                // Cerrar los pipes
-                fclose($pipes[0]);
-                fclose($pipes[1]);
-                fclose($pipes[2]);
-                
-                // Obtener el código de retorno
-                $returnCode = proc_close($process);
-                
-                // Registrar errores si existen
-                if (!empty($stderr)) {
-                    Log::warning("Error en la salida estándar del script Python:", [
-                        'stderr' => $stderr
-                    ]);
-                }
-                
-                // Guardar la respuesta original para depuración
-                $originalResponse = $response;
-                
-                // Registrar información de la respuesta original
-                Log::info("Respuesta original del script Python:", [
-                    'encoding_detected' => mb_detect_encoding($response, 'UTF-8, ISO-8859-1, Windows-1252', true),
-                    'raw_bytes' => bin2hex(substr($response, 0, 50))
-                ]);
-                
-                // Forzar la codificación a UTF-8 desde Windows-1252 (común en sistemas Windows)
-                $response = iconv('Windows-1252', 'UTF-8//TRANSLIT//IGNORE', $response);
-                
-                // Si la conversión falló, intentar con mb_convert_encoding
-                if ($response === false) {
-                    Log::warning("Conversión con iconv falló, intentando con mb_convert_encoding");
-                    $response = mb_convert_encoding($originalResponse, 'UTF-8', 'Windows-1252');
-                }
-                
-                // Limpiar cualquier carácter inválido que pueda haber quedado
-                $response = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $response);
-                
-                // Registrar información después de la conversión
-                Log::info("Respuesta después de conversión a UTF-8:", [
-                    'encoding_detected' => mb_detect_encoding($response, 'UTF-8', true),
-                    'is_valid_utf8' => mb_check_encoding($response, 'UTF-8'),
-                    'sample' => substr($response, 0, 100)
+            $userMessage = $request->input('message');
+            $catalogContent = file_get_contents($this->catalogPath);
+
+            $systemMessage = "Eres un chatbot con el nombre de 'Dr. Asistente Virtual de la Clínica Ricardo Palma' hecho para una clínica, no contestes cosas o respondas cosas fuera de tus parámetros, todo tiene que ver con medicina humana. Además siempre deja en claro que siempre lo mejor no es automedicarse, si no ir con un especialista por si la enfermedad es muy grave. El número de emergencia es el 106. Y la información que tienes es esta:\n" . $catalogContent;
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->apiKey,
+                'HTTP-Referer' => config('app.url'),
+                'Content-Type' => 'application/json',
+            ])->post($this->apiUrl, [
+                'model' => $this->model,
+                'messages' => [
+                    ['role' => 'system', 'content' => $systemMessage],
+                    ['role' => 'user', 'content' => $userMessage]
+                ]
+            ]);
+
+            if ($response->successful()) {
+                $result = $response->json();
+                return response()->json([
+                    'success' => true,
+                    'message' => $result['choices'][0]['message']['content'] ?? 'Lo siento, no pude procesar tu mensaje.'
                 ]);
             } else {
-                throw new \Exception("No se pudo iniciar el proceso del script Python");
-            }
-            
-            // Detectar la codificación de la respuesta
-            $detectedEncoding = mb_detect_encoding($response, 'UTF-8, ISO-8859-1, Windows-1252', true);
-            
-            // Si no es UTF-8, convertir a UTF-8
-            if ($detectedEncoding && $detectedEncoding !== 'UTF-8') {
-                $response = mb_convert_encoding($response, 'UTF-8', $detectedEncoding);
-                Log::info("Codificación convertida de $detectedEncoding a UTF-8");
-            } elseif (!$detectedEncoding) {
-                // Si no se pudo detectar la codificación, intentar con Windows-1252 (común en Windows)
-                $response = mb_convert_encoding($response, 'UTF-8', 'Windows-1252');
-                Log::info("No se pudo detectar la codificación, forzando conversión desde Windows-1252 a UTF-8");
-            }
-            
-            // Asegurar que la respuesta sea válida UTF-8
-            if (!mb_check_encoding($response, 'UTF-8')) {
-                // Si aún no es UTF-8 válido, limpiar caracteres inválidos
-                $response = mb_convert_encoding($response, 'UTF-8', 'UTF-8');
-                Log::info("Se limpiaron caracteres UTF-8 inválidos");
-            }
-            
-            // Extraer solo la última respuesta disponible del chatbot
-            if (preg_match('/Última respuesta disponible del chatbot:\s*\n-+\s*\n(.+?)\s*\n-+/s', $response, $matches)) {
-                $response = trim($matches[1]);
-            } elseif (preg_match('/Respuesta del chatbot:\s*\n-+\s*\n(.+?)\s*\n-+/s', $response, $matches)) {
-                $response = trim($matches[1]);
-            }
-            
-            
-            // Registrar la respuesta para depuración
-            Log::info("Respuesta del script Python (después de conversión):", [
-                'return_code' => $returnCode,
-                'output_length' => strlen($response),
-                'output_sample' => substr($response, 0, 100) . (strlen($response) > 100 ? '...' : ''),
-                'encoding_final' => mb_detect_encoding($response, 'UTF-8, ISO-8859-1, Windows-1252', true),
-                'is_utf8' => mb_check_encoding($response, 'UTF-8'),
-                'raw_bytes' => bin2hex(substr($response, 0, 50)) // Mostrar los primeros 50 bytes en hexadecimal
-            ]);
-            
-            // Asegurar que las líneas de guiones se preserven exactamente como están en la consola
-            
-            // Verificar si hubo un error en la ejecución
-            if ($returnCode !== 0) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error al ejecutar el script Python',
-                    'debug_info' => [
-                        'return_code' => $returnCode,
-                        'raw_output' => $response
-                    ]
+                    'message' => 'Error al procesar la solicitud.'
                 ], 500);
             }
-            
-            // Devolver la respuesta como JSON con la codificación UTF-8 explícita
-            // Usar opciones JSON_UNESCAPED_UNICODE y JSON_UNESCAPED_SLASHES para preservar caracteres especiales
-            return response()->json([
-                'success' => true,
-                'response' => $response
-            ], 200, [
-                'Content-Type' => 'application/json; charset=UTF-8'
-            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
-            
         } catch (\Exception $e) {
-            // Registrar el error
-            Log::error("Error al procesar la consulta del chatbot: " . $e->getMessage());
-            
-            // Devolver respuesta de error
             return response()->json([
                 'success' => false,
-                'message' => 'Error interno del servidor: ' . $e->getMessage(),
-                'debug_info' => [
-                    'exception' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
-                ]
+                'message' => 'Error del servidor: ' . $e->getMessage()
             ], 500);
         }
     }

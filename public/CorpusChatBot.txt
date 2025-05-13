@@ -1,0 +1,169 @@
+Lista de Medicamentos y su Información Detallada:
+
+Paracetamol
+
+Acción terapéutica: Analgésico y antipirético
+
+Indicaciones: Fiebre, dolor leve a moderado
+
+Dosis recomendada: Adultos 500-1000 mg cada 6-8 horas
+
+Efectos secundarios: Daño hepático en dosis altas
+
+Contraindicaciones: Enfermedad hepática severa
+
+Caducidad: Aproximadamente 2-3 años desde la fecha de fabricación
+
+Ibuprofeno
+
+Acción terapéutica: Antiinflamatorio no esteroideo (AINE), analgésico y antipirético
+
+Indicaciones: Dolor, fiebre, inflamación
+
+Dosis recomendada: Adultos 200-800 mg cada 6-8 horas
+
+Efectos secundarios: Irritación gástrica, riesgo de sangrado gastrointestinal
+
+Contraindicaciones: Insuficiencia renal, ulceras gástricas
+
+Caducidad: 2-3 años
+
+Amoxicilina
+
+Acción terapéutica: Antibacteriano (penicilina)
+
+Indicaciones: Infecciones respiratorias, urinarias y de piel
+
+Dosis recomendada: 500-1000 mg cada 8 horas
+
+Efectos secundarios: Reacciones alérgicas, molestias digestivas
+
+Contraindicaciones: Alergia a penicilinas
+
+Caducidad: 2 años
+
+Metformina
+
+Acción terapéutica: Antidiabético oral (biguanida)
+
+Indicaciones: Diabetes tipo 2
+
+Dosis recomendada: 500-2000 mg al día en dosis divididas
+
+Efectos secundarios: Malestar digestivo, acidosis láctica (raro)
+
+Contraindicaciones: Insuficiencia renal grave
+
+Caducidad: 3 años
+
+Omeprazol
+
+Acción terapéutica: Inhibidor de la bomba de protones
+
+Indicaciones: Reflujo gastroesofágico, úlceras gástricas
+
+Dosis recomendada: 20-40 mg al día
+
+Efectos secundarios: Mareos, dolor de cabeza, deficiencia de vitamina B12 a largo plazo
+
+Contraindicaciones: Hipersensibilidad al fármaco
+
+Caducidad: 2-3 años
+
+Loratadina
+
+Acción terapéutica: Antihistamínico
+
+Indicaciones: Alergias, rinitis alérgica, urticaria
+
+Dosis recomendada: 10 mg una vez al día
+
+Efectos secundarios: Somnolencia leve, boca seca
+
+Contraindicaciones: Insuficiencia hepática grave
+
+Caducidad: 2-3 años
+
+Salbutamol
+
+Acción terapéutica: Broncodilatador
+
+Indicaciones: Asma, enfermedad pulmonar obstructiva crónica (EPOC)
+
+Dosis recomendada: 100-200 mcg por inhalación cada 4-6 horas
+
+Efectos secundarios: Taquicardia, temblores, nerviosismo
+
+Contraindicaciones: Enfermedad cardiovascular severa
+
+Caducidad: 2 años
+
+Diazepam
+
+Acción terapéutica: Benzodiacepina (ansiolítico, relajante muscular, anticonvulsivante)
+
+Indicaciones: Ansiedad, insomnio, espasmos musculares
+
+Dosis recomendada: 2-10 mg cada 6-12 horas
+
+Efectos secundarios: Somnolencia, dependencia, depresion respiratoria
+
+Contraindicaciones: Insuficiencia respiratoria severa
+
+Caducidad: 5 años
+
+Atorvastatina
+
+Acción terapéutica: Hipolipemiante (estatinas)
+
+Indicaciones: Hipercolesterolemia, prevención cardiovascular
+
+Dosis recomendada: 10-80 mg al día
+
+Efectos secundarios: Dolor muscular, disfunción hepática
+
+Contraindicaciones: Enfermedad hepática activa
+
+Caducidad: 3 años
+
+Levotiroxina
+
+Acción terapéutica: Hormona tiroidea sintética
+
+Indicaciones: Hipotiroidismo
+
+Dosis recomendada: 25-200 mcg al día
+
+Efectos secundarios: Palpitaciones, insomnio, pérdida de peso
+
+Contraindicaciones: Hipertiroidismo no controlado
+
+Caducidad: 2 años
+
+Ranitidina
+
+Acción terapéutica: Antagonista de los receptores H2
+
+Indicaciones: Úlceras gástricas, reflujo gastroesofágico
+
+Dosis recomendada: 150 mg dos veces al día
+
+Efectos secundarios: Mareos, cefalea, alteraciones hepáticas
+
+Contraindicaciones: Insuficiencia hepática grave
+
+Caducidad: 2 años
+
+Clonazepam
+
+Acción terapéutica: Benzodiacepina (anticonvulsivante, ansiolítico)
+
+Indicaciones: Trastornos de ansiedad, epilepsia
+
+Dosis recomendada: 0.5-2 mg al día
+
+Efectos secundarios: Somnolencia, mareos, dependencia
+
+Contraindicaciones: Insuficiencia respiratoria severa
+
+Caducidad: 5 años

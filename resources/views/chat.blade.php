@@ -44,7 +44,7 @@
                         url: '{{ route("chat.query") }}',
                         type: 'POST',
                         data: {
-                            question: questionText,
+                            message: questionText,
                             _token: '{{ csrf_token() }}'
                         },
                         success: (response) => {
@@ -56,15 +56,8 @@
                             
                             // Agregar respuesta del chatbot
                             if (response.success) {
-                                console.log('Agregando respuesta exitosa:', response.response);
-                                // Mostrar información de depuración completa en la consola
-                                if (response.debug_info) {
-                                    console.log('Información de depuración:', response.debug_info);
-                                    console.log('Salida completa del script Python:', response.debug_info.raw_output);
-                                }
-                                // Procesar la respuesta para manejar saltos de línea y preservar el formato exacto
-                                // Convertir saltos de línea a <br> y preservar las líneas de guiones
-                                let formattedResponse = response.response;
+                                console.log('Agregando respuesta exitosa:', response.message);
+                                let formattedResponse = response.message;
                                 
                                 // Verificar si hay caracteres malformados y reemplazarlos
                                 formattedResponse = formattedResponse

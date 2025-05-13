@@ -8,6 +8,8 @@ use App\Http\Controllers\TareaController;
 use App\Http\Controllers\NotaController;
 use App\Http\Controllers\CitaController;
 use App\Http\Controllers\DiagnosticoController;
+use App\Http\Controllers\ReniecController;
+
 
 Route::get('/', function () {
     return view('sobrenosotros');
@@ -17,7 +19,7 @@ Route::get('/chat', function () {
     return view('chat');
 });
 
-Route::post('/chat/query', [\App\Http\Controllers\ChatbotController::class, 'processQuery'])->name('chat.query');
+Route::post('/chat/query', [\App\Http\Controllers\ChatbotController::class, 'chat'])->name('chat.query');
 
 Route::get('/instrucciones', function () {
     return view('instrucciones');
