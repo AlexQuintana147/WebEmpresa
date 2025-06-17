@@ -108,6 +108,11 @@
                                 @endforeach
                             </ul>
                             <div class="mt-4 text-cyan-700 font-semibold">Por el momento no puedes registrar otra cita hasta que tu cita actual sea atendida o cancelada.</div>
+                            <div class="mt-4">
+                                <button id="btn-cancelar-cita" data-cita-id="{{ $citas->first()->id ?? '' }}" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition flex items-center gap-2">
+                                    <i class="fa-solid fa-times-circle"></i> Cancelar Cita
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -413,8 +418,105 @@
                 div.className = 'bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow mb-4';
                 div.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-2"></i> ' + msg;
             }
+            
+            // El manejo del botón de cancelar cita se ha movido al script al final del body
         });
     </script>
     
+    <!-- Scripts adicionales -->
+    <script>
+        // Este script se ejecutará cuando el DOM esté completamente cargado
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Script principal cargado');
+            
+            // Obtener el botón de cancelar cita por su ID
+            const btnCancelarCita = document.getElementById('btn-cancelar-cita');
+            
+            if (btnCancelarCita) {
+                console.log('Botón de cancelar cita encontrado en script principal');
+                
+                // Añadir el evento click al botón
+                btnCancelarCita.addEventListener('click', async function(event) {
+                    // Prevenir comportamiento por defecto del botón
+                    event.preventDefault();
+                    console.log('Evento click activado en botón cancelar');
+                    
+                    try {
+                        // Obtener el ID de la cita directamente del elemento de datos
+                        const citaId = this.getAttribute('data-cita-id');
+                        console.log('ID de la cita a cancelar:', citaId);
+                        
+                        if (!citaId) {
+                            alert('No se encontró la cita para cancelar.');
+                            return;
+                        }
+                        
+                        // Confirmar la cancelación
+                        if (!confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
+                            return;
+                        }
+                        
+                        // Deshabilitar el botón y mostrar estado de carga
+                        btnCancelarCita.disabled = true;
+                        btnCancelarCita.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cancelando...';
+                        console.log('Botón deshabilitado, enviando solicitud...');
+                        
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+                        console.log('CSRF Token:', csrfToken);
+                        
+                        const response = await fetch(`/api/citas/cancelar/${citaId}`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            // Asegurarse de que la solicitud incluya el token CSRF
+                            credentials: 'same-origin'
+                        });
+                        
+                        console.log('Respuesta recibida, status:', response.status);
+                        
+                        let data;
+                        try {
+                            data = await response.json();
+                            // Depuración de la respuesta
+                            console.log('Respuesta del servidor:', data);
+                            console.log('Status:', response.status);
+                        } catch (jsonError) {
+                            console.error('Error al procesar la respuesta JSON:', jsonError);
+                            alert('Error al procesar la respuesta del servidor');
+                            btnCancelarCita.disabled = false;
+                            btnCancelarCita.innerHTML = '<i class="fa-solid fa-times-circle"></i> Cancelar Cita';
+                            return;
+                        }
+                        
+                        if (response.ok && data.success) {
+                            console.log('Cita cancelada exitosamente');
+                            btnCancelarCita.innerHTML = '<i class="fa-solid fa-check-circle"></i> Cita cancelada';
+                            btnCancelarCita.classList.remove('bg-red-500', 'hover:bg-red-600');
+                            btnCancelarCita.classList.add('bg-green-500');
+                            
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1500);
+                        } else {
+                            console.error('Error en la respuesta:', data.message);
+                            alert(data.message || 'Error al cancelar la cita.');
+                            btnCancelarCita.disabled = false;
+                            btnCancelarCita.innerHTML = '<i class="fa-solid fa-times-circle"></i> Cancelar Cita';
+                        }
+                    } catch (error) {
+                        console.error('Error en la solicitud:', error);
+                        alert('Ocurrió un error al cancelar la cita.');
+                        btnCancelarCita.disabled = false;
+                        btnCancelarCita.innerHTML = '<i class="fa-solid fa-times-circle"></i> Cancelar Cita';
+                    }
+                });
+            } else {
+                console.warn('No se encontró el botón de cancelar cita en el script principal');
+            }
+        });
+    </script>
 </body>
 </html>
