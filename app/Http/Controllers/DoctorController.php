@@ -25,7 +25,9 @@ class DoctorController extends Controller
         // Si el doctor está registrado, obtener sus pacientes mediante la tabla de citas
         if ($doctor) {
             // Obtener los IDs únicos de pacientes que tienen citas con este doctor
+            // Modificado para incluir solo citas pendientes o en espera
             $pacienteIds = \App\Models\Cita::where('doctor_id', $doctor->id)
+                ->whereIn('estado', ['pendiente', 'En Espera'])
                 ->pluck('paciente_id')
                 ->unique();
 

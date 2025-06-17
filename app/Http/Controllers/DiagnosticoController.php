@@ -96,6 +96,9 @@ class DiagnosticoController extends Controller
 
             $respuesta = $result['choices'][0]['message']['content'];
             
+            // Formatear la respuesta con Markdown para mejorar la presentación
+            $respuesta = $this->formatearRespuesta($respuesta);
+            
             // Verificar si la respuesta indica que no entendió la consulta
             if (stripos($respuesta, 'No entiendo la consulta') !== false) {
                 return response()->json([
@@ -116,5 +119,54 @@ class DiagnosticoController extends Controller
                 'error_type' => get_class($e)
             ], 500);
         }
+    }
+
+    /**
+     * Formatea la respuesta del diagnóstico IA con Markdown para mejorar la presentación
+     * 
+     * @param string $respuesta La respuesta original del modelo IA
+     * @return string La respuesta formateada con Markdown
+     */
+    private function formatearRespuesta($respuesta)
+    {
+        // Identificar las secciones comunes en la respuesta
+        $secciones = [
+            'Posible diagnóstico' => '**Posible diagnóstico:**',
+            'Posibles diagnósticos' => '**Posibles diagnósticos:**',
+            'Explicación' => '**Explicación:**',
+            'Recomendaciones' => '**Recomendaciones generales:**',
+            'Recomendaciones generales' => '**Recomendaciones generales:**',
+            'Emergencia' => '**¡EMERGENCIA!**',
+            'Nota' => '**Nota:**'
+        ];
+
+        // Reemplazar los títulos de secciones con versiones en negrita
+        foreach ($secciones as $original => $formateado) {
+            // Buscar el título de sección seguido de dos puntos o no
+            $respuesta = preg_replace('/(' . preg_quote($original, '/') . ')(:|)\s*/i', "\n\n$formateado\n", $respuesta);
+        }
+
+        // Formatear listas numeradas (líneas que comienzan con números seguidos de punto o paréntesis)
+        $respuesta = preg_replace('/^(\d+)[\)\.]\s+/m', "\n$1. ", $respuesta);
+
+        // Formatear listas con viñetas (líneas que comienzan con - o *)
+        $respuesta = preg_replace('/^[\-\*]\s+/m', "\n* ", $respuesta);
+
+        // Formatear términos médicos o palabras clave en negrita
+        $terminosMedicos = ['cefalea', 'migraña', 'tensional', 'hipertensión', 'arterial', 
+                           'neurológico', 'vascular', 'cerebral', 'sinusitis', 'estrés',
+                           'deshidratación', 'emergencia'];
+        
+        foreach ($terminosMedicos as $termino) {
+            $respuesta = preg_replace('/\b(' . preg_quote($termino, '/') . ')\b/i', '**$1**', $respuesta);
+        }
+
+        // Asegurar que hay espacios adecuados entre párrafos
+        $respuesta = preg_replace('/\n{3,}/', "\n\n", $respuesta);
+        
+        // Asegurar que la respuesta comienza sin espacios en blanco
+        $respuesta = trim($respuesta);
+
+        return $respuesta;
     }
 }

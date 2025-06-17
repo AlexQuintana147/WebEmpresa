@@ -299,9 +299,104 @@
         </div>
     </div>
 
-    <script>
+    <style>
+    .markdown-content {
+        font-size: 14px;
+        line-height: 1.6;
+    }
+    .markdown-content strong {
+        font-weight: 700;
+        color: #155e75; /* Azul verdoso oscuro */
+    }
+    .markdown-content ul {
+        list-style-type: disc;
+        margin-left: 1.5rem;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .markdown-content ol {
+        list-style-type: decimal;
+        margin-left: 1.5rem;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .markdown-content li {
+        margin-bottom: 0.25rem;
+    }
+    .markdown-content p {
+        margin-bottom: 0.75rem;
+    }
+</style>
+
+<script>
         console.log('Script de pacientes.blade.php cargado');
         window.pacientes = @json($pacientes);
+        
+        /**
+         * Formatea texto con sintaxis Markdown a HTML
+         * @param {string} texto - Texto con formato Markdown
+         * @return {string} - HTML formateado
+         */
+        function formatearMarkdown(texto) {
+            if (!texto) return '';
+            
+            // Convertir negritas: **texto** a <strong>texto</strong>
+            texto = texto.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            
+            // Procesar listas numeradas (líneas que comienzan con número seguido de punto o paréntesis)
+            let lines = texto.split('\n');
+            let inOrderedList = false;
+            let inUnorderedList = false;
+            
+            for (let i = 0; i < lines.length; i++) {
+                // Detectar listas numeradas
+                if (lines[i].match(/^\d+\.\s+/)) {
+                    if (!inOrderedList) {
+                        lines[i] = '<ol>\n<li>' + lines[i].replace(/^\d+\.\s+/, '') + '</li>';
+                        inOrderedList = true;
+                    } else {
+                        lines[i] = '<li>' + lines[i].replace(/^\d+\.\s+/, '') + '</li>';
+                    }
+                } 
+                // Detectar listas con viñetas
+                else if (lines[i].match(/^[\*\-]\s+/)) {
+                    if (!inUnorderedList) {
+                        lines[i] = '<ul>\n<li>' + lines[i].replace(/^[\*\-]\s+/, '') + '</li>';
+                        inUnorderedList = true;
+                    } else {
+                        lines[i] = '<li>' + lines[i].replace(/^[\*\-]\s+/, '') + '</li>';
+                    }
+                } 
+                // Cerrar listas si la siguiente línea no es parte de la lista
+                else {
+                    if (inOrderedList) {
+                        lines[i-1] += '\n</ol>';
+                        inOrderedList = false;
+                    }
+                    if (inUnorderedList) {
+                        lines[i-1] += '\n</ul>';
+                        inUnorderedList = false;
+                    }
+                }
+            }
+            
+            // Cerrar listas al final si es necesario
+            if (inOrderedList) {
+                lines[lines.length-1] += '\n</ol>';
+            }
+            if (inUnorderedList) {
+                lines[lines.length-1] += '\n</ul>';
+            }
+            
+            // Convertir saltos de línea en etiquetas <p>
+            texto = lines.join('\n');
+            
+            // Añadir espaciado entre secciones
+            texto = texto.replace(/\n\n([^<])/g, '\n<p>$1');
+            texto = texto.replace(/([^>])\n\n/g, '$1</p>\n');
+            
+            return texto;
+        }
 
         function showDetallesModal(index, citaId) {
             try {
@@ -321,7 +416,7 @@
                 document.getElementById('modalPacienteTitle').innerText = 'Descripción del malestar';
                 document.getElementById('modalPacienteContent').innerHTML = `<p class='text-gray-700 whitespace-pre-line'>${descripcion ? descripcion : '-'}</p>`;
                 if (respuestaBot) {
-                    document.getElementById('modalPacienteContent').innerHTML += `<div class='mt-6 p-4 rounded border border-green-300 bg-green-50 text-green-900'><b>Diagnóstico IA Alternativo:</b><br>${respuestaBot}</div>`;
+                    document.getElementById('modalPacienteContent').innerHTML += `<div class='mt-6 p-4 rounded border border-green-300 bg-green-50 text-green-900'><h3 class="font-bold text-lg mb-2">Diagnóstico IA Alternativo:</h3><div class="whitespace-pre-line markdown-content">${formatearMarkdown(respuestaBot)}</div></div>`;
                 }
                 document.getElementById('modalPaciente').classList.remove('hidden');
                 
@@ -374,7 +469,7 @@
                             });
                             const data = await resp.json();
                             if (data.success) {
-                                document.getElementById('modalPacienteContent').innerHTML += `<div class='mt-6 p-4 rounded border border-green-300 bg-green-50 text-green-900'><b>Diagnóstico IA Alternativo:</b><br>${data.respuesta}</div>`;
+                                document.getElementById('modalPacienteContent').innerHTML += `<div class='mt-6 p-4 rounded border border-green-300 bg-green-50 text-green-900'><h3 class="font-bold text-lg mb-2">Diagnóstico IA Alternativo:</h3><div class="whitespace-pre-line markdown-content">${formatearMarkdown(data.respuesta)}</div></div>`;
                                 // Guardar respuesta IA en la cita correcta
                                 if (idCita) {
                                     await fetch(`/citas/${idCita}/respuesta-bot`, {
