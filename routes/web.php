@@ -76,8 +76,10 @@ Route::middleware('doctor')->group(function () {
     Route::post('/doctores/verificar-dni', [\App\Http\Controllers\ReniecController::class, 'consultarDni'])->name('doctores.verificar-dni');
     Route::post('/doctores/guardar-dni', [\App\Http\Controllers\DoctorController::class, 'guardarDni'])->name('doctores.guardar-dni');
     
-    // Ruta para ver el historial médico de un paciente específico
+    // Rutas para historial médico
     Route::get('/pacientes/{paciente}/historial', [\App\Http\Controllers\HistorialController::class, 'show'])->name('historial.show');
+    Route::get('/pacientes/{paciente}/historial/crear/{cita?}', [\App\Http\Controllers\HistorialController::class, 'create'])->name('historial.create');
+    Route::post('/historial', [\App\Http\Controllers\HistorialController::class, 'store'])->name('historial.store');
 
     // Guardar respuesta IA en cita (solo doctores)
     Route::post('/citas/{id}/respuesta-bot', [App\Http\Controllers\CitaController::class, 'guardarRespuestaBot'])->name('citas.guardarRespuestaBot');

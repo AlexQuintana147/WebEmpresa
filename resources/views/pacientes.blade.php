@@ -284,11 +284,8 @@
                       <div id="modalPacienteContent" class="text-gray-700 text-lg min-h-[60px] pb-2">
                         <!-- Aquí el contenido dinámico -->
                       </div>
-                      <div class="mt-8 flex justify-end gap-4">
-                        <button id="btnDiagnosticoIAAlt" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded shadow flex items-center gap-2 transition-all duration-200">
-                            <i class="fas fa-vials"></i> Diagnóstico IA Alternativo
-                        </button>
-                        <button onclick="closeModalPaciente()" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-6 rounded shadow transition-all">Cerrar</button>
+                      <div id="modalButtons" class="mt-8 flex justify-end gap-4">
+                        <!-- Los botones se agregarán dinámicamente desde JavaScript -->
                       </div>
                     </div>
                   </div>
@@ -322,16 +319,32 @@
                     document.getElementById('modalPacienteContent').innerHTML += `<div class='mt-6 p-4 rounded border border-green-300 bg-green-50 text-green-900'><b>Diagnóstico IA Alternativo:</b><br>${respuestaBot}</div>`;
                 }
                 document.getElementById('modalPaciente').classList.remove('hidden');
-                const btnDiagnosticoIAAlt = document.getElementById('btnDiagnosticoIAAlt');
-                if (btnDiagnosticoIAAlt) {
-                    btnDiagnosticoIAAlt.disabled = !!respuestaBot;
-                    if (respuestaBot) {
-                        btnDiagnosticoIAAlt.innerHTML = '<i class="fas fa-vials"></i> Diagnóstico IA Alternativo (ya realizado)';
-                    } else {
-                        btnDiagnosticoIAAlt.innerHTML = '<i class="fas fa-vials"></i> Diagnóstico IA Alternativo';
+                
+                // Botones en el modal
+                const modalButtons = document.getElementById('modalButtons');
+                if (modalButtons) {
+                    // Limpiar botones anteriores
+                    while (modalButtons.firstChild) {
+                        modalButtons.removeChild(modalButtons.firstChild);
                     }
-                }
-                if (btnDiagnosticoIAAlt && !btnDiagnosticoIAAlt.dataset.listener) {
+                    
+                    // Botón para registrar historial médico
+                    const btnRegistrarHistorial = document.createElement('button');
+                    btnRegistrarHistorial.className = 'bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded shadow flex items-center gap-2 transition-all duration-200';
+                    btnRegistrarHistorial.innerHTML = '<i class="fas fa-notes-medical"></i> Registrar Historial';
+                    btnRegistrarHistorial.addEventListener('click', function() {
+                        window.location.href = `/pacientes/${paciente.id}/historial/crear/${idCita || ''}`;
+                    });
+                    modalButtons.appendChild(btnRegistrarHistorial);
+                    
+                    // Botón para diagnóstico IA
+                    const btnDiagnosticoIAAlt = document.createElement('button');
+                    btnDiagnosticoIAAlt.id = 'btnDiagnosticoIAAlt';
+                    btnDiagnosticoIAAlt.className = 'bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded shadow flex items-center gap-2 transition-all duration-200';
+                    btnDiagnosticoIAAlt.disabled = !!respuestaBot;
+                    btnDiagnosticoIAAlt.innerHTML = respuestaBot ? 
+                        '<i class="fas fa-vials"></i> Diagnóstico IA Alternativo (ya realizado)' : 
+                        '<i class="fas fa-vials"></i> Diagnóstico IA Alternativo';
                     btnDiagnosticoIAAlt.addEventListener('click', async function() {
                         btnDiagnosticoIAAlt.disabled = true;
                         btnDiagnosticoIAAlt.innerHTML = '<i class="fas fa-vials fa-spin"></i> Consultando IA...';
@@ -372,7 +385,14 @@
                             btnDiagnosticoIAAlt.innerHTML = '<i class="fas fa-vials"></i> Diagnóstico IA Alternativo';
                         }
                     });
-                    btnDiagnosticoIAAlt.dataset.listener = 'true';
+                    modalButtons.appendChild(btnDiagnosticoIAAlt);
+                    
+                    // Botón para cerrar
+                    const btnCerrar = document.createElement('button');
+                    btnCerrar.className = 'bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-6 rounded shadow transition-all';
+                    btnCerrar.innerHTML = 'Cerrar';
+                    btnCerrar.addEventListener('click', closeModalPaciente);
+                    modalButtons.appendChild(btnCerrar);
                 }
             } catch (e) {
                 document.getElementById('modalPacienteTitle').innerText = 'Error al mostrar detalles';
