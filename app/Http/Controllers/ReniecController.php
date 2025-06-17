@@ -24,7 +24,7 @@ class ReniecController extends Controller
         try {
             // Realizar la consulta a la API de RENIEC
             $response = Http::withHeaders([
-                'Authorization' => 'apis-token-10123.7nxxTERM7ZQDHRJmAaDB1Wp7GoGa1u54'
+                'Authorization' => 'apis-token-15854.VQIB4X1xNlKCLtdPrZoZQXd951llc6jm'
             ])->get('https://api.apis.net.pe/v2/reniec/dni', [
                 'numero' => $request->dni
             ]);
