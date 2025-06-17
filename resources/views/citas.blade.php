@@ -92,7 +92,7 @@
             @endif
             <!-- Validación de cita existente -->
             @php
-                $citasPendientes = isset($citas) ? $citas->where('estado', 'pendiente') : collect([]);
+                $citasPendientes = isset($citas) ? $citas->whereIn('estado', ['pendiente', 'En Espera']) : collect([]);
             @endphp
             @if(count($citasPendientes) > 0)
                 <div class="max-w-2xl mx-auto mt-8">

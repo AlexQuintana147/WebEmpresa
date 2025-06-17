@@ -132,6 +132,15 @@ class HistorialController extends Controller
             'tratamiento' => $request->tratamiento
         ]);
         
+        // Actualizar el estado de la cita a 'completada' si existe una cita asociada
+        if ($request->cita_id) {
+            $cita = Cita::find($request->cita_id);
+            if ($cita) {
+                $cita->estado = 'completada';
+                $cita->save();
+            }
+        }
+        
         return response()->json([
             'success' => true,
             'message' => 'Historial médico registrado correctamente',

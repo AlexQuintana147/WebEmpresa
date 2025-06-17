@@ -182,7 +182,7 @@ class CitaController extends Controller
             if ($yaTieneCita) {
                 return response()->json([
                     'success' => false,
-                    'error' => 'Ya tienes una cita pendiente o en espera. No puedes agendar otra hasta que sea atendida o cancelada.'
+                    'error' => 'Ya tienes una cita pendiente o en espera. No puedes agendar otra hasta que sea atendida, completada o cancelada.'
                 ], 409);
             }
 
