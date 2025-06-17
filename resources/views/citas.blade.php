@@ -91,14 +91,17 @@
                 </div>
             @endif
             <!-- Validación de cita existente -->
-            @if(isset($citas) && count($citas) > 0)
+            @php
+                $citasPendientes = isset($citas) ? $citas->where('estado', 'pendiente') : collect([]);
+            @endphp
+            @if(count($citasPendientes) > 0)
                 <div class="max-w-2xl mx-auto mt-8">
                     <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded shadow text-lg flex items-start gap-3">
                         <i class="fa-solid fa-calendar-check text-2xl mt-1"></i>
                         <div>
-                            <span class="font-bold">Ya tienes una cita registrada:</span>
+                            <span class="font-bold">Ya tienes una cita pendiente:</span>
                             <ul class="mt-2 text-base">
-                                @foreach($citas as $cita)
+                                @foreach($citasPendientes as $cita)
                                     <li>
                                         <b>Fecha:</b> {{ \Carbon\Carbon::parse($cita->fecha)->format('d/m/Y') }}<br>
                                         <b>Hora:</b> {{ $cita->hora_inicio }} - {{ $cita->hora_fin }}<br>
@@ -107,9 +110,9 @@
                                     </li>
                                 @endforeach
                             </ul>
-                            <div class="mt-4 text-cyan-700 font-semibold">Por el momento no puedes registrar otra cita hasta que tu cita actual sea atendida o cancelada.</div>
+                            <div class="mt-4 text-cyan-700 font-semibold">Por el momento no puedes registrar otra cita hasta que tu cita pendiente sea atendida o cancelada.</div>
                             <div class="mt-4">
-                                <button id="btn-cancelar-cita" data-cita-id="{{ $citas->first()->id ?? '' }}" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition flex items-center gap-2">
+                                <button id="btn-cancelar-cita" data-cita-id="{{ $citasPendientes->first()->id ?? '' }}" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition flex items-center gap-2">
                                     <i class="fa-solid fa-times-circle"></i> Cancelar Cita
                                 </button>
                             </div>
@@ -117,6 +120,27 @@
                     </div>
                 </div>
             @else
+                @if(isset($citas) && count($citas) > 0)
+                <div class="max-w-2xl mx-auto mt-8 mb-8">
+                    <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-800 p-4 rounded shadow text-lg flex items-start gap-3">
+                        <i class="fa-solid fa-info-circle text-2xl mt-1"></i>
+                        <div>
+                            <span class="font-bold">Historial de citas:</span>
+                            <ul class="mt-2 text-base">
+                                @foreach($citas as $cita)
+                                    <li>
+                                        <b>Fecha:</b> {{ \Carbon\Carbon::parse($cita->fecha)->format('d/m/Y') }}<br>
+                                        <b>Hora:</b> {{ $cita->hora_inicio }} - {{ $cita->hora_fin }}<br>
+                                        <b>Doctor:</b> {{ $cita->doctor->nombre }} {{ $cita->doctor->apellido_paterno }}<br>
+                                        <b>Estado:</b> <span class="{{ $cita->estado == 'cancelada' ? 'text-red-600' : ($cita->estado == 'atendida' ? 'text-green-600' : 'text-yellow-600') }}">{{ ucfirst($cita->estado) }}</span>
+                                    </li>
+                                    @if(!$loop->last)<hr class="my-2">@endif
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                @endif
             <!-- Contenido Principal -->
             <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
                 <!-- Título de la página con decoración médica -->
