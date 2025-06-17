@@ -3,143 +3,117 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Config;
 
 class DiagnosticoController extends Controller
 {
+    protected $apiKey;
+    protected $apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
+    protected $model = 'deepseek/deepseek-chat:free';
+
+    public function __construct()
+    {
+        // Obtener la API key desde la variable de entorno
+        $this->apiKey = env('OPENROUTER_API_KEY');
+    }
+
     public function diagnosticoIA(Request $request)
     {
-        Log::info('DiagnosticoIA: petición recibida', ['descripcion' => $request->input('descripcion')]);
-        $descripcion = $request->input('descripcion');
-        if (!$descripcion) {
-            Log::error('DiagnosticoIA: No se recibió descripción');
-            return response()->json(['success' => false, 'error' => 'No se recibió descripción'], 400);
-        }
-        $python = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? 'python' : 'python3';
-        $script = base_path('DiagnosticoIA/diagnostico_ia.py');
-        $cmd = "$python " . escapeshellarg($script) . " " . escapeshellarg($descripcion);
-        Log::info("Ejecutando comando: $cmd");
-
-        $descriptorspec = [
-            0 => ["pipe", "r"],  // stdin
-            1 => ["pipe", "w"],  // stdout
-            2 => ["pipe", "w"]   // stderr
-        ];
-
-        $process = proc_open($cmd, $descriptorspec, $pipes);
-        if (is_resource($process)) {
-            $response = stream_get_contents($pipes[1]);
-            $stderr = stream_get_contents($pipes[2]);
-            fclose($pipes[0]);
-            fclose($pipes[1]);
-            fclose($pipes[2]);
-            $returnCode = proc_close($process);
-
-            Log::info("DiagnosticoIA.py STDOUT: $response");
-            if (!empty($stderr)) {
-                Log::warning("DiagnosticoIA.py STDERR: $stderr");
-            }
-
-            // Buscar la línea de respuesta IA y concatenar todas las líneas siguientes
-            $respuestaIA = null;
-            $encontrado = false;
-            $lineas = [];
-            foreach (preg_split('/\r?\n/', $response) as $line) {
-                if ($encontrado) {
-                    $lineas[] = trim($line);
-                }
-                if (strpos($line, 'Respuesta IA:') === 0) {
-                    $lineas[] = trim(substr($line, strlen('Respuesta IA:')));
-                    $encontrado = true;
-                }
-            }
-            $respuestaIA = trim(implode("\n", array_filter($lineas)));
-
-            // --- Normalización y limpieza de codificación UTF-8 ---
-            $detectedEncoding = mb_detect_encoding($respuestaIA, 'UTF-8, ISO-8859-1, Windows-1252', true);
-            if ($detectedEncoding && $detectedEncoding !== 'UTF-8') {
-                $respuestaIA = mb_convert_encoding($respuestaIA, 'UTF-8', $detectedEncoding);
-            } elseif (!$detectedEncoding) {
-                $respuestaIA = mb_convert_encoding($respuestaIA, 'UTF-8', 'Windows-1252');
-            }
-            $respuestaIA = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $respuestaIA);
-            if (!mb_check_encoding($respuestaIA, 'UTF-8')) {
-                $respuestaIA = mb_convert_encoding($respuestaIA, 'UTF-8', 'UTF-8');
-            }
-            // --- FIN normalización ---
-
-            // --- Procesamiento estructurado del diagnóstico IA ---
-            // 1. Extrae todas las líneas relevantes
-            $lineas = array_filter(array_map('trim', preg_split('/\r?\n/', $respuestaIA)));
-            $malestares = [];
-            $enfermedades = '';
-            $recomendaciones = '';
-            $recuerda = '';
-
-            // 2. Buscar todos los textos entre comillas en la primera línea
-            if (isset($lineas[0])) {
-                preg_match_all('/"([^"]+)"/', $lineas[0], $matches);
-                $malestares = $matches[1];
-            }
-            // 3. Enfermedades asociadas: texto después del último malestar entre comillas en la primera línea
-            if (isset($lineas[0]) && !empty($malestares)) {
-                $last_quote = strrpos($lineas[0], '"');
-                if ($last_quote !== false) {
-                    $enfermedades = trim(substr($lineas[0], $last_quote + 1));
-                }
-            }
-            // 4. Recomendaciones (línea 2 si existe)
-            if (isset($lineas[1])) {
-                $recomendaciones = $lineas[1];
-            }
-            // 5. Recuerda (línea 3 si existe)
-            if (isset($lineas[2])) {
-                $recuerda = $lineas[2];
-            }
-
-            // 6. Construye el texto final formateado
-            $texto_final = "";
-            if (!empty($malestares)) {
-                $texto_final .= "<b>Malestares:</b> " . implode(', ', $malestares) . "<br>";
-            }
-            if (!empty($enfermedades)) {
-                $texto_final .= "<b>Enfermedades asociadas:</b> " . htmlspecialchars($enfermedades) . "<br>";
-            }
-            if (!empty($recomendaciones)) {
-                $texto_final .= "<b>Recomendaciones:</b> " . htmlspecialchars($recomendaciones) . "<br>";
-            }
-            if (!empty($recuerda)) {
-                $texto_final .= "<b>Recuerda:</b> " . htmlspecialchars($recuerda);
-            }
-            $respuestaIA = $texto_final;
-            // --- FIN procesamiento estructurado ---
-
-            if ($returnCode !== 0 || !$respuestaIA) {
-                Log::error('DiagnosticoIA: Error de ejecución o sin respuesta IA', [
-                    'stdout' => $response,
-                    'stderr' => $stderr,
-                    'return_code' => $returnCode
-                ]);
+        try {
+            $descripcion = $request->input('descripcion');
+            if (empty($descripcion)) {
                 return response()->json([
                     'success' => false,
-                    'error' => 'No se pudo obtener respuesta válida de la IA.',
-                    'debug' => [
-                        'stdout' => $response,
-                        'stderr' => $stderr,
-                        'return_code' => $returnCode
-                    ]
+                    'error' => 'La descripción del malestar no puede estar vacía.'
+                ], 400);
+            }
+
+            $systemMessage = "Eres un asistente médico especializado en diagnósticos preliminares. Tu función es analizar los síntomas descritos y proporcionar posibles diagnósticos médicos basados en la información proporcionada. Debes seguir estas reglas estrictamente:\n\n1. Solo responde con información médica basada en evidencia.\n2. Si los síntomas son ambiguos o insuficientes para un diagnóstico, responde con 'No entiendo la consulta'.\n3. Siempre aclara que tu diagnóstico es preliminar y que se requiere una evaluación médica profesional.\n4. No proporciones tratamientos específicos, solo posibles diagnósticos y recomendaciones generales.\n5. Si detectas una posible emergencia médica, indica que se debe buscar atención médica inmediata.\n6. No respondas a consultas que no estén relacionadas con síntomas o condiciones médicas.\n7. Mantén un tono profesional y empático.\n8. Estructura tu respuesta en: Posible diagnóstico, Explicación, y Recomendaciones generales.\n9. Si la consulta no está relacionada con medicina o salud, responde con 'No entiendo la consulta'.";
+
+            // Obtener la URL de la aplicación desde la configuración
+            $appUrl = config('app.url');
+            
+            // Si la URL es localhost, usar un dominio más específico para el HTTP-Referer
+            $refererUrl = $appUrl;
+            if ($refererUrl === 'http://localhost') {
+                $refererUrl = 'https://clinica-ricardo-palma.com';
+            }
+            
+            // Generar un identificador único para el usuario basado en la sesión o IP
+            $userId = md5(session()->getId() . request()->ip());
+            
+            Log::info('Enviando solicitud a OpenRouter', [
+                'referer' => $refererUrl,
+                'model' => $this->model,
+                'user_id_hash' => $userId
+            ]);
+            
+            $response = Http::timeout(60)->withHeaders([
+                'Authorization' => 'Bearer ' . $this->apiKey,
+                'HTTP-Referer' => $refererUrl,
+                'Content-Type' => 'application/json',
+                'X-Title' => 'Clinica Ricardo Palma Diagnóstico IA'
+            ])->post($this->apiUrl, [
+                'model' => $this->model,
+                'messages' => [
+                    ['role' => 'system', 'content' => $systemMessage],
+                    ['role' => 'user', 'content' => $descripcion]
+                ],
+                'temperature' => 0.3, // Temperatura más baja para respuestas más precisas
+                'max_tokens' => 1000,
+                'user' => $userId // Identificador estable para el usuario final
+            ]);
+
+            if (!$response->successful()) {
+                $errorData = $response->json();
+                $errorMessage = isset($errorData['error']['message']) 
+                    ? 'Error del servidor: ' . $errorData['error']['message']
+                    : 'Error al procesar la solicitud. Por favor, inténtelo de nuevo.';
+                
+                \Illuminate\Support\Facades\Log::error('Error en la API de OpenRouter (Diagnóstico):', [
+                    'status' => $response->status(),
+                    'error' => $errorData,
+                    'request' => $descripcion
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'error' => $errorMessage,
+                    'status_code' => $response->status()
+                ], $response->status());
+            }
+
+            $result = $response->json();
+            if (!isset($result['choices'][0]['message']['content'])) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Formato de respuesta inválido del API.'
                 ], 500);
             }
 
-            return response()->json(['success' => true, 'respuesta' => $respuestaIA], 200, [
-                'Content-Type' => 'application/json; charset=UTF-8'
-            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
-        } else {
-            Log::error('DiagnosticoIA: No se pudo iniciar el proceso del script Python');
+            $respuesta = $result['choices'][0]['message']['content'];
+            
+            // Verificar si la respuesta indica que no entendió la consulta
+            if (stripos($respuesta, 'No entiendo la consulta') !== false) {
+                return response()->json([
+                    'success' => true,
+                    'respuesta' => 'No entiendo la consulta. Por favor, proporcione una descripción más detallada de los síntomas médicos.'
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'respuesta' => $respuesta
+            ]);
+
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error' => 'No se pudo iniciar el proceso del script Python'
+                'error' => 'Error del servidor: ' . $e->getMessage(),
+                'error_type' => get_class($e)
             ], 500);
         }
     }

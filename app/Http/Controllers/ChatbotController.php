@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Routing\Controller;
-
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Config;
 
 class ChatbotController extends Controller
 {
@@ -16,7 +17,8 @@ class ChatbotController extends Controller
 
     public function __construct()
     {
-        $this->apiKey = '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';
+        // Obtener la API key desde la variable de entorno
+        $this->apiKey = env('OPENROUTER_API_KEY');
         $this->catalogPath = public_path('CorpusChatBot.txt');
     }
 
@@ -42,9 +44,27 @@ class ChatbotController extends Controller
 
             $systemMessage = "Eres un chatbot con el nombre de 'Dr. Asistente Virtual de la Clínica Ricardo Palma' hecho para una clínica, no contestes cosas o respondas cosas fuera de tus parámetros, todo tiene que ver con medicina humana. Además siempre deja en claro que siempre lo mejor no es automedicarse, si no ir con un especialista por si la enfermedad es muy grave. El número de emergencia es el 106. Y la información que tienes es esta:\n" . $catalogContent;
 
+            // Obtener la URL de la aplicación desde la configuración
+            $appUrl = config('app.url');
+            
+            // Si la URL es localhost, usar un dominio más específico para el HTTP-Referer
+            $refererUrl = $appUrl;
+            if ($refererUrl === 'http://localhost') {
+                $refererUrl = 'https://clinica-ricardo-palma.com';
+            }
+            
+            // Generar un identificador único para el usuario basado en la sesión o IP
+            $userId = md5(session()->getId() . request()->ip());
+            
+            Log::info('Enviando solicitud a OpenRouter (Chatbot)', [
+                'referer' => $refererUrl,
+                'model' => $this->model,
+                'user_id_hash' => $userId
+            ]);
+            
             $response = Http::timeout(60)->withHeaders([
                 'Authorization' => 'Bearer ' . $this->apiKey,
-                'HTTP-Referer' => config('app.url'),
+                'HTTP-Referer' => $refererUrl,
                 'Content-Type' => 'application/json',
                 'X-Title' => 'Clinica Ricardo Palma Chatbot'
             ])->post($this->apiUrl, [
@@ -54,7 +74,8 @@ class ChatbotController extends Controller
                     ['role' => 'user', 'content' => $userMessage]
                 ],
                 'temperature' => 0.7,
-                'max_tokens' => 1000
+                'max_tokens' => 1000,
+                'user' => $userId // Identificador estable para el usuario final
             ]);
 
             if (!$response->successful()) {
