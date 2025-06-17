@@ -330,11 +330,19 @@
                     
                     // Botón para registrar historial médico
                     const btnRegistrarHistorial = document.createElement('button');
-                    btnRegistrarHistorial.className = 'bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded shadow flex items-center gap-2 transition-all duration-200';
-                    btnRegistrarHistorial.innerHTML = '<i class="fas fa-notes-medical"></i> Registrar Historial';
-                    btnRegistrarHistorial.addEventListener('click', function() {
-                        window.location.href = `/pacientes/${paciente.id}/historial/crear/${idCita || ''}`;
-                    });
+                    const estadoCita = cita ? cita.estado : null;
+                    const esCompletada = estadoCita === 'completada';
+                    
+                    btnRegistrarHistorial.className = `${esCompletada ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'} text-white font-bold py-2 px-6 rounded shadow flex items-center gap-2 transition-all duration-200`;
+                    btnRegistrarHistorial.innerHTML = '<i class="fas fa-notes-medical"></i> ' + (esCompletada ? 'Historial Registrado' : 'Registrar Historial');
+                    btnRegistrarHistorial.disabled = esCompletada;
+                    
+                    if (!esCompletada) {
+                        btnRegistrarHistorial.addEventListener('click', function() {
+                            window.location.href = `/pacientes/${paciente.id}/historial/crear/${idCita || ''}`;
+                        });
+                    }
+                    
                     modalButtons.appendChild(btnRegistrarHistorial);
                     
                     // Botón para diagnóstico IA
