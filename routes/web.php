@@ -83,6 +83,10 @@ Route::middleware('doctor')->group(function () {
 
     // Guardar respuesta IA en cita (solo doctores)
     Route::post('/citas/{id}/respuesta-bot', [App\Http\Controllers\CitaController::class, 'guardarRespuestaBot'])->name('citas.guardarRespuestaBot');
+    
+    // Rutas para atención directa
+    Route::get('/atenciondirecta', [\App\Http\Controllers\DoctorController::class, 'atencionDirecta'])->name('atenciondirecta.index');
+    Route::post('/pacientes/{paciente}/asignar-doctor', [\App\Http\Controllers\DoctorController::class, 'asignarDoctor'])->name('pacientes.asignar-doctor');
 });
 
 // Ruta pública para obtener el horario semanal de un doctor
@@ -99,6 +103,9 @@ Route::middleware('paciente')->group(function () {
     
     // Ruta para consultar la API de RENIEC desde el backend
     Route::post('/reniec/consultar-dni', [\App\Http\Controllers\ReniecController::class, 'consultarDni'])->name('reniec.consultar-dni');
+    
+    // Ruta para que los pacientes vean la información de su doctor asignado
+    Route::get('/atenciondirecta', [\App\Http\Controllers\PacienteController::class, 'verDoctorAsignado'])->name('paciente.atenciondirecta');
     
     Route::get('/citas', [CitaController::class, 'index'])->name('citas.index');
     Route::post('/citas', [CitaController::class, 'store'])->name('citas.store');

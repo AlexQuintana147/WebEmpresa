@@ -229,6 +229,68 @@ class DoctorController extends Controller
     }
     
     /**
+     * Asigna el doctor actual al paciente especificado
+     */
+    public function asignarDoctor($pacienteId)
+    {
+        try {
+            // Obtener el doctor autenticado
+            $doctor = Doctor::where('usuario_id', Auth::id())->first();
+            
+            if (!$doctor) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontró información del doctor'
+                ], 404);
+            }
+            
+            // Buscar el paciente
+            $paciente = Paciente::findOrFail($pacienteId);
+            
+            // Verificar si el paciente ya tiene un doctor asignado
+            if ($paciente->doctor_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Este paciente ya tiene un doctor asignado'
+                ], 400);
+            }
+            
+            // Asignar el doctor al paciente
+            $paciente->doctor_id = $doctor->id;
+            $paciente->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Se ha asignado el doctor al paciente correctamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al asignar doctor: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    /**
+     * Muestra la vista de atención directa con los pacientes asignados al doctor
+     */
+    public function atencionDirecta()
+    {
+        // Obtener el doctor autenticado
+        $doctor = Doctor::where('usuario_id', Auth::id())->first();
+        
+        if (!$doctor) {
+            return redirect()->route('pacientes.index')
+                ->with('error', 'No se encontró información del doctor');
+        }
+        
+        // Obtener los pacientes asignados a este doctor
+        $pacientes = Paciente::where('doctor_id', $doctor->id)->get();
+        
+        return view('atenciondirecta', compact('doctor', 'pacientes'));
+    }
+    
+    /**
      * Devuelve el horario semanal del doctor (sus tareas)
      */
     public function horario($doctor_id)

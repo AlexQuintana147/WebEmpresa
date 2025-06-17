@@ -253,6 +253,11 @@
                                             <button onclick="showDetallesModal({{ $index }}, {{ $paciente->citas->last()->id ?? 'null' }})" class="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-1 px-3 rounded shadow-sm border border-cyan-600 transition-all flex items-center gap-1" title="Más detalles">
                                                 <i class="fas fa-eye"></i> Detalles
                                             </button>
+                                            @if(!$paciente->doctor_id)
+                                            <button onclick="showSeguimientoModal({{ $paciente->id }})" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-1 px-3 rounded shadow-sm border border-green-600 transition-all flex items-center gap-1" title="Asignar seguimiento">
+                                                <i class="fas fa-user-md"></i> Dar Seguimiento
+                                            </button>
+                                            @endif
                                         </td>
                                     </tr>
                                     @endforeach
@@ -491,6 +496,140 @@
                 document.getElementById('modalPacienteTitle').innerText = 'Error al mostrar historial';
                 document.getElementById('modalPacienteContent').innerHTML = `<pre class='text-red-600'>${e.message}\n${e.stack}</pre>`;
                 document.getElementById('modalPaciente').classList.remove('hidden');
+            }
+        }
+        
+        function showSeguimientoModal(pacienteId) {
+            try {
+                document.getElementById('modalPacienteTitle').innerText = 'Confirmar Seguimiento';
+                document.getElementById('modalPacienteContent').innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-user-md text-5xl text-green-500 mb-4"></i>
+                        <p class="text-gray-700 text-lg mb-6">¿Está seguro que desea dar seguimiento a este paciente?</p>
+                        <p class="text-gray-600 mb-4">Al confirmar, usted será asignado como el doctor de este paciente y no se podrá cambiar posteriormente.</p>
+                    </div>
+                `;
+                
+                // Botones en el modal
+                const modalButtons = document.getElementById('modalButtons');
+                if (modalButtons) {
+                    // Limpiar botones anteriores
+                    while (modalButtons.firstChild) {
+                        modalButtons.removeChild(modalButtons.firstChild);
+                    }
+                    
+                    // Botón para confirmar
+                    const btnConfirmar = document.createElement('button');
+                    btnConfirmar.className = 'bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded shadow transition-all mr-4';
+                    btnConfirmar.innerHTML = 'Confirmar';
+                    btnConfirmar.addEventListener('click', () => asignarDoctor(pacienteId));
+                    modalButtons.appendChild(btnConfirmar);
+                    
+                    // Botón para cancelar
+                    const btnCancelar = document.createElement('button');
+                    btnCancelar.className = 'bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded shadow transition-all';
+                    btnCancelar.innerHTML = 'Cancelar';
+                    btnCancelar.addEventListener('click', closeModalPaciente);
+                    modalButtons.appendChild(btnCancelar);
+                }
+                
+                document.getElementById('modalPaciente').classList.remove('hidden');
+            } catch (e) {
+                console.error('Error al mostrar modal de seguimiento:', e);
+            }
+        }
+        
+        function asignarDoctor(pacienteId) {
+            try {
+                // Mostrar indicador de carga
+                document.getElementById('modalPacienteContent').innerHTML = `
+                    <div class="flex justify-center items-center py-4">
+                        <i class="fas fa-spinner fa-spin text-3xl text-green-500"></i>
+                        <span class="ml-2 text-gray-600">Asignando doctor al paciente...</span>
+                    </div>
+                `;
+                
+                // Realizar petición AJAX para asignar el doctor
+                fetch('/pacientes/' + pacienteId + '/asignar-doctor', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al asignar doctor');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('modalPacienteContent').innerHTML = `
+                            <div class="text-center py-4">
+                                <i class="fas fa-check-circle text-5xl text-green-500 mb-4"></i>
+                                <p class="text-gray-700 text-lg mb-2">${data.message}</p>
+                                <p class="text-gray-600 mb-4">Puede ver los detalles en la sección de Atención Directa.</p>
+                            </div>
+                        `;
+                        
+                        // Actualizar botones
+                        const modalButtons = document.getElementById('modalButtons');
+                        if (modalButtons) {
+                            // Limpiar botones anteriores
+                            while (modalButtons.firstChild) {
+                                modalButtons.removeChild(modalButtons.firstChild);
+                            }
+                            
+                            // Botón para ir a atención directa
+                            const btnAtenciónDirecta = document.createElement('button');
+                            btnAtenciónDirecta.className = 'bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-6 rounded shadow transition-all mr-4';
+                            btnAtenciónDirecta.innerHTML = 'Ver Atención Directa';
+                            btnAtenciónDirecta.addEventListener('click', () => window.location.href = '/atenciondirecta');
+                            modalButtons.appendChild(btnAtenciónDirecta);
+                            
+                            // Botón para cerrar
+                            const btnCerrar = document.createElement('button');
+                            btnCerrar.className = 'bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded shadow transition-all';
+                            btnCerrar.innerHTML = 'Cerrar';
+                            btnCerrar.addEventListener('click', () => {
+                                closeModalPaciente();
+                                // Recargar la página para actualizar la lista de pacientes
+                                window.location.reload();
+                            });
+                            modalButtons.appendChild(btnCerrar);
+                        }
+                    } else {
+                        throw new Error(data.message || 'Error al asignar doctor');
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('modalPacienteContent').innerHTML = `
+                        <div class="text-center py-4">
+                            <i class="fas fa-exclamation-circle text-5xl text-red-500 mb-4"></i>
+                            <p class="text-red-600 text-lg mb-2">Error</p>
+                            <p class="text-gray-700 mb-4">${error.message}</p>
+                        </div>
+                    `;
+                    
+                    // Actualizar botones
+                    const modalButtons = document.getElementById('modalButtons');
+                    if (modalButtons) {
+                        // Limpiar botones anteriores
+                        while (modalButtons.firstChild) {
+                            modalButtons.removeChild(modalButtons.firstChild);
+                        }
+                        
+                        // Botón para cerrar
+                        const btnCerrar = document.createElement('button');
+                        btnCerrar.className = 'bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded shadow transition-all';
+                        btnCerrar.innerHTML = 'Cerrar';
+                        btnCerrar.addEventListener('click', closeModalPaciente);
+                        modalButtons.appendChild(btnCerrar);
+                    }
+                });
+            } catch (e) {
+                console.error('Error al asignar doctor:', e);
             }
         }
     </script>

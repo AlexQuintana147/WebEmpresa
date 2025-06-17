@@ -122,4 +122,32 @@ class PacienteController extends Controller
         return redirect()->route('atencionmedica.index')
             ->with('success', 'DNI asociado correctamente a su cuenta');
     }
+
+    /**
+     * Muestra la información del doctor asignado al paciente autenticado
+     */
+    public function verDoctorAsignado()
+    {
+        // Obtener el paciente autenticado
+        $paciente = Paciente::where('usuario_id', Auth::id())->first();
+        
+        if (!$paciente) {
+            return redirect()->route('atencionmedica.index')
+                ->with('error', 'No se encontró información del paciente');
+        }
+        
+        // Verificar si el paciente tiene un doctor asignado
+        if (!$paciente->doctor_id) {
+            return redirect()->route('atencionmedica.index')
+                ->with('info', 'Aún no tienes un doctor asignado para atención directa');
+        }
+        
+        // Obtener el doctor asignado con sus datos
+        $doctor = $paciente->doctor;
+        
+        // Pasar solo el paciente actual a la vista (no una colección de pacientes)
+        $pacientes = collect([$paciente]);
+        
+        return view('atenciondirecta', compact('doctor', 'pacientes'));
+    }
 }
