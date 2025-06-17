@@ -247,7 +247,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $paciente->created_at ? $paciente->created_at->format('d/m/Y') : '-' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-cyan-700">{{ $paciente->citas->where('estado', 'pendiente')->count() > 0 || $paciente->citas->where('estado', 'En Espera')->count() > 0 ? 'Pendiente' : 'Completo' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-cyan-700 flex gap-2">
-                                            <button onclick="showHistorialModal('{{ $paciente->nombre }} {{ $paciente->apellido_paterno }} {{ $paciente->apellido_materno }}')" class="bg-cyan-100 hover:bg-cyan-200 text-cyan-700 font-semibold py-1 px-3 rounded shadow-sm border border-cyan-200 transition-all flex items-center gap-1" title="Ver historial">
+                                            <button onclick="showHistorialModal({{ $paciente->id }})" class="bg-cyan-100 hover:bg-cyan-200 text-cyan-700 font-semibold py-1 px-3 rounded shadow-sm border border-cyan-200 transition-all flex items-center gap-1" title="Ver historial">
                                                 <i class="fas fa-notes-medical"></i> Historial
                                             </button>
                                             <button onclick="showDetallesModal({{ $index }}, {{ $paciente->citas->last()->id ?? 'null' }})" class="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-1 px-3 rounded shadow-sm border border-cyan-600 transition-all flex items-center gap-1" title="Más detalles">
@@ -413,6 +413,84 @@
             var modal = document.getElementById('modalPaciente');
             if (modal) {
                 modal.classList.add('hidden');
+            }
+        }
+
+        function showHistorialModal(pacienteId) {
+            try {
+                document.getElementById('modalPacienteTitle').innerText = 'Historial Médico';
+                document.getElementById('modalPacienteContent').innerHTML = `
+                    <div class="flex justify-center items-center py-4">
+                        <i class="fas fa-spinner fa-spin text-3xl text-cyan-500"></i>
+                        <span class="ml-2 text-gray-600">Cargando historial médico...</span>
+                    </div>
+                `;
+                document.getElementById('modalPaciente').classList.remove('hidden');
+                
+                // Hacer petición AJAX para obtener el historial médico
+                fetch(`/pacientes/${pacienteId}/historial`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Error al cargar el historial médico');
+                        }
+                        return response.text();
+                    })
+                    .then(html => {
+                        // Extraer solo la parte del historial médico del HTML
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        
+                        // Obtener la información del paciente
+                        const pacienteInfo = doc.querySelector('.bg-blue-50.p-6.rounded-lg.mb-8');
+                        
+                        // Obtener la línea de tiempo de historiales
+                        const historiales = doc.querySelector('.relative.pl-8.space-y-8');
+                        
+                        if (!historiales) {
+                            document.getElementById('modalPacienteContent').innerHTML = `
+                                <div class="text-center py-4">
+                                    <i class="fas fa-notes-medical text-3xl text-cyan-300 mb-2"></i>
+                                    <p class="text-gray-600">Este paciente no tiene registros en su historial médico.</p>
+                                </div>
+                            `;
+                        } else {
+                            // Mostrar el historial médico en el modal
+                            document.getElementById('modalPacienteContent').innerHTML = `
+                                <div class="max-h-[60vh] overflow-y-auto pr-2">
+                                    ${pacienteInfo ? pacienteInfo.outerHTML : ''}
+                                    ${historiales.outerHTML}
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(error => {
+                        document.getElementById('modalPacienteContent').innerHTML = `
+                            <div class="text-center py-4">
+                                <i class="fas fa-exclamation-circle text-3xl text-red-500 mb-2"></i>
+                                <p class="text-red-600">${error.message}</p>
+                            </div>
+                        `;
+                    });
+                
+                // Botones en el modal
+                const modalButtons = document.getElementById('modalButtons');
+                if (modalButtons) {
+                    // Limpiar botones anteriores
+                    while (modalButtons.firstChild) {
+                        modalButtons.removeChild(modalButtons.firstChild);
+                    }
+                    
+                    // Botón para cerrar
+                    const btnCerrar = document.createElement('button');
+                    btnCerrar.className = 'bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-6 rounded shadow transition-all';
+                    btnCerrar.innerHTML = 'Cerrar';
+                    btnCerrar.addEventListener('click', closeModalPaciente);
+                    modalButtons.appendChild(btnCerrar);
+                }
+            } catch (e) {
+                document.getElementById('modalPacienteTitle').innerText = 'Error al mostrar historial';
+                document.getElementById('modalPacienteContent').innerHTML = `<pre class='text-red-600'>${e.message}\n${e.stack}</pre>`;
+                document.getElementById('modalPaciente').classList.remove('hidden');
             }
         }
     </script>
