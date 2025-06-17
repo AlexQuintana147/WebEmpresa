@@ -245,7 +245,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-cyan-700">{{ $paciente->correo }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-cyan-700">{{ $paciente->telefono }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $paciente->created_at ? $paciente->created_at->format('d/m/Y') : '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-cyan-700">{{ $paciente->estado ? 'En Tratamiento' : 'Pendiente' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-cyan-700">{{ $paciente->citas->where('estado', 'pendiente')->count() > 0 || $paciente->citas->where('estado', 'En Espera')->count() > 0 ? 'Pendiente' : 'Completo' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-cyan-700 flex gap-2">
                                             <button onclick="showHistorialModal('{{ $paciente->nombre }} {{ $paciente->apellido_paterno }} {{ $paciente->apellido_materno }}')" class="bg-cyan-100 hover:bg-cyan-200 text-cyan-700 font-semibold py-1 px-3 rounded shadow-sm border border-cyan-200 transition-all flex items-center gap-1" title="Ver historial">
                                                 <i class="fas fa-notes-medical"></i> Historial
