@@ -45,6 +45,14 @@ class Paciente extends Model
     {
         return $this->hasMany(\App\Models\Cita::class, 'paciente_id');
     }
+    
+    /**
+     * Relación: obtiene todos los historiales médicos asociados a este paciente
+     */
+    public function historiales()
+    {
+        return $this->hasMany(Historial::class, 'paciente_id');
+    }
 
     /**
      * Obtiene el nombre completo del paciente
